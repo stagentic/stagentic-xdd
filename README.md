@@ -28,7 +28,7 @@ Language support will be provided through adapters — the skill itself is langu
 
 ## Development
 
-This plugin is being developed using the [TDAB](https://substack.com/@antonymarcano/note/c-252213610) method — Test-Driven Agentic Behaviours. Each behaviour is specified as a scenario, validated end-to-end before the guidance is considered done.
+This plugin is being developed using [TDAB](https://substack.com/@antonymarcano/note/c-252213610) — Test-Driven Agentic Behaviours, a technique adapted from TDD and BDD to drive agent behaviour rather than code. Each behaviour is specified as a scenario, validated end-to-end before the guidance is considered done.
 
 ## License
 
