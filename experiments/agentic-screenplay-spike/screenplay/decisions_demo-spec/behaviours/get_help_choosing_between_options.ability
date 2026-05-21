@@ -1,0 +1,13 @@
+Ability: Get Help Choosing Between Options
+
+  @integration
+  Scenario: Skip weighing path when only one option is given
+    When the Decision Support Agent attempts to seek help deciding, with:
+      | Options |
+      | pizza   |
+    Then the Decision Support Agent should complete its workflow, as follows:
+      | From  | Output                                                |
+      | Agent | What are you choosing between\?                       |
+      | User  | pizza                                                 |
+      | Agent | Looks like you only gave me one option                |
+      | Agent | the (choice\|decision) (is\|has been) (already )?made |

@@ -1,0 +1,16 @@
+[project]
+name = "agentic-screenplay-spike"
+version = "0.0.0"
+description = "Spike: drive TDAB scenarios from a conventional test runner."
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-bdd"]
+behave-compat = ["behave"]  # install only if exercising the behave subtree
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["transcript_renderer"]
