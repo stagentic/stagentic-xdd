@@ -1,7 +1,7 @@
 """Helpers for running a TDAB scenario through `claude -p`.
 
-Composes `agent_utils.transcriber.TranscriptRenderer` to project the JSONL
-that Claude writes at `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`
+Composes `TranscriptRenderer` (vendored at the spike folder root) to project the
+JSONL that Claude writes at `~/.claude/projects/<encoded-cwd>/<session-id>.jsonl`
 into the markdown file the Then-step scorecard expects.
 """
 import subprocess
@@ -9,9 +9,9 @@ import sys
 import uuid
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[4]
-sys.path.insert(0, str(REPO_ROOT / "agent-utils/src"))
-from agent_utils.transcriber import TranscriptRenderer  # noqa: E402
+SPIKE_ROOT = Path(__file__).resolve().parents[1]  # …/agentic-screenplay-spike/
+sys.path.insert(0, str(SPIKE_ROOT))
+from transcript_renderer import TranscriptRenderer  # noqa: E402
 
 PROMPTBOOK_ROOT = Path("/workspace/stagentic-promptbook")
 

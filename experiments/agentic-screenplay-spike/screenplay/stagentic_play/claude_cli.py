@@ -14,9 +14,9 @@ from pathlib import Path
 
 from .agent import Transcript
 
-REPO_ROOT = Path(__file__).resolve().parents[6]
-sys.path.insert(0, str(REPO_ROOT / "agent-utils/src"))
-from agent_utils.transcriber import TranscriptRenderer  # noqa: E402
+SPIKE_ROOT = Path(__file__).resolve().parents[2]  # …/agentic-screenplay-spike/
+sys.path.insert(0, str(SPIKE_ROOT))
+from transcript_renderer import TranscriptRenderer  # noqa: E402
 
 
 class ClaudeCliAgent:
