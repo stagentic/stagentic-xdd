@@ -21,9 +21,9 @@ _DECISION_MADE = re.compile(
 )
 
 
-def the_right_answer_by_skipping_weighing(*, seen_by: Actor):
+def the_right_answer_by_skipping_weighing(*, witnessed_by: Actor):
     def expecting(subject: Actor) -> None:
-        _check(seen_by.role, subject)
+        _check(witnessed_by.role, subject)
     return expecting
 
 

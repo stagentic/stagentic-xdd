@@ -16,11 +16,11 @@ from screenplay_core import Actor
 from stagentic_play import Agent, Auditor
 
 
-def complete_its_workflow(*, as_follows: list[tuple[str, str]], seen_by: Actor):
+def complete_its_workflow(*, as_follows: list[tuple[str, str]], witnessed_by: Actor):
     patterns = [_translate(speaker, regex) for speaker, regex in as_follows]
 
     def expecting(subject: Actor) -> None:
-        _check(seen_by.role, subject, patterns)
+        _check(witnessed_by.role, subject, patterns)
     return expecting
 
 

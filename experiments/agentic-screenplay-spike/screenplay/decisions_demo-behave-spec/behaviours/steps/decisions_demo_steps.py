@@ -27,5 +27,5 @@ def step_then_complete_its_workflow(context):
     )
     rows = [(row["From"], row["Output"]) for row in context.table]
     scr_then(context.decision_support_agent).should(
-        complete_its_workflow(as_follows=rows, seen_by=context.inspector)
+        complete_its_workflow(as_follows=rows, witnessed_by=context.inspector)
     )

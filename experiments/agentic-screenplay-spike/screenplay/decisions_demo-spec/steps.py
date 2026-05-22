@@ -68,7 +68,7 @@ def _then_should_with(
 
     then(actor).should(expectation(
         as_follows=rows,
-        seen_by=inspector)
+        witnessed_by=inspector)
     )
 
 
@@ -84,6 +84,6 @@ def _then_should(
 
     then(actor).should(
         expectation(
-            seen_by=inspector
+            witnessed_by=inspector
         )
     )

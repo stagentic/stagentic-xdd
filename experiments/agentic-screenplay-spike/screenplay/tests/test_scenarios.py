@@ -22,7 +22,7 @@ def test_skips_weighing_when_only_one_option_given(decision_support_agent, inspe
     when(decision_support_agent).attempts_to(run_decisions_demo_with_one_option)
 
     then(decision_support_agent).should(
-        the_right_answer_by_skipping_weighing(seen_by=inspector)
+        the_right_answer_by_skipping_weighing(witnessed_by=inspector)
     )
 
 
@@ -40,13 +40,13 @@ def test_skips_weighing_when_only_one_option_given__inline_data(
 
     then(decision_support_agent).should(
         complete_its_workflow(
-            seen_by=inspector,
             as_follows=[
                 ("Agent", r"What are you choosing between\?"),
                 ("User",  r"pizza"),
                 ("Agent", r"Looks like you only gave me one option"),
                 ("Agent", r"the (choice|decision) (is|has been) (already )?made"),
             ],
+            witnessed_by=inspector,
         )
     )
 
@@ -64,5 +64,5 @@ def test_skips_weighing_when_only_one_option_given__stub_only(
     when(decision_support_agent).attempts_to(run_decisions_demo_with_one_option)
 
     then(decision_support_agent).should(
-        the_right_answer_by_skipping_weighing(seen_by=inspector)
+        the_right_answer_by_skipping_weighing(witnessed_by=inspector)
     )

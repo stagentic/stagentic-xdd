@@ -1,9 +1,9 @@
 """Agentic verification chain: a subject Actor's behaviour is verified by
 an inspector Actor (Auditor for code-based, Agent for LLM-based). The
-inspector is captured by the expectation factory via `seen_by=`; the
+inspector is captured by the expectation factory via `witnessed_by=`; the
 call chain reads:
 
-  then(subject).should(expectation_factory(..., seen_by=inspector))
+  then(subject).should(expectation_factory(..., witnessed_by=inspector))
 """
 from __future__ import annotations
 
