@@ -1,0 +1,5 @@
+.venv/
+.venv-jb/
+__pycache__/
+*.pyc
+*.egg-info/
