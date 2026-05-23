@@ -33,6 +33,9 @@ The bootstrap approach is fixed in
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
 - `docs/assets/` — diagrams referenced from `README.md`.
+- `.claude/settings.json` — checked-in Claude Code config: shared
+  permissions, pinned model env vars (ADR 0003), and
+  `DISABLE_AUTOUPDATER` (ADR 0002).
 
 There is no top-level Python project yet — `experiments/*/pyproject.toml`
 is spike-scoped.
