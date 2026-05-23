@@ -43,6 +43,8 @@ In-repo docs (READMEs, ADRs, CLAUDE.md, etc.) describe the system as it stands n
 
 Ask: *"would this sentence make sense to a reader who has never seen any previous version of this file?"* If a clause references a previous state to contextualise the current one, delete it — the current state stands on its own.
 
+Docs must be environment-agnostic. Describe mechanisms in terms of files, commands, and Claude Code features — never in terms of a specific environment (containers, host OS, install method, directory layout, etc.). A reader on any setup should find the docs accurate.
+
 ## Commit message style
 
 A commit message answers *why*, not *what* — the diff already records every edited line. The message earns its place by stating the motivating problem, constraint, or goal the change serves.
