@@ -15,7 +15,11 @@
       "Bash(gh run list*)",
       "Bash(gh run view*)",
       "Bash(gh release list*)",
-      "Bash(gh release view*)"
+      "Bash(gh release view*)",
+      "Bash(python3 -m pytest --collect-only -q)",
+      "Bash(python3 -m pytest --collect-only -q tests/test_scenarios.py)",
+      "Bash(pytest --collect-only -q)",
+      "Bash(uv run pytest*)"
     ],
     "deny": [
       "Bash(git push*)"
