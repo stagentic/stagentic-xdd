@@ -6,7 +6,6 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
-
       "Bash(gh repo view*)",
       "Bash(gh issue list*)",
       "Bash(gh issue view*)",
@@ -21,5 +20,8 @@
     "deny": [
       "Bash(git push*)"
     ]
+  },
+  "enabledPlugins": {
+    "stagentic-promptbook@stagentic": true
   }
 }
