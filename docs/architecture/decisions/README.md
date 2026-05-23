@@ -23,3 +23,5 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 |---|---|---|
 | [0000](0000-use-adrs-to-record-decisions.md) | Use ADRs to record decisions | Proposed |
 | [0001](0001-start-with-tdab-and-vanilla-pytest.md) | Start development by applying the TDAB pattern with vanilla pytest | Proposed |
+| [0002](0002-pin-claude-code-cli-version.md) | Pin the Claude Code CLI version; treat upgrades as deliberate migrations | Proposed |
+| [0003](0003-pin-model-versions.md) | Pin model versions; treat upgrades as deliberate migrations | Proposed |
