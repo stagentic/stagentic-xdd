@@ -22,4 +22,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | # | Title | Status |
 |---|---|---|
 | [0000](0000-use-adrs-to-record-decisions.md) | Use ADRs to record decisions | Proposed |
-| [0001](0001-drive-initial-development-from-the-tdab-prototype.md) | Drive initial development from the tdab prototype | Proposed |
+| [0001](0001-start-with-tdab-and-vanilla-pytest.md) | Start development by applying the TDAB pattern with vanilla pytest | Proposed |
