@@ -13,8 +13,6 @@ SPIKE_ROOT = Path(__file__).resolve().parents[1]  # …/agentic-screenplay-spike
 sys.path.insert(0, str(SPIKE_ROOT))
 from transcript_renderer import TranscriptRenderer  # noqa: E402
 
-PROMPTBOOK_ROOT = Path("/workspace/stagentic-promptbook")
-
 
 def new_session_id() -> str:
     return str(uuid.uuid4())

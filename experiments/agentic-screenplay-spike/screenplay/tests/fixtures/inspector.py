@@ -3,7 +3,7 @@ import pytest
 from screenplay_core import Actor
 from stagentic_play import Agent, Auditor, ClaudeCliAgent
 
-from .paths import PROMPTBOOK_ROOT, TASKS_DIR
+from .paths import SPIKE_ROOT, TASKS_DIR
 
 
 # ---- Inspector configuration markers -------------------------------------
@@ -27,7 +27,7 @@ def _make_claude_cli_critic(artefacts_dir):
     return Actor("critic").playing_the(
         Agent(ClaudeCliAgent(
             model="claude-sonnet-4-6",
-            cwd=PROMPTBOOK_ROOT,
+            cwd=SPIKE_ROOT,
             tasks_dir=TASKS_DIR,
             artefacts_dir=artefacts_dir,
             step=2, step_type="then",

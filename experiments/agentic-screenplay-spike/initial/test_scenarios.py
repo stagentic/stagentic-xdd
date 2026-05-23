@@ -5,17 +5,16 @@ Slow (~30s/scenario) and non-deterministic — keep behind the `integration` mar
 import pytest
 
 from stagentic_play import Agent, Context, then, when
-from harness import PROMPTBOOK_ROOT
+from harness import SPIKE_ROOT
 
-SCENARIO_DIR = PROMPTBOOK_ROOT / "promptbook-spec/behaviours/decisions-demo"
-TASKS_DIR = SCENARIO_DIR / "tasks"
+TASKS_DIR = SPIKE_ROOT / "fixtures/tasks"
 
 
 @pytest.fixture
 def context(artefacts_dir):
     return Context(
         artefacts_dir=artefacts_dir,
-        cwd=PROMPTBOOK_ROOT,
+        cwd=SPIKE_ROOT,
         tasks_dir=TASKS_DIR,
     )
 

@@ -22,22 +22,15 @@ from tests.fixtures.stubbed_agent import StubbedAgent
 from tests.fixtures.decision_support_agent import STUBBED_TRANSCRIPT
 
 
-def _workspace_root() -> Path:
-    for parent in Path(__file__).resolve().parents:
-        if (parent / "stagentic-promptbook").is_dir():
-            return parent
-    raise RuntimeError("Could not locate stagentic-promptbook sibling")
-
-
-PROMPTBOOK_ROOT = _workspace_root() / "stagentic-promptbook"
-TASKS_DIR = PROMPTBOOK_ROOT / "promptbook-spec/behaviours/decisions-demo/tasks"
+SPIKE_ROOT = Path(__file__).resolve().parents[3]  # …/agentic-screenplay-spike/
+TASKS_DIR = SPIKE_ROOT / "fixtures/tasks"
 
 
 def _make_subject_backend(agent_id: str, artefacts_dir: Path):
     if agent_id.startswith("real_claude"):
         return ClaudeCliAgent(
             model="claude-opus-4-7",
-            cwd=PROMPTBOOK_ROOT,
+            cwd=SPIKE_ROOT,
             tasks_dir=TASKS_DIR,
             artefacts_dir=artefacts_dir,
             step=1, step_type="when",
@@ -55,7 +48,7 @@ def _make_inspector(agent_id: str, artefacts_dir: Path) -> Actor:
         return Actor("critic").playing_the(
             Agent(ClaudeCliAgent(
                 model="claude-sonnet-4-6",
-                cwd=PROMPTBOOK_ROOT,
+                cwd=SPIKE_ROOT,
                 tasks_dir=TASKS_DIR,
                 artefacts_dir=artefacts_dir,
                 step=2, step_type="then",
@@ -72,8 +65,8 @@ def before_scenario(context, scenario):
     timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     test_name = scenario.name.lower().replace(" ", "-")
     artefacts_dir = (
-        PROMPTBOOK_ROOT
-        / f"promptbook-spec-artefacts/transcripts/{timestamp}-{test_name}"
+        SPIKE_ROOT
+        / f".artefacts/transcripts/{timestamp}-{test_name}"
     )
     artefacts_dir.mkdir(parents=True, exist_ok=True)
 

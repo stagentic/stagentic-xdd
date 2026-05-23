@@ -3,14 +3,14 @@ import pytest
 from screenplay_core import Actor
 from stagentic_play import Agent, ClaudeCliAgent
 
-from .paths import PROMPTBOOK_ROOT, TASKS_DIR
+from .paths import SPIKE_ROOT, TASKS_DIR
 from .stubbed_agent import StubbedAgent
 
 
 STUBBED_TRANSCRIPT = """\
 `17:15:50Z` [TOOL] **Skill** `stagentic-promptbook:decisions-demo`
 
-`17:15:54Z` [TOOL] **Read** `/workspace/stagentic-promptbook/skills/decisions-demo/decisions-demo.puml`
+`17:15:54Z` [TOOL] **Read** `skills/decisions-demo/decisions-demo.puml`
 
 `17:16:00Z`
 
@@ -29,7 +29,7 @@ Only one option provided — taking the `yes` branch.
 def _make_claude_cli_backend(artefacts_dir):
     return ClaudeCliAgent(
         model="claude-opus-4-7",
-        cwd=PROMPTBOOK_ROOT,
+        cwd=SPIKE_ROOT,
         tasks_dir=TASKS_DIR,
         artefacts_dir=artefacts_dir,
         step=1, step_type="when",

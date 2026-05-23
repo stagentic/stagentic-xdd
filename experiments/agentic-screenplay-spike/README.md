@@ -20,7 +20,7 @@ These example shapes are parallel explorations at different abstraction levels a
 
 - **`uv`** (Python project manager).
 - **`claude` CLI** on `PATH`, with API access to `claude-opus-4-7` (agent under test) and `claude-sonnet-4-6` (evaluator) — the models the scenarios currently hard-code (see `initial/test_scenarios.py`).
-- **A sibling checkout of `stagentic-promptbook`** next to this repo. The harness walks up from its own location to find a sibling `stagentic-promptbook/` directory and uses it as the agent's working directory; runs fail if it's missing.
+- **The `stagentic-promptbook` Claude Code plugin enabled** in this repo (`stagentic-promptbook@stagentic` in `.claude/settings.json` — already present). The scenarios invoke a skill provided by the plugin; task prompts and a snapshot of the skill source are bundled in-tree at `fixtures/tasks/` and `fixtures/skills/decisions-demo/`.
 
 ## Running
 
@@ -104,6 +104,9 @@ The wrapper exists because behave hard-codes the `.feature` extension in three p
 
 ```
 agentic-screenplay-spike/
+├── fixtures/                           # in-tree task prompts + snapshot of skill source
+│   ├── tasks/                          #   task prompt files referenced by the scenarios
+│   └── skills/decisions-demo/          #   snapshot of the workspace source the plugin is built from
 ├── initial/                            # simpler form: pytest + claude -p
 ├── screenplay/                         # Screenplay-style DSL prototype
 │   ├── tests/                          #   plain pytest example
