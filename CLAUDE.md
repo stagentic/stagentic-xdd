@@ -49,11 +49,9 @@ is spike-scoped.
 - When adding an ADR: copy `TEMPLATE.md` to `NNNN-short-slug.md` (next
   number), fill it in, and add a row to the index in
   `docs/architecture/decisions/README.md`.
+- **Keep `CLAUDE.md` in sync:** when adding an ADR or making a material
+  change (code, structure, conventions, working agreements), re-read this
+  `CLAUDE.md` and *propose changes* to any sections that have gone stale
+  or contradict the change. Do not edit `CLAUDE.md` without explicit
+  authorisation.
 
-## Working agreements
-
-- This repo sits under `/workspace`; the policies in `/workspace/CLAUDE.md`
-  apply (authorisation before executing on plans, "commit" means propose,
-  concise replies, etc.). Nothing here overrides them.
-- Pushing to GitHub is not configured in this container — surface the
-  exact `git push …` command for the user to run on their host.
