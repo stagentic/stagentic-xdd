@@ -1,34 +1,48 @@
-# stagentic:tdd
+# stagentic:xdd
 
-A planned Claude plugin for language-agnostic test-driven development.
+A planned Claude plugin for language-agnostic Behaviour-Driven Development (BDD) / Test-Driven Development (TDD).
 
-## Overview
+Initially it supports Python, because the code that facilitates it is written in Python, but it will evolve to support other languages.
 
-`stagentic:tdd` will be a Claude plugin that brings test-driven development to software projects. It is part of the [Stagentic](https://github.com/stagentic) ecosystem.
+**A work in progress**
 
-## The two loops
+# Why "XDD"
 
-stagentic:tdd's initial focus is the well-known Red-Green-Refactor loop of Test-Driven Development (TDD).
+Both BDD and TDD, in their original form, encompass an outer loop (customer scenarios / customer tests) and an inner loop (Red-Green-Refactor). The mainstream diluted both — TDD to just the inner loop, BDD to just customer tests — but the underlying practice is the same.
 
-Out of scope for now is TDD's lesser-known outer loop — one many practitioners missed in the original literature and rediscovered the hard way.
+For the longer argument, see [What almost everyone gets wrong about TDD/BDD](https://open.substack.com/pub/antonymarcano/p/what-almost-everyone-gets-wrong-about-c05).
 
-The **outer loop** defines new behaviour as an executable scenario, observes it fail, then evolves the guidance — skills, prompts, and checkpoints — until it passes reliably. What accumulates is not just working code but a suite of living specifications that catch regressions whenever something changes.
+Whether you call it TDD, BDD, or eXample-Driven Development — substitute the X with T, B, or whatever you prefer — you can apply the same working practice. What you call it isn't important; doing it well is. This plugin is a skill that aims to help Claude do it well.
 
-The **inner loop** is the familiar Red-Green-Refactor loop: write a failing test, make it pass with the minimum code change, then improve the structure without changing behaviour.
+## The outer and inner loops
+
+The **outer loop** defines each new product behaviour as an executable customer scenario (or customer test), observes it fail, then evolves the guidance — skills, prompts, and checkpoints — until it passes reliably.
+
+What accumulates is not just working code but a suite of living specifications that catch regressions whenever something changes.
+
+The **inner loop** is the familiar Red-Green-Refactor loop: spec a new internal behaviour (write a failing unit test), make it pass with the minimum code change, then improve the structure without changing behaviour.
 
 ![The outer and inner feedback loops in TDD](docs/assets/tdd-outer-inner-loops.png)
 
 *(From "Growing Object-Oriented Software, Guided by Tests" by Nat Pryce and Steve Freeman)*
 
+## Scope
+
 The initial focus is the inner loop, guiding an AI agent through a Red-Green-Refactor loop one behavioural increment at a time. Specifying and validating the skill itself via the outer loop is planned.
+
+Out of scope for now is the outer loop.
 
 ## Language adapters
 
-Language support will be provided through adapters — the skill itself is language-agnostic. Adapters will provide build and test commands, with linters and bespoke tool-chain integration.
+Language support will be provided through adapters — the skill itself is language-agnostic. Adapters will provide build and test commands, with linters, mutation testing and customisable tool-chain integration.
 
 ## Development
 
-This plugin is being developed using [TDAB](https://substack.com/@antonymarcano/note/c-252213610) — Test-Driven Agentic Behaviours, a technique adapted from TDD and BDD to drive agent behaviour rather than code. Each behaviour is specified as a scenario, validated end-to-end before the guidance is considered done.
+This plugin is being developed using a pattern created by Antony Marcano called [TDAB](https://substack.com/@antonymarcano/note/c-252213610) — Test-Driven Agentic Behaviours. This is essentially BDD/TDD for agentic behaviours, driving new or improved agent behaviour one scenario at a time.
+
+Each behaviour is specified as a scenario, with fixture code forming the basis of a small, scoped exercise, validated end-to-end in both the result and the approach to achieving it — before the guidance is considered done.
+
+A key problem this pattern solves is that agent behaviours are non-deterministic and cannot be asserted using traditional methods. Instead, a rubric, or scorecard, is used to evaluate non-deterministic agent behaviours.
 
 ## License
 
