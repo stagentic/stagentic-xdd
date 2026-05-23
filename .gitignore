@@ -7,3 +7,9 @@
 
 # macOS
 .DS_Store
+
+# Python
+**/venv*
+**/.pytest_cache
+**/__pycache__
+**/.python-version
