@@ -17,7 +17,7 @@
       "Bash(gh release list*)",
       "Bash(gh release view*)",
       "Bash(python3 -m pytest --collect-only -q)",
-      "Bash(python3 -m pytest --collect-only -q tests/test_scenarios.py)",
+      "Bash(python3 -m pytest --collect-only -q *)",
       "Bash(pytest --collect-only -q)",
       "Bash(uv run pytest*)"
     ],
