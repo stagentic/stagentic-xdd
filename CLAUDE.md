@@ -37,6 +37,27 @@ The bootstrap approach is fixed in
 There is no top-level Python project yet — `experiments/*/pyproject.toml`
 is spike-scoped.
 
+## Documentation style
+
+In-repo docs (READMEs, ADRs, CLAUDE.md, etc.) describe the system as it stands now. Do not narrate transitions from earlier states — phrases like *"no longer needs X"*, *"used to depend on Y"*, *"X has been removed"* are wrong shape. New readers land on the current version with no knowledge of prior states; transition language is meaningful only to someone reading the git log.
+
+Ask: *"would this sentence make sense to a reader who has never seen any previous version of this file?"* If a clause references a previous state to contextualise the current one, delete it — the current state stands on its own.
+
+## Commit message style
+
+A commit message answers *why*, not *what* — the diff already records every edited line. The message earns its place by stating the motivating problem, constraint, or goal the change serves.
+
+**Subjects:** declarative, framed as what the change makes true. Cast as a completion of *"After this commit, …"* — e.g. `pytest --collect-only allowed on any test path`. Imperative voice (`add X`, `remove Y`) and mechanism-narrating phrases (`X directive added`, `Y section removed`) are wrong shape.
+
+**Bodies:** motivation first. Brief supporting detail on mechanism is fine, but only after the why is clear.
+
+**Format:** conventional commits — `<type>(<scope>): <subject>`.
+
+**ADR commits:** layer the ADR status immediately after the type/scope prefix:
+- `Status: Proposed` → `docs(adr): proposal: <subject>`
+- `Status: Accepted` → `docs(adr): decision: <subject>`
+- Other statuses (Rejected, Superseded, Deprecated) — use the status word by analogy.
+
 ## ADR conventions
 
 - **Portability rule:** ADRs must not link to files outside this
