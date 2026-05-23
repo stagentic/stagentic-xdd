@@ -36,6 +36,16 @@ Out of scope for now is the outer loop.
 
 Language support will be provided through adapters — the skill itself is language-agnostic. Adapters will provide build and test commands, with linters, mutation testing and customisable tool-chain integration.
 
+## Prerequisites
+
+This project requires Claude Code CLI **2.1.147**. Auto-updates are disabled by `.claude/settings.json` — do not run `claude update` without first validating the suite against the candidate version.
+
+Install the required version:
+
+```
+claude install 2.1.147
+```
+
 ## Development
 
 This plugin is being developed using a pattern created by Antony Marcano called [TDAB](https://substack.com/@antonymarcano/note/c-252213610) — Test-Driven Agentic Behaviours. This is essentially BDD/TDD for agentic behaviours, driving new or improved agent behaviour one scenario at a time.
