@@ -7,17 +7,17 @@ TASKS = Path(__file__).parent.parent / "tasks"
 
 class TestRedGreenIntoRefactor:
     def test_write_a_failing_test(self, tmp_path):
-        working_directory = tmp_path / "miles-to-km"
-        shutil.copytree(TASKS / "0-placeholder" / "scene", working_directory)
+        working_dir = tmp_path / "miles-to-km"
+        shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)
         task = TASKS / "1-first-test-for-miles-to-km-converter"
 
         transcript = _fake_agent_performs(
             task=task,
-            workspace=working_directory
+            workspace=working_dir
         )
         _then(
             evidence=transcript,
-            should=_have(working_directory, task, matching=[
+            should=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",
                 "Workspace state matches the expected end-state (src, tests, transcript)",
                 "Transcript shows the agent ran pytest",
@@ -32,17 +32,17 @@ def _fake_agent_performs(*, task, workspace):
     return workspace / "transcript.md"
 
 
-def _have(fixture, task, *, matching):
+def _have(task, working_dir, *, matching):
     table = {
         "Production module exists at src/conversion.py with content": {
             "verify": lambda transcript: (
-                (fixture / "src" / "conversion.py").is_file()
-                and (fixture / "src" / "conversion.py").stat().st_size > 0
+                (working_dir / "src" / "conversion.py").is_file()
+                and (working_dir / "src" / "conversion.py").stat().st_size > 0
             ),
             "failure": "src/conversion.py is missing or empty",
         },
         "Workspace state matches the expected end-state (src, tests, transcript)": {
-            "verify": lambda transcript: not _tree_diff(task / "scene", fixture),
+            "verify": lambda transcript: not _tree_diff(task / "scene", working_dir),
             "failure": "workspace contents do not match the expected end-state",
         },
         "Transcript shows the agent ran pytest": {
