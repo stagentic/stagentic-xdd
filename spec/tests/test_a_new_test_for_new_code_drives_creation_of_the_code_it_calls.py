@@ -6,33 +6,32 @@ TASKS = Path(__file__).parent.parent / "tasks"
 
 
 def test_write_a_failing_test(tmp_path):
-    fixture = tmp_path / "miles-to-km"
-    shutil.copytree(TASKS / "0-placeholder" / "scene", fixture)
+    working_directory = tmp_path / "miles-to-km"
+    shutil.copytree(TASKS / "0-placeholder" / "scene", working_directory)
     task = TASKS / "1-first-test-for-miles-to-km-converter"
 
-    transcript_path = _fake_agent_performs(
+    transcript = _fake_agent_performs(
         task=task,
-        in_workspace=fixture
+        workspace=working_directory
     )
-
-    _audit(
-        expecting=_characteristics(fixture, task, by=[
+    _then(
+        evidence=transcript,
+        should=_have(working_directory, task, matching=[
             "Production module exists at src/conversion.py with content",
             "Workspace state matches the expected end-state (src, tests, transcript)",
             "Transcript shows the agent ran pytest",
             "Transcript shows a FAILED pytest result",
             "First test fails for the right reason",
         ]),
-        transcript_path=transcript_path,
     )
 
 
-def _fake_agent_performs(*, task, in_workspace):
-    shutil.copytree(task / "scene", in_workspace, dirs_exist_ok=True)
-    return in_workspace / "transcript.md"
+def _fake_agent_performs(*, task, workspace):
+    shutil.copytree(task / "scene", workspace, dirs_exist_ok=True)
+    return workspace / "transcript.md"
 
 
-def _characteristics(fixture, task, *, by):
+def _have(fixture, task, *, matching):
     table = {
         "Production module exists at src/conversion.py with content": {
             "verify": lambda transcript: (
@@ -68,12 +67,12 @@ def _characteristics(fixture, task, *, by):
             "failure": "assertion not against a stub (type default or input echoed); got a missing-function error instead",
         },
     }
-    return [{"characteristic": name, **table[name]} for name in by]
+    return [{"characteristic": name, **table[name]} for name in matching]
 
 
-def _audit(expecting, *, transcript_path):
-    transcript = transcript_path.read_text()
-    failures = [row for row in expecting if not row["verify"](transcript)]
+def _then(should, *, evidence):
+    transcript = evidence.read_text()
+    failures = [row for row in should if not row["verify"](transcript)]
     if not failures:
         return
     msg = "Failed characteristics:"
