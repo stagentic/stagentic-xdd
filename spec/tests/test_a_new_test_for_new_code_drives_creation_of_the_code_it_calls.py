@@ -7,7 +7,7 @@ TASKS = Path(__file__).parent.parent / "tasks"
 
 def test_write_a_failing_test(tmp_path):
     fixture = tmp_path / "miles-to-km"
-    shutil.copytree(TASKS / "0-placeholder" / "expected", fixture)
+    shutil.copytree(TASKS / "0-placeholder" / "scene", fixture)
     task = TASKS / "1-first-test-for-miles-to-km-converter"
 
     transcript_path = _fake_agent_performs(
@@ -28,7 +28,7 @@ def test_write_a_failing_test(tmp_path):
 
 
 def _fake_agent_performs(*, task, in_workspace):
-    shutil.copytree(task / "expected", in_workspace, dirs_exist_ok=True)
+    shutil.copytree(task / "scene", in_workspace, dirs_exist_ok=True)
     return in_workspace / "transcript.md"
 
 
@@ -42,7 +42,7 @@ def _characteristics(fixture, task, *, by):
             "failure": "src/conversion.py is missing or empty",
         },
         "Workspace state matches the expected end-state (src, tests, transcript)": {
-            "verify": lambda transcript: not _tree_diff(task / "expected", fixture),
+            "verify": lambda transcript: not _tree_diff(task / "scene", fixture),
             "failure": "workspace contents do not match the expected end-state",
         },
         "Transcript shows the agent ran pytest": {
