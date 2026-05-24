@@ -2,9 +2,31 @@
 
 A planned Claude plugin for language-agnostic Behaviour-Driven Development (BDD) / Test-Driven Development (TDD).
 
-Initially it supports Python, because the code that facilitates it is written in Python, but it will evolve to support other languages.
+## A work in progress
 
-**A work in progress**
+One inner-loop scenario currently runs green against a fake agent and a
+deterministic auditor — enough to establish the scaffolding without LLM
+non-determinism in the loop. The harness is designed so both sides swap
+to real Claude integrations via fixture configuration, without rewriting
+the test:
+
+- The fake agent will be replaced by an agent wrapping `claude -p`
+  running the xdd skill on each task's prompt — the agent being
+  evaluated.
+- The deterministic auditor will be replaced by a critic wrapping
+  `claude -p` running a scorecard prompt over the same characteristic
+  prose, judging the agent's transcript and resulting workspace state.
+
+For an illustrative sketch of the eventual fixture-config matrix
+(real-Claude vs stubbed agent × auditor vs critic), see
+[`experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py`](experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py)
+— a prototype shape, not a target architecture.
+
+The immediate next step is to make each task's `scene/` a runnable Python
+project so the real agent has somewhere to run `uv run pytest tests/`.
+See [`NEXT.md`](NEXT.md) for the current focus and
+[`docs/architecture/decisions/`](docs/architecture/decisions/) for the
+architectural direction.
 
 # Why "XDD"
 
@@ -34,7 +56,7 @@ Out of scope for now is the outer loop.
 
 ## Language adapters
 
-Language support will be provided through adapters — the skill itself is language-agnostic. Adapters will provide build and test commands, with linters, mutation testing and customisable tool-chain integration.
+Today, only Python is supported, because the code that facilitates the skill is written in Python. Beyond that, language support will be provided through adapters — the skill itself is language-agnostic. Adapters will provide build and test commands, with linters, mutation testing and customisable tool-chain integration.
 
 ## Prerequisites
 
