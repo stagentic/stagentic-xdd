@@ -28,3 +28,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0004](0004-structure-agent-control-with-guidance-guardrails-and-gateways.md) | Structure agent control through guidance, guardrails, and gateways | Proposed |
 | [0005](0005-periodic-cli-version-update-checking.md) | Periodic Claude Code CLI version update checking | Proposed |
 | [0006](0006-use-native-installer-for-pinned-cli.md) | Use the Claude Code native installer for the pinned CLI version | Proposed |
+| [0007](0007-structure-inner-loop-scenarios-as-a-task-chain-with-a-scorecard.md) | Structure inner-loop scenarios as a task chain audited by a scorecard | Accepted |

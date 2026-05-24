@@ -27,18 +27,39 @@ The bootstrap approach is fixed in
 
 ## Layout
 
-- `docs/architecture/decisions/` — ADRs. Append-only, one decision per
-  numbered file. Start from `TEMPLATE.md`.
+- `spec/` — pytest project that holds the TDAB scenarios for the xdd skill.
+  - `spec/tests/` — one pytest test per scenario.
+  - `spec/tasks/<n>-<slug>/` — a task is a unit of agent work. Its
+    `scene/` directory holds the canned workspace state after the
+    task completes. See ADR 0007 for the chain pattern.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
+- `docs/architecture/decisions/` — ADRs. Append-only, one decision per
+  numbered file. Start from `TEMPLATE.md`.
 - `docs/assets/` — diagrams referenced from `README.md`.
 - `.claude/settings.json` — checked-in Claude Code config: shared
   permissions, pinned model env vars (ADR 0003), and
   `DISABLE_AUTOUPDATER` (ADR 0002).
 
-There is no top-level Python project yet — `experiments/*/pyproject.toml`
-is spike-scoped.
+## Working with `spec/`
+
+A scenario in `spec/tests/test_*.py` does three things:
+
+1. Copies the previous task's `scene/` into a tmp workspace.
+2. Calls `_fake_agent_performs(task=…, in_workspace=…)`, which copies
+   the target task's `scene/` over the workspace and returns the
+   transcript path.
+3. Calls `_audit(expecting=_characteristics(…, by=[names]),
+   transcript_path=…)` to evaluate a scorecard of
+   `{characteristic, verify, failure}` dicts.
+
+Each `tasks/N-name/scene/` is also the starting fixture for task
+`N+1`; `0-placeholder/` is the genesis. Adding a scenario means adding
+the next task directory.
+
+See ADR 0007 for the rationale behind the task chain, the scorecard
+shape, and the planned auditor → critic and fake → real agent swaps.
 
 ## Documentation style
 
