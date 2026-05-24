@@ -63,11 +63,11 @@ The bootstrap approach is fixed in
 A scenario in `spec/tests/test_*.py` does three things:
 
 1. Copies the previous task's `scene/` into a tmp workspace.
-2. Calls `_fake_agent_performs(task=…, in_workspace=…)`, which copies
+2. Calls `_fake_agent_performs(task=…, workspace=…)`, which copies
    the target task's `scene/` over the workspace and returns the
    transcript path.
-3. Calls `_audit(expecting=_characteristics(…, by=[names]),
-   transcript_path=…)` to evaluate a scorecard of
+3. Calls `_then(should=_have(task, working_dir, matching=[names]),
+   evidence=transcript)` to evaluate a scorecard of
    `{characteristic, verify, failure}` dicts.
 
 Each `tasks/N-name/scene/` is also the starting fixture for task
