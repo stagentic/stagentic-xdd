@@ -7,6 +7,22 @@ additional language adapters are deferred.
 See `README.md` for the framing and the link to the longer "what almost
 everyone gets wrong about TDD/BDD" argument.
 
+## Where to look first
+
+- `docs/architecture/decisions/` — architectural directions. Accepted
+  ones must be adhered to; proposed ones are still under evaluation.
+- `NEXT.md` (repo root, if present) — the immediate next step,
+  including known constraints. Read it at session start. If a user
+  prompt is open-ended ("let's continue", "what next?"), use NEXT.md
+  to orient and propose steps. If NEXT.md is missing, ask the user
+  what they want to work on.
+
+NEXT.md is not a backlog. When a step from it lands, propose updating
+it to reflect the new state — delete what's done, surface what's next.
+When a NEXT.md item crystallises into an architectural direction
+(proposed or accepted), migrate it to an ADR and replace it with what
+comes after.
+
 ## Development pattern: TDAB
 
 This plugin is developed using **TDAB** (Test-Driven Agentic Behaviours):
