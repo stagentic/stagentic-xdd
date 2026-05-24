@@ -5,25 +5,26 @@ from pathlib import Path
 TASKS = Path(__file__).parent.parent / "tasks"
 
 
-def test_write_a_failing_test(tmp_path):
-    working_directory = tmp_path / "miles-to-km"
-    shutil.copytree(TASKS / "0-placeholder" / "scene", working_directory)
-    task = TASKS / "1-first-test-for-miles-to-km-converter"
+class TestRedGreenIntoRefactor:
+    def test_write_a_failing_test(self, tmp_path):
+        working_directory = tmp_path / "miles-to-km"
+        shutil.copytree(TASKS / "0-placeholder" / "scene", working_directory)
+        task = TASKS / "1-first-test-for-miles-to-km-converter"
 
-    transcript = _fake_agent_performs(
-        task=task,
-        workspace=working_directory
-    )
-    _then(
-        evidence=transcript,
-        should=_have(working_directory, task, matching=[
-            "Production module exists at src/conversion.py with content",
-            "Workspace state matches the expected end-state (src, tests, transcript)",
-            "Transcript shows the agent ran pytest",
-            "Transcript shows a FAILED pytest result",
-            "First test fails for the right reason",
-        ]),
-    )
+        transcript = _fake_agent_performs(
+            task=task,
+            workspace=working_directory
+        )
+        _then(
+            evidence=transcript,
+            should=_have(working_directory, task, matching=[
+                "Production module exists at src/conversion.py with content",
+                "Workspace state matches the expected end-state (src, tests, transcript)",
+                "Transcript shows the agent ran pytest",
+                "Transcript shows a FAILED pytest result",
+                "First test fails for the right reason",
+            ]),
+        )
 
 
 def _fake_agent_performs(*, task, workspace):
