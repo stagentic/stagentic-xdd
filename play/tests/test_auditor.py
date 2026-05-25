@@ -4,11 +4,11 @@ from auditor import Auditor
 
 
 def test_evaluate_returns_none_for_a_passing_scorecard(tmp_path):
-    evidence = tmp_path / "transcript.md"
-    evidence.write_text("anything")
+    dummy_transcript = tmp_path / "transcript.md"
+    dummy_transcript.write_text("anything")
 
     Auditor().evaluate(
-        evidence=evidence,
+        evidence=dummy_transcript,
         scorecard=[
             {"characteristic": "always passes",
              "verify": lambda transcript: True,
@@ -18,12 +18,12 @@ def test_evaluate_returns_none_for_a_passing_scorecard(tmp_path):
 
 
 def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(tmp_path):
-    evidence = tmp_path / "transcript.md"
-    evidence.write_text("anything")
+    dummy_transcript = tmp_path / "transcript.md"
+    dummy_transcript.write_text("anything")
 
     with pytest.raises(AssertionError) as excinfo:
         Auditor().evaluate(
-            evidence=evidence,
+            evidence=dummy_transcript,
             scorecard=[
                 {"characteristic": "my characteristic",
                  "verify": lambda transcript: False,
@@ -36,12 +36,12 @@ def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(tmp_pa
 
 
 def test_failure_message_lists_every_failed_row(tmp_path):
-    evidence = tmp_path / "transcript.md"
-    evidence.write_text("anything")
+    dummy_transcript = tmp_path / "transcript.md"
+    dummy_transcript.write_text("anything")
 
     with pytest.raises(AssertionError) as excinfo:
         Auditor().evaluate(
-            evidence=evidence,
+            evidence=dummy_transcript,
             scorecard=[
                 {"characteristic": "first characteristic",
                  "verify": lambda transcript: False,
