@@ -5,7 +5,7 @@ from pathlib import Path
 TASKS = Path(__file__).parent.parent / "tasks"
 
 
-class TestRedGreenIntoRefactor:
+class TestRedGreenCommit:
     def test_write_a_failing_test(self, tmp_path):
         working_dir = tmp_path / "miles-to-km"
         shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)

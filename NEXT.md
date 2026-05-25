@@ -29,6 +29,28 @@ Concrete shape to figure out:
   tree listing + selected file contents, or let it use a `Read`
   tool against the workspace path.
 
+## Starting point
+
+Nothing critic-related exists yet. The auditor lives inline in
+`spec/tests/test_red_green_commit.py` as `_have`, `_then`,
+and `_tree_diff` helpers; there is no separate evaluator module
+and no critic of any kind.
+
+Develop the critic via ordinary TDD, not as a TDAB scenario (per
+ADR 0001 point 4 — auditor and critic are harness code, their
+behaviour driven by unit tests, not by scorecard rubrics).
+
+The spike under `experiments/agentic-screenplay-spike/` prototypes
+`claude -p` invocations from Python; treat as a source of ideas,
+not a target shape (per ADR 0001).
+
+Suggested first move: extract the eval interface from the inline
+helpers in `test_red_green_commit.py` — something that
+takes a scorecard (list of rows) plus evidence (transcript text,
+`working_dir` path) and returns per-characteristic verdicts. With
+that shape in place, the auditor becomes one implementation and
+the critic can land as another, swapped via fixture.
+
 ## Deferred
 
 The "live constraint once the agent is real" — transient artefacts
