@@ -46,14 +46,21 @@ def test_failure_message_lists_every_failed_row(tmp_path):
                 {"characteristic": "first characteristic",
                  "verify": lambda transcript: False,
                  "failure": "first failure"},
-                {"characteristic": "second characteristic",
+                {"characteristic": "middle characteristic",
+                 "verify": lambda transcript: True,
+                 "failure": "middle failure"},
+                {"characteristic": "third characteristic",
                  "verify": lambda transcript: False,
-                 "failure": "second failure"},
+                 "failure": "third failure"},
             ],
         )
 
     message = str(excinfo.value)
     assert "first characteristic" in message
     assert "first failure" in message
-    assert "second characteristic" in message
-    assert "second failure" in message
+
+    assert "middle characteristic" not in message
+    assert "middle failure" not in message
+
+    assert "third characteristic" in message
+    assert "third failure" in message
