@@ -1,5 +1,9 @@
 # NEXT
 
+> Do not reference this file in commit messages. NEXT.md tracks the
+> immediate next step and is rewritten as work lands; a commit that
+> points at NEXT.md rots the moment the file changes.
+
 ## Make the critic swappable; introduce an agentic critic
 
 Per ADR 0001, the then-step is to evolve the in-process auditor
