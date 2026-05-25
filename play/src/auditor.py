@@ -1,0 +1,3 @@
+class Auditor:
+    def evaluate(self, *, scorecard, evidence):
+        ...
