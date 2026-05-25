@@ -64,3 +64,25 @@ def test_failure_message_lists_every_failed_row(tmp_path):
 
     assert "third characteristic" in message
     assert "third failure" in message
+
+
+def test_verify_receives_the_evidence_text(tmp_path):
+    dummy_transcript = tmp_path / "transcript.md"
+    dummy_transcript.write_text("hello agent")
+
+    seen = []
+
+    def capture(transcript):
+        seen.append(transcript)
+        return True
+
+    Auditor().evaluate(
+        evidence=dummy_transcript,
+        scorecard=[
+            {"characteristic": "captures input",
+             "verify": capture,
+             "failure": "n/a"},
+        ],
+    )
+
+    assert seen == ["hello agent"]
