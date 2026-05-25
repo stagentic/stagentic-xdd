@@ -29,3 +29,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0005](0005-periodic-cli-version-update-checking.md) | Periodic Claude Code CLI version update checking | Proposed |
 | [0006](0006-use-native-installer-for-pinned-cli.md) | Use the Claude Code native installer for the pinned CLI version | Proposed |
 | [0007](0007-structure-inner-loop-scenarios-as-a-task-chain-with-a-scorecard.md) | Structure inner-loop scenarios as a task chain audited by a scorecard | Accepted |
+| [0008](0008-run-the-agent-with-cwd-at-the-workspace-root.md) | Run the agent with cwd at the workspace root | Proposed |
