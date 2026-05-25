@@ -16,6 +16,13 @@ everyone gets wrong about TDD/BDD" argument.
   prompt is open-ended ("let's continue", "what next?"), use NEXT.md
   to orient and propose steps. If NEXT.md is missing, ask the user
   what they want to work on.
+- `docs/architecture/conventions/` — naming and design-intent
+  conventions that should persist across refactors. Consult when
+  touching the affected area (e.g. `spec-conventions.md` before
+  refactoring or renaming inside `spec/`).
+- `docs/writing-style.md` — prose conventions (label-agnostic
+  framing; quote actual stated reasons). Consult when writing
+  commits, ADRs, or doc bodies.
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.
@@ -93,6 +100,9 @@ infrastructure, not something each task produces.
 
 See ADR 0007 for the rationale behind the task chain, the scorecard
 shape, and the planned auditor → critic and fake → real agent swaps.
+See `docs/architecture/conventions/spec-conventions.md` for naming and
+design-intent conventions that should persist across refactors
+(`transcript`, `working_dir`).
 
 ## Documentation style
 
@@ -101,6 +111,8 @@ In-repo docs (READMEs, ADRs, CLAUDE.md, etc.) describe the system as it stands n
 Ask: *"would this sentence make sense to a reader who has never seen any previous version of this file?"* If a clause references a previous state to contextualise the current one, delete it — the current state stands on its own.
 
 Docs must be environment-agnostic. Describe mechanisms in terms of files, commands, and Claude Code features — never in terms of a specific environment (containers, host OS, install method, directory layout, etc.). A reader on any setup should find the docs accurate.
+
+See `docs/writing-style.md` for label-agnostic framing rules (do not reach for "BDD-flavoured", "Gherkin-style", etc.) and the discipline of quoting actual stated reasons in commit bodies and ADRs.
 
 ## Commit message style
 
