@@ -17,6 +17,7 @@ class TestRedGreenCommit:
         )
         inspector.evaluate(
             evidence=transcript,
+            working_dir=working_dir,
             scorecard=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",
                 "Workspace state matches the expected end-state (src, tests, transcript)",
@@ -35,30 +36,30 @@ def _fake_agent_performs(*, task, workspace):
 def _have(task, working_dir, *, matching):
     table = {
         "Production module exists at src/conversion.py with content": {
-            "verify": lambda transcript: (
+            "verify": lambda transcript, working_dir: (
                 (working_dir / "src" / "conversion.py").is_file()
                 and (working_dir / "src" / "conversion.py").stat().st_size > 0
             ),
             "failure": "src/conversion.py is missing or empty",
         },
         "Workspace state matches the expected end-state (src, tests, transcript)": {
-            "verify": lambda transcript: not _tree_diff(task / "scene", working_dir),
+            "verify": lambda transcript, working_dir: not _tree_diff(task / "scene", working_dir),
             "failure": "workspace contents do not match the expected end-state",
         },
         "Transcript shows the agent ran pytest": {
-            "verify": lambda transcript: bool(
+            "verify": lambda transcript, working_dir: bool(
                 re.search(r"\[TOOL\] \*\*Bash\*\*.*?pytest", transcript, re.DOTALL)
             ),
             "failure": "transcript shows no `[TOOL] **Bash**` running pytest",
         },
         "Transcript shows a FAILED pytest result": {
-            "verify": lambda transcript: bool(
+            "verify": lambda transcript, working_dir: bool(
                 re.search(r"\[TOOL\] \*\*Bash\*\*.*?pytest.*?FAILED", transcript, re.DOTALL)
             ),
             "failure": "transcript shows no FAILED result from pytest",
         },
         "First test fails for the right reason": {
-            "verify": lambda transcript: (
+            "verify": lambda transcript, working_dir: (
                 bool(re.search(r"FAILED.*?(assert|AssertionError)", transcript, re.DOTALL))
                 and not re.search(
                     r"(ImportError|NameError|ModuleNotFoundError|cannot import name)",
