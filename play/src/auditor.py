@@ -1,5 +1,5 @@
 class Auditor:
     def evaluate(self, *, scorecard, evidence):
-        row = scorecard[0]
-        if not row["verify"](evidence):
-            raise AssertionError(row)
+        failures = [row for row in scorecard if not row["verify"](evidence)]
+        if failures:
+            raise AssertionError(failures)
