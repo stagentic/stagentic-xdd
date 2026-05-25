@@ -6,7 +6,7 @@ TASKS = Path(__file__).parent.parent / "tasks"
 
 
 class TestRedGreenCommit:
-    def test_write_a_failing_test(self, tmp_path):
+    def test_write_a_failing_test(self, tmp_path, inspector):
         working_dir = tmp_path / "miles-to-km"
         shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)
         task = TASKS / "1-first-test-for-miles-to-km-converter"
@@ -15,9 +15,9 @@ class TestRedGreenCommit:
             task=task,
             workspace=working_dir
         )
-        _then(
+        inspector.evaluate(
             evidence=transcript,
-            should=_have(task, working_dir, matching=[
+            scorecard=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",
                 "Workspace state matches the expected end-state (src, tests, transcript)",
                 "Transcript shows the agent ran pytest",
@@ -69,18 +69,6 @@ def _have(task, working_dir, *, matching):
         },
     }
     return [{"characteristic": name, **table[name]} for name in matching]
-
-
-def _then(should, *, evidence):
-    transcript = evidence.read_text()
-    failures = [row for row in should if not row["verify"](transcript)]
-    if not failures:
-        return
-    msg = "Failed characteristics:"
-    for row in failures:
-        msg += f"\n  - {row['characteristic']}"
-        msg += f"\n      {row['failure']}"
-    raise AssertionError(msg)
 
 
 def _tree_diff(expected_root, actual_root):
