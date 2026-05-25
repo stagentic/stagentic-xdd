@@ -55,6 +55,10 @@ The bootstrap approach is fixed in
   - `spec/tasks/<n>-<slug>/` — a task is a unit of agent work. Its
     `scene/` directory holds the canned workspace state after the
     task completes. See ADR 0007 for the chain pattern.
+- `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
+  Framework code — currently `Auditor` — that scenarios reach via
+  the `inspector` pytest fixture. Has its own pyproject.toml and
+  unit-test suite.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
@@ -73,9 +77,10 @@ A scenario in `spec/tests/test_*.py` does three things:
 2. Calls `_fake_agent_performs(task=…, workspace=…)`, which copies
    the target task's `scene/` over the workspace and returns the
    transcript path.
-3. Calls `_then(should=_have(task, working_dir, matching=[names]),
-   evidence=transcript)` to evaluate a scorecard of
-   `{characteristic, verify, failure}` dicts.
+3. Calls `inspector.evaluate(evidence=transcript, scorecard=_have(...))`
+   to evaluate a scorecard of `{characteristic, verify, failure}` dicts
+   against the transcript. `inspector` is a pytest fixture (in
+   `spec/conftest.py`) supplying an `Auditor` from `play/`.
 
 Each `tasks/N-name/scene/` is also the starting fixture for task
 `N+1`; `0-placeholder/` is the genesis. Adding a scenario means adding

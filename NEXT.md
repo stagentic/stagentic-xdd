@@ -6,11 +6,10 @@
 
 ## Make the critic swappable; introduce an agentic critic
 
-Per ADR 0001, the then-step is to evolve the in-process auditor
-(regex / file-existence / tree-diff predicates) into a critic — a
+Per ADR 0001, the next step is to introduce a critic — a
 `claude -p` invocation that reads the transcript and workspace and
 evaluates each scorecard characteristic by LLM judgement —
-selectable by pytest fixture.
+alongside the existing auditor, selectable by pytest fixture.
 
 The scorecard already holds the shape this needs: each entry has a
 characteristic *description* (the natural-language target) and a
@@ -19,26 +18,21 @@ the critic would use the description as a prompt fragment instead.
 
 Concrete shape to figure out:
 
-- The eval interface — what does a critic/auditor receive
-  (transcript text, `working_dir` path, scorecard entries) and
-  return (per-characteristic verdict + reasoning)?
 - The fixture — pytest parametrisation over `auditor` and
   `critic`, so the same scenario runs under both.
 - Critic correctness baseline — with the fake agent producing
   scene-exact output, the critic should agree with the auditor on
   every characteristic. Divergences are critic bugs until a real
   agent makes the question nontrivial.
-- Evidence the critic sees — the transcript via `.read_text()` is
-  obvious; what about workspace state? Either give the critic a
-  tree listing + selected file contents, or let it use a `Read`
-  tool against the workspace path.
 
 ## Starting point
 
-Nothing critic-related exists yet. The auditor lives inline in
-`spec/tests/test_red_green_commit.py` as `_have`, `_then`,
-and `_tree_diff` helpers; there is no separate evaluator module
-and no critic of any kind.
+The auditor lives in `play/src/auditor.py` as
+`Auditor.evaluate(*, evidence, scorecard)`, raising
+`AssertionError(failures)` on any falsy `verify`. The scenario in
+`spec/tests/test_red_green_commit.py` reaches it via the `inspector`
+pytest fixture in `spec/conftest.py`. `_have` and `_tree_diff` remain
+inline in the scenario file because the scorecard rows close over them.
 
 Develop the critic via ordinary TDD, not as a TDAB scenario (per
 ADR 0001 point 4 — auditor and critic are harness code, their
@@ -48,12 +42,23 @@ The spike under `experiments/agentic-screenplay-spike/` prototypes
 `claude -p` invocations from Python; treat as a source of ideas,
 not a target shape (per ADR 0001).
 
-Suggested first move: extract the eval interface from the inline
-helpers in `test_red_green_commit.py` — something that
-takes a scorecard (list of rows) plus evidence (transcript text,
-`working_dir` path) and returns per-characteristic verdicts. With
-that shape in place, the auditor becomes one implementation and
-the critic can land as another, swapped via fixture.
+The critic externally mimics the auditor: same
+`evaluate(*, evidence, working_dir, scorecard)` signature, same
+raise-on-failure / return-None behaviour. Internally, it prompts
+`claude -p` with both paths and instructs the agent to use the
+`Read` tool to inspect either. The response is parsed into
+pass/fail verdicts per scorecard characteristic; failures go into
+the AssertionError.
+
+Adding `working_dir` to the signature lifts it out of the verify
+lambdas' closures (where it currently lives in `_have`). The
+refactor lands as part of preparing for the critic: a uniform
+signature means the critic becomes a swap, not a redesign.
+
+Suggested first move: refactor the auditor first — add the
+`working_dir` kwarg and update verify lambdas to receive it.
+Green the scenario. Then TDD the critic against the same shape
+with the `claude -p` call stubbed.
 
 ## Deferred
 
