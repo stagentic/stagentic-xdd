@@ -4,17 +4,17 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## Make the critic swappable; introduce an agentic critic
+## Introduce an agentic critic
 
-Per ADR 0001, the next step is to introduce a critic — a
-`claude -p` invocation that reads the transcript and workspace and
-evaluates each scorecard characteristic by LLM judgement —
-alongside the existing auditor, selectable by pytest fixture.
+Per ADR 0001, introduce a critic — a `claude -p` invocation that reads
+the transcript and workspace and evaluates each scorecard characteristic
+by LLM judgement — alongside the existing auditor, selectable by pytest
+fixture.
 
 The scorecard already holds the shape this needs: each entry has a
 characteristic *description* (the natural-language target) and a
 *failure* message. The auditor's `verify` lambda is its mechanism;
-the critic would use the description as a prompt fragment instead.
+the critic uses the description as a prompt fragment instead.
 
 Concrete shape to figure out:
 
@@ -28,11 +28,12 @@ Concrete shape to figure out:
 ## Starting point
 
 The auditor lives in `play/src/auditor.py` as
-`Auditor.evaluate(*, evidence, scorecard)`, raising
-`AssertionError(failures)` on any falsy `verify`. The scenario in
-`spec/tests/test_red_green_commit.py` reaches it via the `inspector`
-pytest fixture in `spec/conftest.py`. `_have` and `_tree_diff` remain
-inline in the scenario file because the scorecard rows close over them.
+`Auditor.evaluate(*, evidence, working_dir=None, scorecard)`, raising
+`AssertionError(failures)` on any falsy `verify(transcript, working_dir)`.
+The scenario in `spec/tests/test_red_green_commit.py` reaches it via
+the `inspector` pytest fixture in `spec/conftest.py`. `_have` and
+`_tree_diff` remain inline in the scenario file because the scorecard
+rows close over them.
 
 Develop the critic via ordinary TDD, not as a TDAB scenario (per
 ADR 0001 point 4 — auditor and critic are harness code, their
@@ -50,15 +51,9 @@ raise-on-failure / return-None behaviour. Internally, it prompts
 pass/fail verdicts per scorecard characteristic; failures go into
 the AssertionError.
 
-Adding `working_dir` to the signature lifts it out of the verify
-lambdas' closures (where it currently lives in `_have`). The
-refactor lands as part of preparing for the critic: a uniform
-signature means the critic becomes a swap, not a redesign.
-
-Suggested first move: refactor the auditor first — add the
-`working_dir` kwarg and update verify lambdas to receive it.
-Green the scenario. Then TDD the critic against the same shape
-with the `claude -p` call stubbed.
+Suggested first move: TDD the critic in `play/` with the `claude -p`
+call stubbed — get the skeleton green against the same unit-test
+scenarios as the auditor, then swap the stub for a real invocation.
 
 ## Deferred
 
