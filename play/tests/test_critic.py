@@ -1,6 +1,7 @@
 import pytest
 
 from critic import Critic
+from test_doubles.stubbed_claude_cli import StubbedClaudeCli
 
 
 class TestCritic:
@@ -22,10 +23,8 @@ class TestCritic:
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
-        the_characteristic_fails = lambda prompt: "FAIL: my characteristic\n"
-
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=the_characteristic_fails).evaluate(
+            Critic(claude=StubbedClaudeCli("FAIL: my characteristic\n")).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
                 scorecard=[
@@ -41,9 +40,7 @@ class TestCritic:
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
-        always_passes = lambda prompt: "PASS"
-
-        Critic(claude=always_passes).evaluate(
+        Critic(claude=StubbedClaudeCli("PASS")).evaluate(
             evidence=dummy_transcript,
             working_dir=tmp_path,
             scorecard=[
@@ -78,14 +75,12 @@ class TestCritic:
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
-        first_and_third_fail = lambda prompt: (
-            "FAIL: first characteristic\n"
-            "PASS: middle characteristic\n"
-            "FAIL: third characteristic\n"
-        )
-
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=first_and_third_fail).evaluate(
+            Critic(claude=StubbedClaudeCli(
+                "FAIL: first characteristic\n"
+                "PASS: middle characteristic\n"
+                "FAIL: third characteristic\n"
+            )).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
                 scorecard=[
