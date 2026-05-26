@@ -10,3 +10,10 @@ class TestClaudeCli:
 
         with pytest.raises(RuntimeError):
             ClaudeCli(subprocess=failing)("any prompt")
+
+    def test_returns_stdout_when_subprocess_succeeds(self):
+        succeeding = StubbedSubprocess(returncode=0, stdout="PASS\n")
+
+        result = ClaudeCli(subprocess=succeeding)("any prompt")
+
+        assert result == "PASS\n"
