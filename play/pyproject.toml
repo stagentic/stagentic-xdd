@@ -24,6 +24,7 @@ target-version = "py312"
 [tool.ruff.lint]
 extend-select = [
     "B",   # flake8-bugbear — common gotchas and design issues
+    "C4",  # flake8-comprehensions — prefer comprehensions over equivalent calls
     "E3",  # blank-line rules
     "I",   # import sorting
     "N",   # PEP 8 naming conventions
