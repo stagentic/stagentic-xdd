@@ -24,7 +24,9 @@ class TestCritic:
         dummy_transcript.write_text("anything")
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=StubbedClaudeCli("FAIL: my characteristic\n")).evaluate(
+            Critic(claude=StubbedClaudeCli(
+                '[{"characteristic": "my characteristic", "status": "FAIL"}]'
+            )).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
                 scorecard=[
@@ -40,7 +42,9 @@ class TestCritic:
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
-        Critic(claude=StubbedClaudeCli("PASS")).evaluate(
+        Critic(claude=StubbedClaudeCli(
+            '[{"characteristic": "always passes", "status": "PASS"}]'
+        )).evaluate(
             evidence=dummy_transcript,
             working_dir=tmp_path,
             scorecard=[
@@ -58,7 +62,7 @@ class TestCritic:
 
         def capture(prompt):
             received.append(prompt)
-            return "PASS"
+            return '[{"characteristic": "some characteristic", "status": "PASS"}]'
 
         Critic(claude=capture).evaluate(
             evidence=dummy_transcript,
@@ -72,15 +76,28 @@ class TestCritic:
         assert str(dummy_transcript) in received[0]
         assert str(working_dir) in received[0]
 
+    def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+
+        with pytest.raises(ValueError, match="unaccounted"):
+            Critic(claude=StubbedClaudeCli("I cannot access those files.")).evaluate(
+                evidence=dummy_transcript,
+                working_dir=tmp_path,
+                scorecard=[
+                    {"characteristic": "my characteristic", "failure": "my failure"},
+                ],
+            )
+
     def test_failure_message_lists_every_failed_row(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
         with pytest.raises(AssertionError) as excinfo:
             Critic(claude=StubbedClaudeCli(
-                "FAIL: first characteristic\n"
-                "PASS: middle characteristic\n"
-                "FAIL: third characteristic\n"
+                '[{"characteristic": "first characteristic", "status": "FAIL"},'
+                ' {"characteristic": "middle characteristic", "status": "PASS"},'
+                ' {"characteristic": "third characteristic", "status": "FAIL"}]'
             )).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
