@@ -4,12 +4,28 @@ from critic import Critic
 
 
 class TestCritic:
+    def test_evaluate_raises_ValueError_when_no_claude_provided(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+
+        with pytest.raises(ValueError):
+            Critic().evaluate(
+                evidence=dummy_transcript,
+                working_dir=tmp_path,
+                scorecard=[
+                    {"characteristic": "my characteristic",
+                     "failure": "my failure message"},
+                ],
+            )
+
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
+        the_characteristic_fails = lambda prompt: "FAIL: my characteristic\n"
+
         with pytest.raises(AssertionError) as excinfo:
-            Critic().evaluate(
+            Critic(claude=the_characteristic_fails).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
                 scorecard=[

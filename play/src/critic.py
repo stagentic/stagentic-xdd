@@ -4,7 +4,7 @@ class Critic:
 
     def evaluate(self, *, evidence, working_dir=None, scorecard):
         if self._claude is None:
-            raise AssertionError(scorecard)
+            raise ValueError("no claude implementation provided")
         prompt = f"Transcript: {evidence}\nWorkspace: {working_dir}"
         result = self._claude(prompt)
         failed_names = {
