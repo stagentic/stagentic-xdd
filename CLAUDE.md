@@ -56,9 +56,10 @@ The bootstrap approach is fixed in
     `scene/` directory holds the canned workspace state after the
     task completes. See ADR 0007 for the chain pattern.
 - `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
-  Framework code — currently `Auditor` — that scenarios reach via
-  the `inspector` pytest fixture. Has its own pyproject.toml and
-  unit-test suite.
+  Framework code — `Auditor`, `Critic`, and `ClaudeCli` — that scenarios
+  reach via the `inspector` pytest fixture. Has its own pyproject.toml
+  and unit-test suite. Test doubles live in `play/tests/test_doubles/`;
+  contract tests (marked `contract`) live in `play/tests/contract/`.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
@@ -77,10 +78,12 @@ A scenario in `spec/tests/test_*.py` does three things:
 2. Calls `_fake_agent_performs(task=…, workspace=…)`, which copies
    the target task's `scene/` over the workspace and returns the
    transcript path.
-3. Calls `inspector.evaluate(evidence=transcript, scorecard=_have(...))`
-   to evaluate a scorecard of `{characteristic, verify, failure}` dicts
-   against the transcript. `inspector` is a pytest fixture (in
-   `spec/conftest.py`) supplying an `Auditor` from `play/`.
+3. Calls `inspector.evaluate(evidence=transcript, working_dir=working_dir,
+   scorecard=_have(...))` to evaluate a scorecard against the transcript.
+   `inspector` is a pytest fixture (in `spec/conftest.py`) supplying an
+   inspector from `play/`. Auditor scorecard rows carry
+   `{characteristic, verify, failure}`; `verify` is Auditor-specific.
+   Critic rows need only `{characteristic, failure}`.
 
 Each `tasks/N-name/scene/` is also the starting fixture for task
 `N+1`; `0-placeholder/` is the genesis. Adding a scenario means adding
