@@ -1,14 +1,12 @@
 # Commands
 
-Key developer commands for this repo.
+Key developer commands for this repo. All commands run from the repo root.
 
 ## Linting
 
-Ruff must be run from within each project directory.
-
 ```
-cd play && uv run ruff check .
-cd spec && uv run ruff check .
+uv run --project play ruff check play
+uv run --project spec ruff check spec
 ```
 
 ## Tests
@@ -16,17 +14,17 @@ cd spec && uv run ruff check .
 ### `play/` unit tests
 
 ```
-cd play && uv run pytest
+uv run --project play pytest play/tests -m "not contract"
 ```
 
 ### `play/` contract tests (require `claude` CLI)
 
 ```
-cd play && uv run pytest -m contract
+uv run --project play pytest play/tests -m contract
 ```
 
 ### `spec/` scenarios
 
 ```
-cd spec && uv run pytest
+uv run --project spec pytest spec/tests
 ```
