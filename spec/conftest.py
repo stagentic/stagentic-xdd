@@ -1,7 +1,12 @@
+from pathlib import Path
+
 import pytest
 from auditor import Auditor
 from critic import Critic
 from claude_cli import ClaudeCli
+from fake_agent import FakeAgent
+
+TASKS = Path(__file__).parent / "tasks"
 
 
 def pytest_addoption(parser):
@@ -15,3 +20,8 @@ def inspector(request):
             return Auditor()
         case "critic":
             return Critic(claude=ClaudeCli())
+
+
+@pytest.fixture
+def agent():
+    return FakeAgent(tasks=TASKS)

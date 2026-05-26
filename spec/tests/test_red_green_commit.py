@@ -2,18 +2,15 @@ import re
 import shutil
 from pathlib import Path
 
-from fake_agent import FakeAgent
-
 TASKS = Path(__file__).parent.parent / "tasks"
 
 
 class TestRedGreenCommit:
-    def test_write_a_failing_test(self, tmp_path, inspector):
+    def test_write_a_failing_test(self, tmp_path, inspector, agent):
         working_dir = tmp_path / "miles-to-km"
         shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)
         task = TASKS / "1-first-test-for-miles-to-km-converter"
 
-        agent = FakeAgent(tasks=TASKS)
         agent.perform(task="1-first-test-for-miles-to-km-converter", working_dir=working_dir)
         inspector.evaluate(
             evidence=agent.transcript,
