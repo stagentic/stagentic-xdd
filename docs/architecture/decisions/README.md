@@ -30,3 +30,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0006](0006-use-native-installer-for-pinned-cli.md) | Use the Claude Code native installer for the pinned CLI version | Proposed |
 | [0007](0007-structure-inner-loop-scenarios-as-a-task-chain-with-a-scorecard.md) | Structure inner-loop scenarios as a task chain audited by a scorecard | Accepted |
 | [0008](0008-run-the-agent-with-cwd-at-the-workspace-root.md) | Run the agent with cwd at the workspace root | Proposed |
+| [0009](0009-select-inspector-and-agent-per-run-via-pytest-cli-options.md) | Select inspector and agent per run via pytest CLI options | Accepted |
