@@ -60,7 +60,8 @@ The bootstrap approach is fixed in
   Framework code — `Auditor`, `Critic`, and `ClaudeCli` — that scenarios
   reach via the `inspector` pytest fixture. Has its own pyproject.toml
   and unit-test suite. Test doubles live in `play/tests/test_doubles/`;
-  contract tests (marked `contract`) live in `play/tests/contract/`.
+  contract tests (marked `contract`) live in `play/tests/contract/`;
+  integration tests (marked `integration`) live in `play/tests/integration/`.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.

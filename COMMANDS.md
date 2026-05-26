@@ -14,7 +14,13 @@ uv run --project spec ruff check spec
 ### `play/` unit tests
 
 ```
-uv run --project play pytest play/tests -m "not contract"
+uv run --project play pytest play/tests -m "not contract and not integration"
+```
+
+### `play/` integration tests (require `claude` CLI)
+
+```
+uv run --project play pytest play/tests -m integration
 ```
 
 ### `play/` contract tests (require `claude` CLI)
@@ -27,4 +33,10 @@ uv run --project play pytest play/tests -m contract
 
 ```
 uv run --project spec pytest spec/tests
+```
+
+### `spec/` scenarios with critic (require `claude` CLI)
+
+```
+uv run --project spec pytest spec/tests --inspector=critic
 ```
