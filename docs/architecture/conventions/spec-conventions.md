@@ -4,7 +4,7 @@ Naming and design-intent conventions for `spec/` that should persist across refa
 
 ## The `transcript` variable
 
-The local variable returned by `_fake_agent_performs(...)` is named `transcript`, even though today it is a `pathlib.Path` rather than a `Transcript` object. The same applies to the `evidence=` kwarg on `_then(...)`.
+The local variable returned by `_fake_agent_performs(...)` is named `transcript`, even though today it is a `pathlib.Path` rather than a `Transcript` object. The same applies to the `evidence=` kwarg on `inspector.evaluate(...)`.
 
 **Why:** the intent is to evolve `transcript` into a `Transcript` object that carries its own path (`.path`) and a method to read its contents (replacing the current `evidence.read_text()` inside `_then`). Naming declaratively today avoids a churning rename when the object lands. The kwarg name `evidence` follows the same principle — named for the contract (something that proves what the agent did), not the file shape.
 

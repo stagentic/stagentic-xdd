@@ -37,7 +37,7 @@ Holding these together as one design is what makes the swaps tractable later.
 
 6. **Each scorecard row is `{characteristic, verify, failure}`:**
    - `characteristic` — prose statement of the expected behaviour
-   - `verify(transcript) -> bool` — auditor's deterministic check
+   - `verify(transcript, working_dir) -> bool` — auditor's deterministic check
    - `failure` — static prose printed when verify returns false
 
 7. **The `characteristic` prose is the durable contract.** The auditor receives the full row (characteristic + verify + failure) — its *check strategy* for that characteristic. The critic receives only the `characteristic` prose, embedded in its scorecard prompt. Either evaluator can be swapped in without touching the test body.
