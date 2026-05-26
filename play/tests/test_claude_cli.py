@@ -17,3 +17,13 @@ class TestClaudeCli:
         result = ClaudeCli(subprocess=succeeding)("any prompt")
 
         assert result == "PASS\n"
+
+    def test_passes_prompt_to_subprocess(self):
+        received = []
+        def capture(cmd, **kwargs):
+            received.append(cmd)
+            return StubbedSubprocess(returncode=0, stdout="PASS\n")(cmd)
+
+        ClaudeCli(subprocess=capture)("evaluate this transcript")
+
+        assert "evaluate this transcript" in received[0]
