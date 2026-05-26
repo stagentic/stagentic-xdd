@@ -60,7 +60,7 @@ class TestCritic:
 
         received = []
 
-        def capture(prompt):
+        def capture(prompt, **kwargs):
             received.append(prompt)
             return '[{"characteristic": "some characteristic", "status": "PASS"}]'
 
@@ -75,6 +75,25 @@ class TestCritic:
 
         assert str(dummy_transcript) in received[0]
         assert str(working_dir) in received[0]
+
+    def test_evaluate_passes_working_dir_as_add_dir_to_claude(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+        working_dir = tmp_path / "workspace"
+
+        received_kwargs = []
+
+        def capture(prompt, **kwargs):
+            received_kwargs.append(kwargs)
+            return '[{"characteristic": "some characteristic", "status": "PASS"}]'
+
+        Critic(claude=capture).evaluate(
+            evidence=dummy_transcript,
+            working_dir=working_dir,
+            scorecard=[{"characteristic": "some characteristic", "failure": "some failure"}],
+        )
+
+        assert received_kwargs[0].get("add_dir") == working_dir
 
     def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
