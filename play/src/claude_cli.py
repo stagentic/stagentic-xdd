@@ -1,5 +1,8 @@
+import subprocess as _subprocess_module
+
+
 class ClaudeCli:
-    def __init__(self, subprocess=None):
+    def __init__(self, subprocess=_subprocess_module.run):
         self._subprocess = subprocess
 
     def __call__(self, prompt):
