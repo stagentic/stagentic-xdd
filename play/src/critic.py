@@ -30,9 +30,17 @@ def _build_prompt(evidence, working_dir, scorecard):
     )
 
 
+def _strip_code_fence(result):
+    stripped = result.strip()
+    if stripped.startswith("```"):
+        stripped = stripped.split("\n", 1)[1]
+        stripped = stripped.rsplit("```", 1)[0]
+    return stripped
+
+
 def _failures_from(result, scorecard):
     try:
-        rows = json.loads(result)
+        rows = json.loads(_strip_code_fence(result))
         statuses = {row["characteristic"]: row["status"] for row in rows}
     except (json.JSONDecodeError, KeyError):
         raise ValueError(f"unaccounted characteristics: response was not valid JSON: {result!r}")

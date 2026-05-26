@@ -95,6 +95,18 @@ class TestCritic:
 
         assert received_kwargs[0].get("workspace") == working_dir
 
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+
+        Critic(claude=StubbedClaudeCli(
+            '```json\n[{"characteristic": "always passes", "status": "PASS"}]\n```\n'
+        )).evaluate(
+            evidence=dummy_transcript,
+            working_dir=tmp_path,
+            scorecard=[{"characteristic": "always passes", "failure": "should never see this"}],
+        )
+
     def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")

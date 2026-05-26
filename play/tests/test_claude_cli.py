@@ -28,3 +28,15 @@ class TestClaudeCli:
         ClaudeCli(subprocess=capture)("evaluate this transcript")
 
         assert "evaluate this transcript" in received[0]
+
+    def test_includes_add_dir_in_command_when_workspace_provided(self, tmp_path):
+        received = []
+
+        def capture(cmd, **kwargs):
+            received.append(cmd)
+            return StubbedSubprocess(returncode=0, stdout="[]")(cmd)
+
+        ClaudeCli(subprocess=capture)("my prompt", workspace=tmp_path)
+
+        assert "--add-dir" in received[0]
+        assert str(tmp_path) in received[0]
