@@ -39,4 +39,5 @@ extend-select = [
 pythonpath = ["src", "tests"]
 markers = [
     "contract: tests that call the real claude CLI (slow, require claude to be installed)",
+    "integration: tests that exercise the full critic with a real claude CLI (slow)",
 ]
