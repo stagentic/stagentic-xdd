@@ -19,6 +19,7 @@ preview = true
 extend-select = [
     "E3",  # blank-line rules
     "I",   # import sorting
+    "UP",  # pyupgrade — modernise Python syntax
     "W",   # pycodestyle warnings (trailing whitespace, etc.)
 ]
 
