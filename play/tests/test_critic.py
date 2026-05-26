@@ -56,12 +56,12 @@ class TestCritic:
                 scorecard=[_PYTEST_RAN],
             )
 
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, tmp_path):
+    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, tmp_path, claude_cli):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_NO_PYTEST)
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=_stub_fail(_PYTEST_RAN)).evaluate(
+            Critic(claude=claude_cli or _stub_fail(_PYTEST_RAN)).evaluate(
                 evidence=transcript,
                 working_dir=tmp_path,
                 scorecard=[_PYTEST_RAN],
@@ -70,11 +70,11 @@ class TestCritic:
         assert _PYTEST_RAN["characteristic"] in str(excinfo.value)
         assert _PYTEST_RAN["failure"] in str(excinfo.value)
 
-    def test_evaluate_returns_none_for_a_passing_scorecard(self, tmp_path):
+    def test_evaluate_returns_none_for_a_passing_scorecard(self, tmp_path, claude_cli):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
-        Critic(claude=_stub_pass(_PYTEST_RAN)).evaluate(
+        Critic(claude=claude_cli or _stub_pass(_PYTEST_RAN)).evaluate(
             evidence=transcript,
             working_dir=tmp_path,
             scorecard=[_PYTEST_RAN],
@@ -119,12 +119,12 @@ class TestCritic:
 
         assert received_kwargs[0].get("workspace") == working_dir
 
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, tmp_path):
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, tmp_path, claude_cli):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
         fenced = f'```json\n{_stub_pass(_PYTEST_RAN)._response}\n```\n'
 
-        Critic(claude=StubbedClaudeCli(fenced)).evaluate(
+        Critic(claude=claude_cli or StubbedClaudeCli(fenced)).evaluate(
             evidence=transcript,
             working_dir=tmp_path,
             scorecard=[_PYTEST_RAN],
@@ -141,7 +141,7 @@ class TestCritic:
                 scorecard=[_PYTEST_RAN],
             )
 
-    def test_failure_message_lists_every_failed_row(self, tmp_path):
+    def test_failure_message_lists_every_failed_row(self, tmp_path, claude_cli):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_NO_PYTEST)
 
@@ -152,7 +152,7 @@ class TestCritic:
         )
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=StubbedClaudeCli(mixed_response)).evaluate(
+            Critic(claude=claude_cli or StubbedClaudeCli(mixed_response)).evaluate(
                 evidence=transcript,
                 working_dir=tmp_path,
                 scorecard=[_PYTEST_RAN, _PYTEST_FAILED, _ASSERTION_ERROR],
