@@ -1,7 +1,7 @@
 import pytest
+from test_doubles.stubbed_subprocess import StubbedSubprocess
 
 from claude_cli import ClaudeCli
-from test_doubles.stubbed_subprocess import StubbedSubprocess
 
 
 class TestClaudeCli:
@@ -20,6 +20,7 @@ class TestClaudeCli:
 
     def test_passes_prompt_to_subprocess(self):
         received = []
+
         def capture(cmd, **kwargs):
             received.append(cmd)
             return StubbedSubprocess(returncode=0, stdout="PASS\n")(cmd)

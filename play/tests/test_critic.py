@@ -1,7 +1,7 @@
 import pytest
+from test_doubles.stubbed_claude_cli import StubbedClaudeCli
 
 from critic import Critic
-from test_doubles.stubbed_claude_cli import StubbedClaudeCli
 
 
 class TestCritic:
@@ -55,6 +55,7 @@ class TestCritic:
         working_dir = tmp_path / "workspace"
 
         received = []
+
         def capture(prompt):
             received.append(prompt)
             return "PASS"
