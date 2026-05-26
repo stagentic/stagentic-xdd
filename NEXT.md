@@ -11,23 +11,34 @@ a canned `scene/` over the workspace and returns a pre-written
 transcript. The end goal is replacing it with a real `claude -p`
 invocation.
 
-Follow the same pattern used for the critic:
+`play.fake_agent.FakeAgent` has the shape both variants will share:
+`FakeAgent(tasks=…).perform(task=name, working_dir=…)` looks up
+`<tasks>/<name>.sh` and runs it in the working directory; the
+resulting `transcript.md` path is held on `agent.transcript`. The
+variation between fake and real is only the command that interprets
+the task — fake runs a shell script, real will run `claude -p` with
+a prompt referencing `<tasks>/<name>.md`.
 
-1. **Introduce the abstraction** — there is no concept of "an agent"
-   yet, only the private helper `_fake_agent_performs`. Make that
-   absence good first: name the role, then add the seam that lets
-   it be injected. Both sub-steps land green with only the fake
-   implementation present. *(Make the change easy before making the
-   easy change — the hard part here is conceptual, not behavioural.)*
+1. **Introduce the abstraction** — `FakeAgent` exists in `play/`;
+   what remains is the spec-side seam.
 
-   a. Lift `_fake_agent_performs` to a named *agent* role with one
-      implementation (a fake, in `play/`). The scenario reaches it
-      the same way it currently reaches `inspector`.
+   a. Wire `FakeAgent` into the spec via an `agent` fixture in
+      `spec/conftest.py` (paralleling `inspector`). Author a `.sh`
+      for `1-first-test-for-miles-to-km-converter` that produces
+      the same workspace state and `transcript.md` the canned
+      scene supplies today. Replace `_fake_agent_performs` at the
+      call site with `agent.perform(...)` and `agent.transcript`.
 
-   b. Make the agent injectable at runtime via a pytest fixture
-      (paralleling the `inspector` fixture) and a `--agent` CLI
-      option in `spec/conftest.py`. Only the fake is wired; `real`
-      is not yet a valid choice.
+      *Layout to resolve:* `FakeAgent` currently looks up
+      `<tasks>/<name>.sh`. Today `spec/tasks/<n>-<slug>/` is a
+      directory with `scene/` inside, so the name collides. Either
+      let scripts live inside the task dir (e.g.
+      `<tasks>/<name>/script.sh`, a one-line `FakeAgent` change)
+      or move scripts apart from the scene chain.
+
+   b. Make the agent injectable via a `--agent` CLI option in
+      `spec/conftest.py` (paralleling `--inspector=auditor|critic`).
+      Only `fake` is wired; `real` is not yet a valid choice.
       *(cf. `0849177`, `45da208`, `1c1213e`)*
 
 2. **Watch real fail** — add the real-claude implementation behind
