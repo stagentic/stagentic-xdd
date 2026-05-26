@@ -1,8 +1,9 @@
 import subprocess as _subprocess_module
+from collections.abc import Callable
 
 
 class ClaudeCli:
-    def __init__(self, subprocess=_subprocess_module.run):
+    def __init__(self, subprocess: Callable = _subprocess_module.run):
         self._subprocess = subprocess
 
     def __call__(self, prompt):
