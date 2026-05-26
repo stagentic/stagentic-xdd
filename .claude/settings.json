@@ -1,4 +1,10 @@
 {
+  "env": {
+    "DISABLE_AUTOUPDATER": "1",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-7",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001"
+  },
   "permissions": {
     "allow": [
       "Bash(git commit*)",
@@ -27,11 +33,5 @@
   },
   "enabledPlugins": {
     "stagentic-promptbook@stagentic": true
-  },
-  "env": {
-    "DISABLE_AUTOUPDATER": "1",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-7",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-6",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4-5-20251001"
   }
 }
