@@ -1,6 +1,5 @@
 import subprocess as _subprocess_module
 from collections.abc import Callable
-from typing import Any
 
 
 class ClaudeCli:
@@ -13,12 +12,13 @@ class ClaudeCli:
             raise RuntimeError(result.stderr)
         return result.stdout
 
+
 def _run(subprocess, prompt):
     return subprocess(_command(prompt), capture_output=True, text=True)
 
 
-def _is_not_success_exit_code(result) -> Any:
-        return result.returncode != 0
+def _is_not_success_exit_code(result) -> bool:
+    return result.returncode != 0
 
 
 def _command(prompt):
