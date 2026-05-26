@@ -8,7 +8,7 @@ class Critic:
     def evaluate(self, *, evidence, working_dir=None, scorecard):
         _require_claude(self._claude)
         prompt = _build_prompt(evidence, working_dir, scorecard)
-        result = self._claude(prompt, add_dir=working_dir)
+        result = self._claude(prompt, workspace=working_dir)
         failures = _failures_from(result, scorecard)
         if failures:
             raise AssertionError(failures)

@@ -76,7 +76,7 @@ class TestCritic:
         assert str(dummy_transcript) in received[0]
         assert str(working_dir) in received[0]
 
-    def test_evaluate_passes_working_dir_as_add_dir_to_claude(self, tmp_path):
+    def test_evaluate_passes_working_dir_as_workspace_to_claude(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
         working_dir = tmp_path / "workspace"
@@ -93,7 +93,7 @@ class TestCritic:
             scorecard=[{"characteristic": "some characteristic", "failure": "some failure"}],
         )
 
-        assert received_kwargs[0].get("add_dir") == working_dir
+        assert received_kwargs[0].get("workspace") == working_dir
 
     def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
