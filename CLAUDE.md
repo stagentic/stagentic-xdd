@@ -139,7 +139,8 @@ A commit message answers *why*, not *what* — the diff already records every ed
 
 **Commit proposals:** when proposing a commit for approval, always show the
 complete message verbatim — subject, blank line, body (if any), blank line,
-and trailer — exactly as it will be passed to `git commit -m`.
+and trailer — exactly as it will be passed to `git commit -m`. After the
+message block, list the files to be staged.
 
 ## ADR conventions
 
