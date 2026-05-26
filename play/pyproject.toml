@@ -27,6 +27,7 @@ extend-select = [
     "E3",  # blank-line rules
     "I",   # import sorting
     "N",   # PEP 8 naming conventions
+    "SIM", # flake8-simplify — simplifiable code
     "UP",  # pyupgrade — modernise Python syntax
     "W",   # pycodestyle warnings (trailing whitespace, etc.)
 ]
