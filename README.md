@@ -4,26 +4,26 @@ A planned Claude plugin for language-agnostic Behaviour-Driven Development (BDD)
 
 ## A work in progress
 
-One inner-loop scenario currently runs green against a fake agent and a
-deterministic auditor — enough to establish the scaffolding without LLM
-non-determinism in the loop. The harness is designed so both sides swap
-to real Claude integrations via fixture configuration, without rewriting
-the test:
+One inner-loop scenario currently runs green against a fake agent,
+selectable against either a deterministic auditor or an agentic critic.
 
-- The fake agent will be replaced by an agent wrapping `claude -p`
-  running the xdd skill on each task's prompt — the agent being
-  evaluated.
-- The deterministic auditor will be replaced by a critic wrapping
-  `claude -p` running a scorecard prompt over the same characteristic
-  prose, judging the agent's transcript and resulting workspace state.
+The critic wraps `claude -p` running a scorecard prompt over the
+agent's transcript and resulting workspace state, judging each
+characteristic without deterministic assertions.
+
+The harness is designed so both sides grow via fixture configuration —
+without rewriting the test:
+
+- A real agent wrapping `claude -p` running the xdd skill will join
+  the fake agent as a selectable option.
 
 For an illustrative sketch of the eventual fixture-config matrix
 (real-Claude vs stubbed agent × auditor vs critic), see
 [`experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py`](experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py)
 — a prototype shape, not a target architecture.
 
-The immediate next step is to make each task's `scene/` a runnable Python
-project so the real agent has somewhere to run `uv run pytest tests/`.
+The immediate next step is to add a real `claude -p` agent as a
+selectable option alongside the fake agent.
 See [`NEXT.md`](NEXT.md) for the current focus and
 [`docs/architecture/decisions/`](docs/architecture/decisions/) for the
 architectural direction.
