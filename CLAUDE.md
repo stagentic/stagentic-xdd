@@ -16,6 +16,7 @@ everyone gets wrong about TDD/BDD" argument.
   prompt is open-ended ("let's continue", "what next?"), use NEXT.md
   to orient and propose steps. If NEXT.md is missing, ask the user
   what they want to work on.
+- `COMMANDS.md` (repo root) — key developer commands (test runners, linter).
 - `docs/architecture/conventions/` — naming and design-intent
   conventions that should persist across refactors. Consult when
   touching the affected area (e.g. `spec-conventions.md` before
