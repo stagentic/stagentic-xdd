@@ -11,3 +11,4 @@ class FakeAgent:
             cwd=working_dir,
             check=True,
         )
+        self.transcript = working_dir / "transcript.md"
