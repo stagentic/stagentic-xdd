@@ -5,11 +5,11 @@ class Critic:
     def __init__(self, claude=None):
         self._claude = claude
 
-    def evaluate(self, *, evidence, working_dir=None, scorecard):
+    def evaluate(self, *, evidence, working_dir=None, should):
         _require_claude(self._claude)
-        prompt = _build_prompt(evidence, working_dir, scorecard)
+        prompt = _build_prompt(evidence, working_dir, should)
         result = self._claude(prompt, workspace=working_dir)
-        failures = _failures_from(result, scorecard)
+        failures = _failures_from(result, should)
         if failures:
             raise AssertionError(failures)
 
@@ -19,8 +19,8 @@ def _require_claude(claude):
         raise ValueError("no claude implementation provided")
 
 
-def _build_prompt(evidence, working_dir, scorecard):
-    characteristics = "\n".join(f"- {row['characteristic']}" for row in scorecard)
+def _build_prompt(evidence, working_dir, should):
+    characteristics = "\n".join(f"- {row['characteristic']}" for row in should)
     return (
         f"Transcript: {evidence}\n"
         f"Workspace: {working_dir}\n\n"
@@ -38,16 +38,16 @@ def _strip_code_fence(result):
     return stripped
 
 
-def _failures_from(result, scorecard):
+def _failures_from(result, should):
     try:
         rows = json.loads(_strip_code_fence(result))
         statuses = {row["characteristic"]: row["status"] for row in rows}
     except (json.JSONDecodeError, KeyError):
         raise ValueError(f"unaccounted characteristics: response was not valid JSON: {result!r}")
 
-    unaccounted = [row for row in scorecard if row["characteristic"] not in statuses]
+    unaccounted = [row for row in should if row["characteristic"] not in statuses]
     if unaccounted:
         names = ", ".join(row["characteristic"] for row in unaccounted)
         raise ValueError(f"unaccounted characteristics: {names}")
 
-    return [row for row in scorecard if statuses.get(row["characteristic"]) == "FAIL"]
+    return [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]

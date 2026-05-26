@@ -13,7 +13,7 @@ class TestCritic:
             Critic().evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
-                scorecard=[
+                should=[
                     {"characteristic": "my characteristic",
                      "failure": "my failure message"},
                 ],
@@ -29,7 +29,7 @@ class TestCritic:
             )).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
-                scorecard=[
+                should=[
                     {"characteristic": "my characteristic",
                      "failure": "my failure message"},
                 ],
@@ -38,7 +38,7 @@ class TestCritic:
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_evaluate_returns_none_for_a_passing_scorecard(self, tmp_path):
+    def test_evaluate_returns_none_when_all_characteristics_pass(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")
 
@@ -47,7 +47,7 @@ class TestCritic:
         )).evaluate(
             evidence=dummy_transcript,
             working_dir=tmp_path,
-            scorecard=[
+            should=[
                 {"characteristic": "always passes",
                  "failure": "should never see this"},
             ],
@@ -67,7 +67,7 @@ class TestCritic:
         Critic(claude=capture).evaluate(
             evidence=dummy_transcript,
             working_dir=working_dir,
-            scorecard=[
+            should=[
                 {"characteristic": "some characteristic",
                  "failure": "some failure"},
             ],
@@ -90,7 +90,7 @@ class TestCritic:
         Critic(claude=capture).evaluate(
             evidence=dummy_transcript,
             working_dir=working_dir,
-            scorecard=[{"characteristic": "some characteristic", "failure": "some failure"}],
+            should=[{"characteristic": "some characteristic", "failure": "some failure"}],
         )
 
         assert received_kwargs[0].get("workspace") == working_dir
@@ -104,7 +104,7 @@ class TestCritic:
         )).evaluate(
             evidence=dummy_transcript,
             working_dir=tmp_path,
-            scorecard=[{"characteristic": "always passes", "failure": "should never see this"}],
+            should=[{"characteristic": "always passes", "failure": "should never see this"}],
         )
 
     def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
@@ -115,7 +115,7 @@ class TestCritic:
             Critic(claude=StubbedClaudeCli("I cannot access those files.")).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
-                scorecard=[
+                should=[
                     {"characteristic": "my characteristic", "failure": "my failure"},
                 ],
             )
@@ -132,7 +132,7 @@ class TestCritic:
             )).evaluate(
                 evidence=dummy_transcript,
                 working_dir=tmp_path,
-                scorecard=[
+                should=[
                     {"characteristic": "first characteristic",
                      "failure": "first failure"},
                     {"characteristic": "middle characteristic",

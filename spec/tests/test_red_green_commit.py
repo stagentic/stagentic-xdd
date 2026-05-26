@@ -18,7 +18,7 @@ class TestRedGreenCommit:
         inspector.evaluate(
             evidence=transcript,
             working_dir=working_dir,
-            scorecard=_have(task, working_dir, matching=[
+            should=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",
                 "Workspace state matches the expected end-state (src, tests, transcript)",
                 "Transcript shows the agent ran pytest",

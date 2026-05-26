@@ -24,7 +24,7 @@ def test_critic_passes_when_all_characteristics_are_met(tmp_path):
     Critic(claude=ClaudeCli()).evaluate(
         evidence=transcript,
         working_dir=tmp_path,
-        scorecard=[
+        should=[
             {"characteristic": "Transcript shows the agent ran pytest",
              "failure": "No pytest invocation found in the transcript"},
             {"characteristic": "Transcript shows a PASS pytest result",
@@ -42,7 +42,7 @@ def test_critic_raises_when_characteristics_are_not_met(tmp_path):
         Critic(claude=ClaudeCli()).evaluate(
             evidence=transcript,
             working_dir=tmp_path,
-            scorecard=[
+            should=[
                 {"characteristic": "Transcript shows the agent ran pytest",
                  "failure": "No pytest invocation found in the transcript"},
                 {"characteristic": "Transcript shows a PASS pytest result",
