@@ -7,13 +7,13 @@ class ClaudeCli:
         self._subprocess = subprocess
 
     def __call__(self, prompt):
-        result = _run(self._subprocess, prompt)
+        result = _submit_to(self._subprocess, prompt)
         if _is_not_success_exit_code(result):
             raise RuntimeError(result.stderr)
         return result.stdout
 
 
-def _run(subprocess, prompt):
+def _submit_to(subprocess, prompt):
     return subprocess(_command(prompt), capture_output=True, text=True)
 
 
