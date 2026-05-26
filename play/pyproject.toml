@@ -16,7 +16,11 @@ package = false
 preview = true
 
 [tool.ruff.lint]
-extend-select = ["E3", "I", "W"]
+extend-select = [
+    "E3",  # blank-line rules
+    "I",   # import sorting
+    "W",   # pycodestyle warnings (trailing whitespace, etc.)
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "tests"]
