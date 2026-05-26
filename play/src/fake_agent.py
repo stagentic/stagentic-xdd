@@ -7,7 +7,7 @@ class FakeAgent:
 
     def perform(self, *, task, working_dir):
         subprocess.run(
-            ["bash", str(self._tasks / f"{task}.sh")],
+            ["bash", str(self._tasks / task / "fake-task.sh")],
             cwd=working_dir,
             check=True,
         )

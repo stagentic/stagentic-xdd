@@ -4,8 +4,9 @@ from fake_agent import FakeAgent
 class TestFakeAgent:
     def test_perform_runs_the_named_task_script_in_the_working_directory(self, tmp_path):
         tasks = tmp_path / "tasks"
-        tasks.mkdir()
-        (tasks / "leaves-sentinel.sh").write_text("touch sentinel.txt\n")
+        task_dir = tasks / "leaves-sentinel"
+        task_dir.mkdir(parents=True)
+        (task_dir / "fake-task.sh").write_text("touch sentinel.txt\n")
         working_dir = tmp_path / "workspace"
         working_dir.mkdir()
 
@@ -17,8 +18,9 @@ class TestFakeAgent:
 
     def test_transcript_is_the_path_in_the_working_directory_after_perform(self, tmp_path):
         tasks = tmp_path / "tasks"
-        tasks.mkdir()
-        (tasks / "writes-transcript.sh").write_text("touch transcript.md\n")
+        task_dir = tasks / "writes-transcript"
+        task_dir.mkdir(parents=True)
+        (task_dir / "fake-task.sh").write_text("touch transcript.md\n")
         working_dir = tmp_path / "workspace"
         working_dir.mkdir()
 
