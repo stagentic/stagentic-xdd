@@ -3,7 +3,15 @@ class Critic:
         self._claude = claude
 
     def evaluate(self, *, evidence, working_dir=None, scorecard):
-        prompt = f"Transcript: {evidence}\nWorkspace: {working_dir}"
-        result = self._claude(prompt) if self._claude else ""
-        if "PASS" not in result:
+        if self._claude is None:
             raise AssertionError(scorecard)
+        prompt = f"Transcript: {evidence}\nWorkspace: {working_dir}"
+        result = self._claude(prompt)
+        failed_names = {
+            line[len("FAIL: "):].strip()
+            for line in result.splitlines()
+            if line.startswith("FAIL: ")
+        }
+        failures = [row for row in scorecard if row["characteristic"] in failed_names]
+        if failures:
+            raise AssertionError(failures)

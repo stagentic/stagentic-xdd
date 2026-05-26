@@ -57,3 +57,37 @@ class TestCritic:
 
         assert str(dummy_transcript) in received[0]
         assert str(working_dir) in received[0]
+
+    def test_failure_message_lists_every_failed_row(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+
+        first_and_third_fail = lambda prompt: (
+            "FAIL: first characteristic\n"
+            "PASS: middle characteristic\n"
+            "FAIL: third characteristic\n"
+        )
+
+        with pytest.raises(AssertionError) as excinfo:
+            Critic(claude=first_and_third_fail).evaluate(
+                evidence=dummy_transcript,
+                working_dir=tmp_path,
+                scorecard=[
+                    {"characteristic": "first characteristic",
+                     "failure": "first failure"},
+                    {"characteristic": "middle characteristic",
+                     "failure": "middle failure"},
+                    {"characteristic": "third characteristic",
+                     "failure": "third failure"},
+                ],
+            )
+
+        message = str(excinfo.value)
+        assert "first characteristic" in message
+        assert "first failure" in message
+
+        assert "middle characteristic" not in message
+        assert "middle failure" not in message
+
+        assert "third characteristic" in message
+        assert "third failure" in message
