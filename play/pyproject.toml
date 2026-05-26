@@ -15,10 +15,16 @@ package = false
 [tool.ruff]
 preview = true
 
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "N802",  # test names may embed exception type names (e.g. ValueError) in uppercase for readability
+]
+
 [tool.ruff.lint]
 extend-select = [
     "E3",  # blank-line rules
     "I",   # import sorting
+    "N",   # PEP 8 naming conventions
     "UP",  # pyupgrade — modernise Python syntax
     "W",   # pycodestyle warnings (trailing whitespace, etc.)
 ]
