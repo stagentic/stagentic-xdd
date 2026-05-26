@@ -8,9 +8,11 @@
 
 The critic skeleton is in place. The approach to completing it:
 
-1. **Wire the fixture** — parametrise `spec/conftest.py` over `Auditor`
-   and `Critic(claude=ClaudeCli())` so the same scenario runs under
-   both. Do not commit this until the critic passes.
+1. **Wire the fixture** — add a `--inspector` CLI option to
+   `spec/conftest.py` (ADR 0009). `uv run pytest` keeps using `Auditor`
+   by default; `uv run pytest --inspector=critic` uses
+   `Critic(claude=ClaudeCli())`. Do not commit this until the critic
+   passes.
 
 2. **Watch the critic fail** — run the scenario under both inspectors.
    The critic's failure reveals exactly what the prompt needs to do.
