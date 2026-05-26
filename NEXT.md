@@ -8,19 +8,31 @@
 
 `_fake_agent_performs` in `spec/tests/test_red_green_commit.py` copies
 a canned `scene/` over the workspace and returns a pre-written
-transcript. The next step is replacing it with a real `claude -p`
+transcript. The end goal is replacing it with a real `claude -p`
 invocation.
 
 Follow the same pattern used for the critic:
 
-1. **Wire the option, disable until green** — add a `--agent` CLI
-   option to `spec/conftest.py` (default: `fake`; option: `real`).
-   Keep `fake` working and commit. Do not commit `real` until the
-   scenario passes under it.
-   *(cf. `0849177`, `45da208`, `1c1213e`)*
+1. **Introduce the abstraction** — there is no concept of "an agent"
+   yet, only the private helper `_fake_agent_performs`. Make that
+   absence good first: name the role, then add the seam that lets
+   it be injected. Both sub-steps land green with only the fake
+   implementation present. *(Make the change easy before making the
+   easy change — the hard part here is conceptual, not behavioural.)*
 
-2. **Watch it fail** — run the scenario under `--agent=real` to see
-   what the agent actually does and what the transcript contains.
+   a. Lift `_fake_agent_performs` to a named *agent* role with one
+      implementation (a fake, in `play/`). The scenario reaches it
+      the same way it currently reaches `inspector`.
+
+   b. Make the agent injectable at runtime via a pytest fixture
+      (paralleling the `inspector` fixture) and a `--agent` CLI
+      option in `spec/conftest.py`. Only the fake is wired; `real`
+      is not yet a valid choice.
+      *(cf. `0849177`, `45da208`, `1c1213e`)*
+
+2. **Watch real fail** — add the real-claude implementation behind
+   `--agent=real` and run the scenario to see what the agent actually
+   does and what the transcript contains.
 
 3. **Test-drive any harness changes** — drive fixes through unit tests
    before wiring them up.
