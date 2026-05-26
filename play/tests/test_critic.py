@@ -35,3 +35,25 @@ class TestCritic:
                  "failure": "should never see this"},
             ],
         )
+
+    def test_evaluate_passes_evidence_and_working_dir_to_claude(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+        working_dir = tmp_path / "workspace"
+
+        received = []
+        def capture(prompt):
+            received.append(prompt)
+            return "PASS"
+
+        Critic(claude=capture).evaluate(
+            evidence=dummy_transcript,
+            working_dir=working_dir,
+            scorecard=[
+                {"characteristic": "some characteristic",
+                 "failure": "some failure"},
+            ],
+        )
+
+        assert str(dummy_transcript) in received[0]
+        assert str(working_dir) in received[0]

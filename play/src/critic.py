@@ -3,6 +3,7 @@ class Critic:
         self._claude = claude
 
     def evaluate(self, *, evidence, working_dir=None, scorecard):
-        result = self._claude("") if self._claude else ""
+        prompt = f"Transcript: {evidence}\nWorkspace: {working_dir}"
+        result = self._claude(prompt) if self._claude else ""
         if "PASS" not in result:
             raise AssertionError(scorecard)
