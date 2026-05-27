@@ -1,3 +1,4 @@
+import uuid
 from pathlib import Path
 
 
@@ -8,8 +9,9 @@ class ClaudeSession:
         self._home = home
 
     def run(self, *, prompt, working_dir, transcript_path):
-        result = self._claude(prompt, workspace=working_dir, session_id="x")
+        sid = str(uuid.uuid4())
+        result = self._claude(prompt, workspace=working_dir, session_id=sid)
         encoded_cwd = "-" + str(working_dir).strip("/").replace("/", "-").replace("_", "-")
-        jsonl_path = self._home / ".claude" / "projects" / encoded_cwd / "x.jsonl"
+        jsonl_path = self._home / ".claude" / "projects" / encoded_cwd / f"{sid}.jsonl"
         self._transcriber(jsonl_path, transcript_path)
         return result

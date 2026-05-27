@@ -34,6 +34,18 @@ class TestClaudeSession:
 
         (jsonl_path, output_path), _ = transcriber_calls[0]
         assert jsonl_path.parent == Path("/some/home/.claude/projects/-work-dir")
-        assert jsonl_path.stem == kwargs["session_id"]
         assert jsonl_path.suffix == ".jsonl"
         assert output_path == transcript_path
+
+    def test_each_run_uses_a_unique_session_id(self):
+        captured = []
+
+        def capture(prompt, **kwargs):
+            captured.append(kwargs["session_id"])
+            return ""
+
+        session = ClaudeSession(claude=capture, transcriber=lambda *_: None, home=Path("/h"))
+        session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
+        session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
+
+        assert captured[0] != captured[1]
