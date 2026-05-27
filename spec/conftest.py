@@ -19,7 +19,7 @@ def pytest_addoption(parser):
 
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
-    outcome = yield
+    yield
     archive(
         phase=call.when,
         tmp_path=item.funcargs.get("tmp_path"),
