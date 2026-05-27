@@ -21,7 +21,7 @@ class TestCritic:
         session = ClaudeSession(
             claude=_claude_spy(
                 claude_cli_calls,
-                returns='[{"characteristic": "always passes", "status": "PASS"}]'
+                returns='[{"characteristic": "a characteristic", "status": "PASS"}]'
             ),
             transcriber=_transcriber_spy(transcriber_calls),
             home=tmp_path / "home",
@@ -29,7 +29,7 @@ class TestCritic:
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=working_dir,
-            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
         assert str(evidence) in claude_cli_calls[0]["prompt"]
@@ -73,23 +73,25 @@ class TestCritic:
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, evidence, tmp_path):
+    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path):
         session = ClaudeSession(
-            claude=lambda *_, **__: "I cannot access those files.",
+            claude=lambda *_, **__: "not valid json.",
             transcriber=lambda *_: None,
             home=tmp_path / "home",
         )
 
-        with pytest.raises(ValueError, match="unaccounted"):
+        with pytest.raises(ValueError, match="unaccounted") as excinfo:
             Critic(session=session).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
-                should=[{"characteristic": "my characteristic", "failure": "my failure"}],
+                should=[{"characteristic": "a characteristic", "failure": "my failure"}],
             )
+
+        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
     def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path):
         session = ClaudeSession(
-            claude=lambda *_, **__: '```json\n[{"characteristic": "always passes", "status": "PASS"}]\n```\n',
+            claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n',
             transcriber=lambda *_: None,
             home=tmp_path / "home",
         )
@@ -97,7 +99,7 @@ class TestCritic:
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
-            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
     def test_failure_message_lists_every_failed_row(self, evidence, tmp_path):
@@ -127,25 +129,9 @@ class TestCritic:
         assert "middle" not in message and "middle failure" not in message
         assert "third" in message and "third failure" in message
 
-    def test_evaluate_chains_underlying_parse_error_as_cause(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: "not json",
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
-
-        with pytest.raises(ValueError) as excinfo:
-            Critic(session=session).evaluate(
-                evidence=evidence,
-                working_dir=tmp_path,
-                should=[{"characteristic": "x", "failure": "y"}],
-            )
-
-        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
-
     def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path):
         session = ClaudeSession(
-            claude=lambda *_, **__: '[{"characteristic": "only this one", "status": "PASS"}]',
+            claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]',
             transcriber=lambda *_: None,
             home=tmp_path / "home",
         )
@@ -155,8 +141,8 @@ class TestCritic:
                 evidence=evidence,
                 working_dir=tmp_path,
                 should=[
-                    {"characteristic": "only this one", "failure": "x"},
-                    {"characteristic": "missing from response", "failure": "y"},
+                    {"characteristic": "a characteristic", "failure": "x"},
+                    {"characteristic": "another characteristic", "failure": "y"},
                 ],
             )
 
