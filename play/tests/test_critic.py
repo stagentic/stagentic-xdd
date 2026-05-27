@@ -63,6 +63,15 @@ class TestCritic:
         assert claude_cli_calls[0]["workspace"] == working_dir
         assert transcriber_calls[0] == working_dir / "critique.md"
 
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'))
+
+        Critic(session=session).evaluate(
+            evidence=evidence,
+            working_dir=tmp_path,
+            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
+        )
+
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path, _using):
         session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'))
 
@@ -75,27 +84,6 @@ class TestCritic:
 
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
-
-    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: "not valid json."))
-
-        with pytest.raises(ValueError, match="not valid JSON") as excinfo:
-            Critic(session=session).evaluate(
-                evidence=evidence,
-                working_dir=tmp_path,
-                should=[{"characteristic": "a characteristic", "failure": "my failure"}],
-            )
-
-        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
-
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'))
-
-        Critic(session=session).evaluate(
-            evidence=evidence,
-            working_dir=tmp_path,
-            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
-        )
 
     def test_failure_message_lists_every_failed_row(self, evidence, tmp_path, _using):
         session = ClaudeSession(**_using(claude=lambda *_, **__: (
@@ -119,6 +107,18 @@ class TestCritic:
         assert "first" in message and "first failure" in message
         assert "middle" not in message and "middle failure" not in message
         assert "third" in message and "third failure" in message
+
+    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: "not valid json."))
+
+        with pytest.raises(ValueError, match="not valid JSON") as excinfo:
+            Critic(session=session).evaluate(
+                evidence=evidence,
+                working_dir=tmp_path,
+                should=[{"characteristic": "a characteristic", "failure": "my failure"}],
+            )
+
+        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
     def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path, _using):
         session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]'))
