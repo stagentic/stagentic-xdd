@@ -5,11 +5,16 @@ from claude_cli import ClaudeCli
 
 
 class TestClaudeCli:
-    def test_raises_RuntimeError_when_subprocess_fails(self):
-        failing = StubbedSubprocess(returncode=1, stderr="something went wrong")
+    def test_submits_full_command_to_subprocess(self, tmp_path):
+        calls = []
 
-        with pytest.raises(RuntimeError):
-            ClaudeCli(subprocess=failing)("any prompt")
+        ClaudeCli(subprocess=_subprocess_spy(calls))("evaluate this", workspace=tmp_path, session_id="abc-123")
+
+        cmd, kwargs = calls[0]
+        assert "evaluate this" in cmd
+        assert "--session-id" in cmd and "abc-123" in cmd
+        assert "--add-dir" in cmd and str(tmp_path) in cmd
+        assert kwargs["cwd"] == tmp_path
 
     def test_returns_stdout_when_subprocess_succeeds(self):
         succeeding = StubbedSubprocess(returncode=0, stdout="PASS\n")
@@ -18,48 +23,32 @@ class TestClaudeCli:
 
         assert result == "PASS\n"
 
-    def test_passes_prompt_to_subprocess(self):
-        received = []
+    def test_omits_session_id_from_command_when_not_provided(self):
+        calls = []
 
-        def capture(cmd, **kwargs):
-            received.append(cmd)
-            return StubbedSubprocess(returncode=0, stdout="PASS\n")(cmd)
+        ClaudeCli(subprocess=_subprocess_spy(calls))("any prompt")
 
-        ClaudeCli(subprocess=capture)("evaluate this transcript")
+        cmd, _ = calls[0]
+        assert "--session-id" not in cmd
 
-        assert "evaluate this transcript" in received[0]
+    def test_omits_workspace_from_command_when_not_provided(self):
+        calls = []
 
-    def test_includes_session_id_in_command_when_provided(self):
-        received = []
+        ClaudeCli(subprocess=_subprocess_spy(calls))("any prompt")
 
-        def capture(cmd, **kwargs):
-            received.append(cmd)
-            return StubbedSubprocess(returncode=0, stdout="")(cmd)
+        cmd, kwargs = calls[0]
+        assert "--add-dir" not in cmd
+        assert kwargs["cwd"] is None
 
-        ClaudeCli(subprocess=capture)("my prompt", session_id="abc-123")
+    def test_raises_RuntimeError_when_subprocess_fails(self):
+        failing = StubbedSubprocess(returncode=1, stderr="something went wrong")
 
-        assert "--session-id" in received[0]
-        assert "abc-123" in received[0]
+        with pytest.raises(RuntimeError):
+            ClaudeCli(subprocess=failing)("any prompt")
 
-    def test_runs_subprocess_with_workspace_as_cwd(self, tmp_path):
-        received = []
 
-        def capture(cmd, **kwargs):
-            received.append(kwargs)
-            return StubbedSubprocess(returncode=0, stdout="")(cmd)
-
-        ClaudeCli(subprocess=capture)("my prompt", workspace=tmp_path)
-
-        assert received[0]["cwd"] == tmp_path
-
-    def test_includes_add_dir_in_command_when_workspace_provided(self, tmp_path):
-        received = []
-
-        def capture(cmd, **kwargs):
-            received.append(cmd)
-            return StubbedSubprocess(returncode=0, stdout="[]")(cmd)
-
-        ClaudeCli(subprocess=capture)("my prompt", workspace=tmp_path)
-
-        assert "--add-dir" in received[0]
-        assert str(tmp_path) in received[0]
+def _subprocess_spy(calls):
+    def spy(cmd, **kwargs):
+        calls.append((cmd, kwargs))
+        return StubbedSubprocess(returncode=0, stdout="")(cmd)
+    return spy
