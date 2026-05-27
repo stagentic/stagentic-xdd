@@ -28,6 +28,12 @@ class TestAgent:
         assert calls[0]["workspace"] == workspace.working_dir
         assert calls[0]["session_id"] is not None
 
+    def test_sid_is_accessible_after_perform(self, workspace):
+        agent = Agent(tasks=workspace.tasks, claude=lambda *_, **__: None, transcriber=lambda *_, **__: None)
+        agent.perform(task="my-task", working_dir=workspace.working_dir)
+
+        assert agent.sid is not None
+
     def test_transcript_is_in_the_working_dir_after_perform(self, workspace):
         def fake_transcriber(jsonl_path, output_path):
             output_path.touch()
