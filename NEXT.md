@@ -6,30 +6,41 @@
 
 ## Swap the fake agent for the real claude CLI
 
-`FakeAgent` is wired into the spec via an `agent` fixture in
-`spec/conftest.py`. `FakeAgent(tasks=…).perform(task=name, working_dir=…)`
-looks up `<tasks>/<name>/fake-task.sh` and runs it; the resulting
-`transcript.md` path is held on `agent.transcript`. The variation between
-fake and real is only the command that interprets the task — fake runs a
-shell script, real will run `claude -p` with a prompt referencing the task.
+`--agent=real` is wired into `spec/conftest.py`. `Agent` (in `play/src/agent.py`)
+calls `claude -p` via `ClaudeCli`, generates a session ID, and delegates transcript
+rendering to an injected transcriber callable. `Transcriber` (in `play/src/transcriber.py`)
+renders JSONL to markdown and is approved-tested against a real run fixture.
 
-1. **Make the agent injectable** — add a `--agent` CLI option in
-   `spec/conftest.py` (paralleling `--inspector=auditor|critic`).
-   Only `fake` is wired; `real` is not yet a valid choice.
-   *(cf. `0849177`, `45da208`, `1c1213e`)*
+What remains before `--agent=real` can run end-to-end:
 
-2. **Watch real fail** — add the real-claude implementation behind
-   `--agent=real` and run the scenario to see what the agent actually
-   does and what the transcript contains.
+1. **Refactor `Transcriber`** — `Agent` injects a transcriber callable with the
+   signature `(jsonl_path, output_path)`. `Transcriber.render(jsonl_path)` returns
+   a string; there is a mismatch. Refactor `Transcriber` so it can serve directly
+   as that callable (or as the source of one), test-driving the change.
 
-3. **Test-drive any harness changes** — drive fixes through unit tests
+2. **Wire the JSONL path into `Agent`** — `Agent.perform()` currently passes `None`
+   as the JSONL path to the transcriber. The JSONL lands at
+   `~/.claude/projects/<encoded-cwd>/<sid>.jsonl` where
+   `encoded-cwd = "-" + cwd.strip("/").replace("/", "-")`.
+   Test-drive the path computation, then pass the real path to the transcriber.
+
+3. **Wire `Transcriber` into the `Agent` fixture** — `spec/conftest.py` currently
+   injects a no-op `lambda` as the transcriber. Replace it with the real transcriber.
+
+4. **Watch real run** — run the scenario under `--agent=real` to see what the
+   agent actually does and what the transcript contains.
+
+5. **Test-drive any harness changes** — drive fixes through unit tests
    before wiring them up.
    *(cf. `9ccdbc4`, `01c965c`, `546fe91`, `b862c2d`)*
 
-4. **Integration tests last** — once the scenario is green under
+6. **Integration tests last** — once the scenario is green under
    `--agent=real`, add integration tests for the real-agent path one
    at a time.
    *(cf. `ea7b497`)*
+
+Once `--agent=real` is green, commit `spec/conftest.py`, `COMMANDS.md`,
+and `spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md` together.
 
 ## Future want: preserve test artefacts
 
