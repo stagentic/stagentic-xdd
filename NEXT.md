@@ -24,7 +24,23 @@
 ## 1. Refactoring pass
 
 Review all production code in `play/src/` and `spec/` and leave it in good
-shape before the xdd skill work begins.
+shape before the xdd skill work begins. Work through each file in turn —
+for each production file, review its tests alongside it.
+
+### `play/src/`
+
+- [ ] `agent.py` (and `tests/test_agent.py`)
+- [ ] `auditor.py` (and `tests/test_auditor.py`)
+- [ ] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
+- [ ] `claude_session.py` (and `tests/test_claude_session.py`)
+- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
+- [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
+- [ ] `transcriber.py` (and `tests/test_transcriber.py`)
+
+### `spec/`
+
+- [ ] `archiver.py` (and `tests/test_archiver.py`)
+- [ ] `conftest.py`
 
 ## 2. Write the xdd skill
 

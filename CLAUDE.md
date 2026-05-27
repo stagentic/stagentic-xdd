@@ -58,7 +58,7 @@ The bootstrap approach is fixed in
     task completes. See ADR 0007 for the chain pattern.
 - `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
   Framework code — `Agent`, `FakeAgent`, `Transcriber`, `Auditor`, `Critic`,
-  and `ClaudeCli` — that scenarios reach via pytest fixtures. Has its own
+  `ClaudeSession`, and `ClaudeCli` — that scenarios reach via pytest fixtures. Has its own
   pyproject.toml and unit-test suite. Test doubles live in
   `play/tests/test_doubles/`; contract tests (marked `contract`) live in
   `play/tests/contract/`; integration tests (marked `integration`) live in
