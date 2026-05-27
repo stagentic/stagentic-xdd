@@ -30,7 +30,8 @@ class Critic:
             raise ValueError(f"unaccounted characteristics: {names}")
         failures = [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]
         if failures:
-            raise AssertionError(failures)
+            lines = [f"- {row['characteristic']}: {row['failure']}" for row in failures]
+            raise AssertionError("\n".join(lines))
 
 
 def _strip_code_fence(result):
