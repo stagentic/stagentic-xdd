@@ -15,6 +15,9 @@ _RENDERERS = {
 
 
 class Transcriber:
+    def __call__(self, jsonl_path, output_path):
+        output_path.write_text(self.render(jsonl_path))
+
     def render(self, jsonl_path):
         return "".join(
             map(_format, _blocks(jsonl_path))
