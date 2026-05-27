@@ -4,6 +4,17 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
+## Working approach
+
+1. Propose a test — await explicit approval before writing it.
+2. Write the test and run it.
+3. Understand the failure — propose the minimum change to address only that failure.
+4. Await approval — answering a clarifying question is not approval.
+5. Apply the change and repeat from 2 until green.
+6. On green: run the full suite, then propose a commit.
+7. Commits are proposed only — never applied until the user gives express approval.
+8. Repeat from 1 until the work item is complete.
+
 ## 1. Preserve critic transcript as `critique.md`
 
 When `--.artefacts-dir` is set and `--inspector=critic`, the critic's output
@@ -38,11 +49,6 @@ does not expose or persist it.
 sourced from a real critic run (approval-test style, same pattern as
 `sample-transcript.jsonl` / `sample-transcript.md`). Use these to test
 that `Transcriber` renders the critic JSONL correctly before wiring it up.
-
-### Approach
-
-Use TDAB: propose test → await approval → write test → drive to green one
-minimum change at a time.
 
 The work will likely involve:
 1. Surfacing the critic's raw response so it can be written to `critique.md`.
