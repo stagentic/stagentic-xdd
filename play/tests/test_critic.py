@@ -44,7 +44,10 @@ class TestCritic:
         transcriber_calls = []
 
         session = ClaudeSession(**_using(
-            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "a characteristic", "status": "PASS"}]'),
+            claude=_claude_spy(
+                claude_cli_calls,
+                returns='[{"characteristic": "a characteristic", "status": "PASS"}]'
+            ),
             transcriber=_transcriber_spy(transcriber_calls),
         ))
 
@@ -56,23 +59,9 @@ class TestCritic:
 
         assert str(evidence) in claude_cli_calls[0]["prompt"]
         assert str(working_dir) in claude_cli_calls[0]["prompt"]
+        assert "a characteristic" in claude_cli_calls[0]["prompt"]
         assert claude_cli_calls[0]["workspace"] == working_dir
         assert transcriber_calls[0] == working_dir / "critique.md"
-
-    def test_evaluate_includes_characteristics_in_prompt(self, evidence, tmp_path, _using):
-        claude_cli_calls = []
-
-        session = ClaudeSession(**_using(
-            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "my characteristic", "status": "PASS"}]'),
-        ))
-
-        Critic(session=session).evaluate(
-            evidence=evidence,
-            working_dir=tmp_path,
-            should=[{"characteristic": "my characteristic", "failure": "x"}],
-        )
-
-        assert "my characteristic" in claude_cli_calls[0]["prompt"]
 
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path, _using):
         session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'))
