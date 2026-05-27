@@ -1,4 +1,5 @@
 import json
+import pathlib
 import re
 from collections import namedtuple
 from datetime import datetime
@@ -25,7 +26,7 @@ class Transcriber:
 
 
 def _blocks(jsonl_path):
-    with open(jsonl_path) as file:
+    with pathlib.Path(jsonl_path).open() as file:
         entries = list(map(json.loads, file))
     return (
         block

@@ -17,6 +17,7 @@ class TestAgent:
 
     def test_perform_calls_claude_with_the_task_prompt_workspace_and_session_id(self, workspace):
         calls = []
+
         def spy_claude(prompt, *, workspace, session_id):
             calls.append({"prompt": prompt, "workspace": workspace, "session_id": session_id})
 
@@ -37,6 +38,7 @@ class TestAgent:
     def test_transcriber_receives_jsonl_path_derived_from_cwd_and_sid(self, workspace, tmp_path):
         home = tmp_path / "home"
         received = {}
+
         def spy_transcriber(jsonl_path, output_path):
             received["jsonl_path"] = jsonl_path
 
@@ -60,6 +62,7 @@ class TestAgent:
         working_dir = tmp_path / "my_workspace"
         working_dir.mkdir()
         received = {}
+
         def spy_transcriber(jsonl_path, output_path):
             received["jsonl_path"] = jsonl_path
 
