@@ -22,8 +22,8 @@ class Critic:
         try:
             rows = json.loads(_strip_code_fence(result))
             statuses = {row["characteristic"]: row["status"] for row in rows}
-        except (json.JSONDecodeError, KeyError) as err:
-            raise ValueError(f"unaccounted characteristics: response was not valid JSON: {result!r}") from err
+        except json.JSONDecodeError as err:
+            raise ValueError(f"response was not valid JSON: {result!r}") from err
         unaccounted = [row for row in should if row["characteristic"] not in statuses]
         if unaccounted:
             names = ", ".join(row["characteristic"] for row in unaccounted)

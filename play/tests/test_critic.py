@@ -79,7 +79,7 @@ class TestCritic:
     def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path, _using):
         session = ClaudeSession(**_using(claude=lambda *_, **__: "not valid json."))
 
-        with pytest.raises(ValueError, match="unaccounted") as excinfo:
+        with pytest.raises(ValueError, match="not valid JSON") as excinfo:
             Critic(session=session).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
