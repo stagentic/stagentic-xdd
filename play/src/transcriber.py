@@ -108,7 +108,7 @@ def _format_time(timestamp):
     if not timestamp:
         return "NO TIMESTAMP"
     try:
-        dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        dt = datetime.fromisoformat(timestamp)
         return dt.strftime("%H:%M:%SZ")
     except ValueError:
         return ""
