@@ -1,33 +1,54 @@
 import json
+import re
 from collections import namedtuple
 from datetime import datetime
 
+Block = namedtuple("Block", ["timestamp", "kind", "content", "body"], defaults=[""])
 
-Block = namedtuple("Block", ["timestamp", "kind", "content"])
+_RENDERERS = {
+    "TOOL USE":        lambda ts, kind, c: f"`{ts}` **[{kind}]** {c}\n\n",
+    "TOOL RESULT":     lambda ts, kind, c: f"`{ts}` **[{kind}]**\n\n```\n{c}\n```\n\n" if c else f"`{ts}` **[{kind}]**\n\n",
+    "QUEUE OPERATION": lambda ts, kind, c: f"`{ts}` **[{kind}]** {c}\n\n",
+    "ATTACHMENT":      lambda ts, kind, c: f"`{ts}` **[{kind}]** {c}\n\n",
+    "AI TITLE":        lambda ts, kind, c: f"`{ts}` **[{kind}]** {c}\n\n",
+}
 
 
 class Transcriber:
     def render(self, jsonl_path):
-        return "".join(_format(block) for block in _blocks(jsonl_path))
+        return "".join(
+            map(_format, _blocks(jsonl_path))
+        )
 
 
 def _blocks(jsonl_path):
-    with open(jsonl_path) as f:
-        for line in f:
-            entry = json.loads(line)
-            timestamp = _format_time(entry.get("timestamp", ""))
-            content = entry.get("message", {}).get("content", [])
-            if isinstance(content, list):
-                for item in content:
-                    yield _block_from_item(item, timestamp)
-            else:
-                block = _block_from_entry(entry, timestamp)
-                if block:
-                    yield block
+    with open(jsonl_path) as file:
+        entries = list(map(json.loads, file))
+    return (
+        block
+        for entry in entries
+        for block in _blocks_from(entry)
+    )
+
+
+def _blocks_from(entry):
+    timestamp = _timestamp_for(entry)
+    if "message" not in entry:
+        block = _block_from_entry(entry, timestamp)
+        return [block] if block else []
+    content = entry["message"].get("content", [])
+    if isinstance(content, list):
+        return (_block_from_item(item, timestamp) for item in content)
+    kind = entry.get("type", "").upper().replace("_", " ").replace("-", " ")
+    return [Block(timestamp, kind, _strip_headings(content).strip())] if kind else []
+
+
+def _timestamp_for(entry) -> str:
+    return _format_time(entry.get("timestamp", ""))
 
 
 def _block_from_item(item, timestamp):
-    kind = item.get("type", "").upper().replace("_", " ")
+    kind = item.get("type", "").upper().replace("_", " ").replace("-", " ")
     if item.get("type") == "tool_use":
         name = item.get("name", "")
         key = _tool_key(name, item.get("input", {}))
@@ -36,24 +57,34 @@ def _block_from_item(item, timestamp):
 
 
 def _block_from_entry(entry, timestamp):
-    kind = entry.get("type", "").upper().replace("_", " ")
+    kind = entry.get("type", "").upper().replace("_", " ").replace("-", " ")
     if not kind:
         return None
-    content = entry.get("aiTitle") or entry.get("content") or entry.get("operation") or ""
-    return Block(timestamp, kind, content)
+    attachment = entry.get("attachment", {})
+    added_names = attachment.get("addedNames", [])
+    content = (entry.get("operation")
+               or entry.get("aiTitle")
+               or _strip_headings(entry.get("lastPrompt") or "")
+               or entry.get("content")
+               or attachment.get("type", "").replace("_", " ")
+               or "")
+    if entry.get("operation"):
+        body = _strip_headings(entry.get("content", "")).strip()
+    elif added_names:
+        body = "```\naddedNames:\n" + "\n".join(added_names) + "\n```"
+    else:
+        body = ""
+    return Block(timestamp, kind, content, body)
 
 
 def _format(block):
-    timestamp, kind, content = block
-    if not kind:
-        return ""
-    if kind == "TOOL USE":
-        return f"`{timestamp}` [{kind}] {content}\n\n"
-    if kind == "TOOL RESULT" and content:
-        return f"`{timestamp}` [{kind}]\n\n```\n{content}\n```\n\n"
-    if content:
-        return f"`{timestamp}` [{kind}]\n\n{content}\n\n"
-    return f"`{timestamp}` [{kind}]\n\n"
+    timestamp, kind, content, body = block
+    render = _RENDERERS.get(kind)
+    if render:
+        result = render(timestamp, kind, content)
+    else:
+        result = f"`{timestamp}` **[{kind}]**\n\n{content}\n\n" if content else f"`{timestamp}` **[{kind}]**\n\n"
+    return result + body + "\n\n" if body else result
 
 
 def _tool_key(name, tool_input):
@@ -65,9 +96,13 @@ def _tool_key(name, tool_input):
     return next(iter(tool_input.values()), "") if tool_input else ""
 
 
+def _strip_headings(text):
+    return re.sub(r'^#+ ', '', text, flags=re.MULTILINE)
+
+
 def _format_time(timestamp):
     if not timestamp:
-        return ""
+        return "NO TIMESTAMP"
     try:
         dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
         return dt.strftime("%H:%M:%SZ")
