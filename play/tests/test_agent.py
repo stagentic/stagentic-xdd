@@ -48,9 +48,25 @@ class TestAgent:
         )
         agent.perform(task="my-task", working_dir=workspace.working_dir)
 
-        encoded_cwd = "-" + str(workspace.working_dir).strip("/").replace("/", "-")
+        encoded_cwd = "-" + str(workspace.working_dir).strip("/").replace("/", "-").replace("_", "-")
         expected = home / ".claude" / "projects" / encoded_cwd / f"{agent.sid}.jsonl"
         assert received["jsonl_path"] == expected
+
+    def test_transcriber_receives_jsonl_path_with_underscores_encoded_as_hyphens(self, tmp_path):
+        home = tmp_path / "home"
+        tasks = tmp_path / "tasks"
+        (tasks / "my-task").mkdir(parents=True)
+        (tasks / "my-task" / "TASK.md").write_text("do the thing")
+        working_dir = tmp_path / "my_workspace"
+        working_dir.mkdir()
+        received = {}
+        def spy_transcriber(jsonl_path, output_path):
+            received["jsonl_path"] = jsonl_path
+
+        agent = Agent(tasks=tasks, claude=lambda *_, **__: None, transcriber=spy_transcriber, home=home)
+        agent.perform(task="my-task", working_dir=working_dir)
+
+        assert "-my-workspace" in str(received["jsonl_path"])
 
     def test_transcript_is_in_the_working_dir_after_perform(self, workspace):
         def fake_transcriber(jsonl_path, output_path):
