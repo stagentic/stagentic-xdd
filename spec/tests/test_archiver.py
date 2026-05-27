@@ -29,6 +29,15 @@ class TestArchiver:
 
         assert list(artefacts.iterdir()) == []
 
+    def test_archive_does_nothing_when_tmp_path_is_none(self, tmp_path):
+        artefacts_dir = tmp_path / "artefacts"
+        artefacts_dir.mkdir()
+
+        archive(phase="call", tmp_path=None, test_name="test_foo",
+                artefacts_dir=artefacts_dir, timestamp="20260527-120000")
+
+        assert list(artefacts_dir.iterdir()) == []
+
     def test_archive_does_nothing_when_artefacts_dir_is_not_set(self, tmp_path):
         workspace = tmp_path / "workspace"
         workspace.mkdir()
