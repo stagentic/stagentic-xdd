@@ -19,7 +19,10 @@ class TestCritic:
         transcriber_calls = []
 
         session = ClaudeSession(
-            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "always passes", "status": "PASS"}]'),
+            claude=_claude_spy(
+                claude_cli_calls,
+                returns='[{"characteristic": "always passes", "status": "PASS"}]'
+            ),
             transcriber=_transcriber_spy(transcriber_calls),
             home=tmp_path / "home",
         )
@@ -38,7 +41,10 @@ class TestCritic:
         claude_cli_calls = []
 
         session = ClaudeSession(
-            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "my characteristic", "status": "PASS"}]'),
+            claude=_claude_spy(
+                claude_cli_calls,
+                returns='[{"characteristic": "my characteristic", "status": "PASS"}]',
+            ),
             transcriber=lambda *_: None,
             home=tmp_path / "home",
         )
