@@ -34,6 +34,24 @@ class TestAgent:
 
         assert agent.sid is not None
 
+    def test_transcriber_receives_jsonl_path_derived_from_cwd_and_sid(self, workspace, tmp_path):
+        home = tmp_path / "home"
+        received = {}
+        def spy_transcriber(jsonl_path, output_path):
+            received["jsonl_path"] = jsonl_path
+
+        agent = Agent(
+            tasks=workspace.tasks,
+            claude=lambda *_, **__: None,
+            transcriber=spy_transcriber,
+            home=home,
+        )
+        agent.perform(task="my-task", working_dir=workspace.working_dir)
+
+        encoded_cwd = "-" + str(workspace.working_dir).strip("/").replace("/", "-")
+        expected = home / ".claude" / "projects" / encoded_cwd / f"{agent.sid}.jsonl"
+        assert received["jsonl_path"] == expected
+
     def test_transcript_is_in_the_working_dir_after_perform(self, workspace):
         def fake_transcriber(jsonl_path, output_path):
             output_path.touch()
