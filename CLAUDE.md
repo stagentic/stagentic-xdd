@@ -58,7 +58,7 @@ The bootstrap approach is fixed in
     task completes. See ADR 0007 for the chain pattern.
 - `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
   Framework code — `Agent`, `FakeAgent`, `Transcriber`, `Auditor`, `Critic`,
-  `ClaudeSession`, and `ClaudeCli` — that scenarios reach via pytest fixtures. Has its own
+  `ClaudeSession`, `ClaudeCli`, and `Inspector` — that scenarios reach via pytest fixtures. Has its own
   pyproject.toml and unit-test suite. Test doubles live in
   `play/tests/test_doubles/`; contract tests (marked `contract`) live in
   `play/tests/contract/`; integration tests (marked `integration`) live in
@@ -79,10 +79,9 @@ A scenario in `spec/tests/test_*.py` does three things:
 
 1. Copies the previous task's `scene/` into a tmp workspace.
 2. Calls `agent.perform(task=…, working_dir=…)` via the `agent` pytest
-   fixture (in `spec/conftest.py`). The fixture selects a `FakeAgent`
-   or real `Agent` depending on `--agent`. The real agent path
-   (`--agent=real`) exists locally but is not yet committed — it
-   lands once the scenario passes, which requires the xdd skill.
+   fixture (in `spec/conftest.py`). The fixture currently exposes only
+   `FakeAgent`; `--agent=real` is not yet wired up — it lands once the
+   xdd skill has its first passing scenario.
 3. Calls `inspector.evaluate(evidence=agent.transcript, working_dir=working_dir,
    should=_have(...))` to evaluate a scorecard against the transcript.
    `inspector` is a pytest fixture (in `spec/conftest.py`) supplying an

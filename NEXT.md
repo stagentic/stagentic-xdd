@@ -30,10 +30,10 @@ for each production file, review its tests alongside it.
 ### `play/src/`
 
 - [x] `agent.py` (and `tests/test_agent.py`)
-- [ ] `auditor.py` (and `tests/test_auditor.py`)
+- [x] `auditor.py` (and `tests/test_auditor.py`)
 - [ ] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [ ] `claude_session.py` (and `tests/test_claude_session.py`)
-- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
+- [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
 

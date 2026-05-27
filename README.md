@@ -14,9 +14,9 @@ characteristic without deterministic assertions.
 The harness is designed so both sides grow via fixture configuration —
 without rewriting the test:
 
-- A real `claude -p` agent is in progress locally as `--agent=real`,
-  but the scenario must pass before that work is committed — the xdd
-  skill has not yet been written.
+- `Agent` is implemented but `--agent=real` is not yet wired into the
+  fixtures — the `agent` fixture exposes only `FakeAgent` until the xdd
+  skill has its first passing scenario.
 
 For an illustrative sketch of the eventual fixture-config matrix
 (real-Claude vs stubbed agent × auditor vs critic), see
