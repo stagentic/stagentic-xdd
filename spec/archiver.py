@@ -1,10 +1,10 @@
 import shutil
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 
 def current_timestamp():
-    return datetime.now().strftime("%Y%m%d-%H%M%S")
+    return datetime.now(UTC).strftime("%Y%m%d-%H%M%S")
 
 
 def archive(*, phase, tmp_path, test_name, artefacts_dir, timestamp):
