@@ -5,8 +5,8 @@ Key developer commands for this repo. All commands run from the repo root.
 ## Linting
 
 ```
-uv run --project play ruff check play
-uv run --project spec ruff check spec
+uv run --directory play ruff check .
+uv run --directory spec ruff check .
 ```
 
 ## Tests
@@ -14,25 +14,25 @@ uv run --project spec ruff check spec
 ### `play/` unit tests
 
 ```
-uv run --project play pytest play/tests -m "not contract and not integration"
+uv run --directory play pytest tests -m "not contract and not integration"
 ```
 
 ### `play/` integration tests (require `claude` CLI)
 
 ```
-uv run --project play pytest play/tests -m integration
+uv run --directory play pytest tests -m integration
 ```
 
 ### `play/` contract tests (require `claude` CLI)
 
 ```
-uv run --project play pytest play/tests -m contract
+uv run --directory play pytest tests -m contract
 ```
 
 ### `spec/` scenarios
 
 ```
-uv run --project spec pytest spec/tests
+uv run --directory spec pytest tests
 ```
 
 ### `spec/` scenarios with real agent (require `claude` CLI)
@@ -40,7 +40,7 @@ uv run --project spec pytest spec/tests
 > Not yet available — lands once the scenario passes with the real agent.
 
 ```
-uv run --project spec pytest spec/tests --agent=real
+uv run --directory spec pytest tests --agent=real
 ```
 
 ### `spec/` scenarios with real agent, preserving artefacts (require `claude` CLI)
@@ -48,13 +48,13 @@ uv run --project spec pytest spec/tests --agent=real
 > Not yet available — lands once the scenario passes with the real agent.
 
 ```
-uv run --project spec pytest spec/tests --agent=real --.artefacts-dir spec/.artefacts
+uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts
 ```
 
 ### `spec/` scenarios with critic (require `claude` CLI)
 
 ```
-uv run --project spec pytest spec/tests --inspector=critic
+uv run --directory spec pytest tests --inspector=critic
 ```
 
 ### `spec/` scenarios with real agent and critic (require `claude` CLI)
@@ -62,5 +62,5 @@ uv run --project spec pytest spec/tests --inspector=critic
 > Not yet available — lands once the scenario passes with the real agent.
 
 ```
-uv run --project spec pytest spec/tests --agent=real --inspector=critic
+uv run --directory spec pytest tests --agent=real --inspector=critic
 ```
