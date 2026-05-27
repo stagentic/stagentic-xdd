@@ -14,7 +14,7 @@ class ClaudeCli:
 
 
 def _submit_to(subprocess, prompt, workspace, session_id):
-    return subprocess(_command(prompt, workspace, session_id), capture_output=True, text=True)
+    return subprocess(_command(prompt, workspace, session_id), cwd=workspace, capture_output=True, text=True)
 
 
 def _is_not_success_exit_code(result) -> bool:
