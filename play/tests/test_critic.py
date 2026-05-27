@@ -1,229 +1,174 @@
 import json
+from pathlib import Path
 
 import pytest
-from test_doubles.stubbed_claude_cli import StubbedClaudeCli
 
+from claude_session import ClaudeSession
 from critic import Critic
 
 
 class TestCritic:
-    def test_evaluate_raises_ValueError_when_no_claude_provided(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
+    def test_evaluate_builds_prompt_and_delegates_to_session(self, tmp_path):
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+        working_dir = tmp_path / "workspace"
+        calls = []
+        transcribed = []
 
-        with pytest.raises(ValueError):
-            Critic().evaluate(
-                evidence=dummy_transcript,
-                working_dir=tmp_path,
-                should=[
-                    {"characteristic": "my characteristic",
-                     "failure": "my failure message"},
-                ],
-            )
+        def capture(prompt, **kwargs):
+            calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
+            return '[{"characteristic": "always passes", "status": "PASS"}]'
+
+        def capture_transcriber(jsonl_path, output_path):
+            transcribed.append(output_path)
+
+        session = ClaudeSession(claude=capture, transcriber=capture_transcriber, home=tmp_path / "home")
+        Critic(session=session).evaluate(
+            evidence=evidence,
+            working_dir=working_dir,
+            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+        )
+
+        assert str(evidence) in calls[0]["prompt"]
+        assert str(working_dir) in calls[0]["prompt"]
+        assert calls[0]["workspace"] == working_dir
+        assert transcribed[0] == working_dir / "critique.md"
+
+    def test_evaluate_includes_characteristics_in_prompt(self, tmp_path):
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+        calls = []
+
+        def capture(prompt, **kwargs):
+            calls.append(prompt)
+            return '[{"characteristic": "my characteristic", "status": "PASS"}]'
+
+        session = ClaudeSession(claude=capture, transcriber=lambda *_: None, home=tmp_path / "home")
+        Critic(session=session).evaluate(
+            evidence=evidence,
+            working_dir=tmp_path,
+            should=[{"characteristic": "my characteristic", "failure": "x"}],
+        )
+
+        assert "my characteristic" in calls[0]
 
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+
+        def always_fail(prompt, **kwargs):
+            return '[{"characteristic": "my characteristic", "status": "FAIL"}]'
+
+        session = ClaudeSession(claude=always_fail, transcriber=lambda *_: None, home=tmp_path / "home")
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=StubbedClaudeCli(
-                '[{"characteristic": "my characteristic", "status": "FAIL"}]'
-            )).evaluate(
-                evidence=dummy_transcript,
+            Critic(session=session).evaluate(
+                evidence=evidence,
                 working_dir=tmp_path,
-                should=[
-                    {"characteristic": "my characteristic",
-                     "failure": "my failure message"},
-                ],
+                should=[{"characteristic": "my characteristic", "failure": "my failure message"}],
             )
 
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_evaluate_returns_none_when_all_characteristics_pass(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-
-        Critic(claude=StubbedClaudeCli(
-            '[{"characteristic": "always passes", "status": "PASS"}]'
-        )).evaluate(
-            evidence=dummy_transcript,
-            working_dir=tmp_path,
-            should=[
-                {"characteristic": "always passes",
-                 "failure": "should never see this"},
-            ],
-        )
-
-    def test_evaluate_passes_evidence_and_working_dir_to_claude(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-        working_dir = tmp_path / "workspace"
-
-        received = []
-
-        def capture(prompt, **kwargs):
-            received.append(prompt)
-            return '[{"characteristic": "some characteristic", "status": "PASS"}]'
-
-        Critic(claude=capture).evaluate(
-            evidence=dummy_transcript,
-            working_dir=working_dir,
-            should=[
-                {"characteristic": "some characteristic",
-                 "failure": "some failure"},
-            ],
-        )
-
-        assert str(dummy_transcript) in received[0]
-        assert str(working_dir) in received[0]
-
-    def test_evaluate_passes_working_dir_as_workspace_to_claude(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-        working_dir = tmp_path / "workspace"
-
-        received_kwargs = []
-
-        def capture(prompt, **kwargs):
-            received_kwargs.append(kwargs)
-            return '[{"characteristic": "some characteristic", "status": "PASS"}]'
-
-        Critic(claude=capture).evaluate(
-            evidence=dummy_transcript,
-            working_dir=working_dir,
-            should=[{"characteristic": "some characteristic", "failure": "some failure"}],
-        )
-
-        assert received_kwargs[0].get("workspace") == working_dir
-
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-
-        Critic(claude=StubbedClaudeCli(
-            '```json\n[{"characteristic": "always passes", "status": "PASS"}]\n```\n'
-        )).evaluate(
-            evidence=dummy_transcript,
-            working_dir=tmp_path,
-            should=[{"characteristic": "always passes", "failure": "should never see this"}],
-        )
-
     def test_evaluate_raises_ValueError_when_response_is_not_valid_json(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+
+        session = ClaudeSession(
+            claude=lambda *_, **__: "I cannot access those files.",
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
 
         with pytest.raises(ValueError, match="unaccounted"):
-            Critic(claude=StubbedClaudeCli("I cannot access those files.")).evaluate(
-                evidence=dummy_transcript,
+            Critic(session=session).evaluate(
+                evidence=evidence,
                 working_dir=tmp_path,
-                should=[
-                    {"characteristic": "my characteristic", "failure": "my failure"},
-                ],
+                should=[{"characteristic": "my characteristic", "failure": "my failure"}],
             )
 
-    def test_evaluate_chains_underlying_parse_error_as_cause(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, tmp_path):
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
 
-        with pytest.raises(ValueError) as excinfo:
-            Critic(claude=StubbedClaudeCli("I cannot access those files.")).evaluate(
-                evidence=dummy_transcript,
-                working_dir=tmp_path,
-                should=[
-                    {"characteristic": "my characteristic", "failure": "my failure"},
-                ],
-            )
-        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
-
-    def test_evaluate_passes_jsonl_path_to_transcriber(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-        home = tmp_path / "home"
-        working_dir = tmp_path / "workspace"
-        received_jsonl = []
-
-        def capture_transcriber(jsonl_path, output_path):
-            received_jsonl.append(jsonl_path)
-
-        Critic(
-            claude=StubbedClaudeCli('[{"characteristic": "always passes", "status": "PASS"}]'),
-            transcriber=capture_transcriber,
-            home=home,
-        ).evaluate(
-            evidence=dummy_transcript,
-            working_dir=working_dir,
-            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+        session = ClaudeSession(
+            claude=lambda *_, **__: '```json\n[{"characteristic": "always passes", "status": "PASS"}]\n```\n',
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
         )
 
-        encoded_cwd = "-" + str(working_dir).strip("/").replace("/", "-").replace("_", "-")
-        assert received_jsonl[0].parent == home / ".claude" / "projects" / encoded_cwd
-        assert received_jsonl[0].suffix == ".jsonl"
-
-    def test_evaluate_uses_transcriber_to_write_critique_md(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-        written_to = []
-
-        def capture_transcriber(jsonl_path, output_path):
-            written_to.append(output_path)
-
-        Critic(
-            claude=StubbedClaudeCli('[{"characteristic": "always passes", "status": "PASS"}]'),
-            transcriber=capture_transcriber,
-        ).evaluate(
-            evidence=dummy_transcript,
+        Critic(session=session).evaluate(
+            evidence=evidence,
             working_dir=tmp_path,
             should=[{"characteristic": "always passes", "failure": "should never see this"}],
         )
-
-        assert written_to == [tmp_path / "critique.md"]
-
-    def test_evaluate_passes_session_id_to_claude(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
-        received_kwargs = []
-
-        def capture(prompt, **kwargs):
-            received_kwargs.append(kwargs)
-            return '[{"characteristic": "always passes", "status": "PASS"}]'
-
-        Critic(claude=capture).evaluate(
-            evidence=dummy_transcript,
-            working_dir=tmp_path,
-            should=[{"characteristic": "always passes", "failure": "should never see this"}],
-        )
-
-        assert "session_id" in received_kwargs[0]
 
     def test_failure_message_lists_every_failed_row(self, tmp_path):
-        dummy_transcript = tmp_path / "transcript.md"
-        dummy_transcript.write_text("anything")
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+
+        session = ClaudeSession(
+            claude=lambda *_, **__: (
+                '[{"characteristic": "first", "status": "FAIL"},'
+                ' {"characteristic": "middle", "status": "PASS"},'
+                ' {"characteristic": "third", "status": "FAIL"}]'
+            ),
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(claude=StubbedClaudeCli(
-                '[{"characteristic": "first characteristic", "status": "FAIL"},'
-                ' {"characteristic": "middle characteristic", "status": "PASS"},'
-                ' {"characteristic": "third characteristic", "status": "FAIL"}]'
-            )).evaluate(
-                evidence=dummy_transcript,
+            Critic(session=session).evaluate(
+                evidence=evidence,
                 working_dir=tmp_path,
                 should=[
-                    {"characteristic": "first characteristic",
-                     "failure": "first failure"},
-                    {"characteristic": "middle characteristic",
-                     "failure": "middle failure"},
-                    {"characteristic": "third characteristic",
-                     "failure": "third failure"},
+                    {"characteristic": "first", "failure": "first failure"},
+                    {"characteristic": "middle", "failure": "middle failure"},
+                    {"characteristic": "third", "failure": "third failure"},
                 ],
             )
 
         message = str(excinfo.value)
-        assert "first characteristic" in message
-        assert "first failure" in message
+        assert "first" in message and "first failure" in message
+        assert "middle" not in message and "middle failure" not in message
+        assert "third" in message and "third failure" in message
 
-        assert "middle characteristic" not in message
-        assert "middle failure" not in message
+    def test_evaluate_chains_underlying_parse_error_as_cause(self, tmp_path):
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
 
-        assert "third characteristic" in message
-        assert "third failure" in message
+        session = ClaudeSession(
+            claude=lambda *_, **__: "not json",
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
+
+        with pytest.raises(ValueError) as excinfo:
+            Critic(session=session).evaluate(
+                evidence=evidence,
+                working_dir=tmp_path,
+                should=[{"characteristic": "x", "failure": "y"}],
+            )
+
+        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
+
+    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, tmp_path):
+        evidence = tmp_path / "transcript.md"
+        evidence.write_text("anything")
+
+        session = ClaudeSession(
+            claude=lambda *_, **__: '[{"characteristic": "only this one", "status": "PASS"}]',
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
+
+        with pytest.raises(ValueError, match="unaccounted"):
+            Critic(session=session).evaluate(
+                evidence=evidence,
+                working_dir=tmp_path,
+                should=[
+                    {"characteristic": "only this one", "failure": "x"},
+                    {"characteristic": "missing from response", "failure": "y"},
+                ],
+            )

@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from auditor import Auditor
 from claude_cli import ClaudeCli
+from claude_session import ClaudeSession
 from critic import Critic
 from fake_agent import FakeAgent
 from transcriber import Transcriber
@@ -35,7 +36,7 @@ def inspector(request):
         case "auditor":
             return Auditor()
         case "critic":
-            return Critic(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())
+            return Critic(session=ClaudeSession(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home()))
 
 
 @pytest.fixture

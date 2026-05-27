@@ -1,7 +1,11 @@
+from pathlib import Path
+
 import pytest
 
 from claude_cli import ClaudeCli
+from claude_session import ClaudeSession
 from critic import Critic
+from transcriber import Transcriber
 
 _TRANSCRIPT_PYTEST_RAN_AND_PASSED = """\
 [TOOL] **Bash** `uv run pytest tests/`
@@ -21,7 +25,7 @@ def test_critic_passes_when_all_characteristics_are_met(tmp_path):
     transcript = tmp_path / "transcript.md"
     transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
 
-    Critic(claude=ClaudeCli()).evaluate(
+    Critic(session=ClaudeSession(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())).evaluate(
         evidence=transcript,
         working_dir=tmp_path,
         should=[
@@ -39,7 +43,7 @@ def test_critic_raises_when_characteristics_are_not_met(tmp_path):
     transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
     with pytest.raises(AssertionError) as excinfo:
-        Critic(claude=ClaudeCli()).evaluate(
+        Critic(session=ClaudeSession(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())).evaluate(
             evidence=transcript,
             working_dir=tmp_path,
             should=[
