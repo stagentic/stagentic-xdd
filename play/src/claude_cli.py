@@ -8,16 +8,21 @@ class ClaudeCli:
 
     def __call__(self, prompt, *, workspace=None, session_id=None):
         result = _submit_to(self._subprocess, prompt, workspace, session_id)
-        if _is_not_success_exit_code(result):
+        if _is_not_successful(result):
             raise RuntimeError(result.stderr)
         return result.stdout
 
 
 def _submit_to(subprocess, prompt, workspace, session_id):
-    return subprocess(_command(prompt, workspace, session_id), cwd=workspace, capture_output=True, text=True)
+    return subprocess(
+        _command(prompt, workspace, session_id),
+        cwd=workspace,
+        capture_output=True,
+        text=True
+    )
 
 
-def _is_not_success_exit_code(result) -> bool:
+def _is_not_successful(result) -> bool:
     return result.returncode != 0
 
 
