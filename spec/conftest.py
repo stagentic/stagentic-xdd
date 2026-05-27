@@ -3,9 +3,10 @@ from pathlib import Path
 import pytest
 from archiver import archive, current_timestamp
 from auditor import Auditor
-from critic import Critic
 from claude_cli import ClaudeCli
+from critic import Critic
 from fake_agent import FakeAgent
+from transcriber import Transcriber
 
 TASKS = Path(__file__).parent / "tasks"
 
@@ -33,7 +34,7 @@ def inspector(request):
         case "auditor":
             return Auditor()
         case "critic":
-            return Critic(claude=ClaudeCli())
+            return Critic(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())
 
 
 @pytest.fixture
