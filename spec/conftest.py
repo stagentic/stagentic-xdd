@@ -6,15 +6,12 @@ from auditor import Auditor
 from critic import Critic
 from claude_cli import ClaudeCli
 from fake_agent import FakeAgent
-from agent import Agent
-from transcriber import Transcriber
 
 TASKS = Path(__file__).parent / "tasks"
 
 
 def pytest_addoption(parser):
     parser.addoption("--inspector", default="auditor", choices=["auditor", "critic"])
-    parser.addoption("--agent", default="fake", choices=["fake", "real"])
     parser.addoption("--.artefacts-dir", default=None)
 
 
@@ -40,9 +37,5 @@ def inspector(request):
 
 
 @pytest.fixture
-def agent(request):
-    match request.config.getoption("--agent"):
-        case "fake":
-            return FakeAgent(tasks=TASKS)
-        case "real":
-            return Agent(tasks=TASKS, claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())
+def agent():
+    return FakeAgent(tasks=TASKS)

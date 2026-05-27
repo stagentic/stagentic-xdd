@@ -37,7 +37,7 @@ uv run --project spec pytest spec/tests
 
 ### `spec/` scenarios with real agent (require `claude` CLI)
 
-> Not yet committed — these commands exist locally but land once the scenario passes with the real agent.
+> Not yet available — lands once the scenario passes with the real agent.
 
 ```
 uv run --project spec pytest spec/tests --agent=real
@@ -45,7 +45,7 @@ uv run --project spec pytest spec/tests --agent=real
 
 ### `spec/` scenarios with real agent, preserving artefacts (require `claude` CLI)
 
-> Not yet committed — these commands exist locally but land once the scenario passes with the real agent.
+> Not yet available — lands once the scenario passes with the real agent.
 
 ```
 uv run --project spec pytest spec/tests --agent=real --.artefacts-dir spec/.artefacts
@@ -59,7 +59,7 @@ uv run --project spec pytest spec/tests --inspector=critic
 
 ### `spec/` scenarios with real agent and critic (require `claude` CLI)
 
-> Not yet committed — these commands exist locally but land once the scenario passes with the real agent.
+> Not yet available — lands once the scenario passes with the real agent.
 
 ```
 uv run --project spec pytest spec/tests --agent=real --inspector=critic
