@@ -33,4 +33,4 @@ extend-select = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["../play/src"]
+pythonpath = ["../play/src", "."]
