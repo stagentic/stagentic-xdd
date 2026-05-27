@@ -15,7 +15,7 @@ TASKS = Path(__file__).parent / "tasks"
 def pytest_addoption(parser):
     parser.addoption("--inspector", default="auditor", choices=["auditor", "critic"])
     parser.addoption("--agent", default="fake", choices=["fake", "real"])
-    parser.addoption("--artefacts-dir", default=None)
+    parser.addoption("--.artefacts-dir", default=None)
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -25,7 +25,7 @@ def pytest_runtest_makereport(item, call):
         phase=call.when,
         tmp_path=item.funcargs.get("tmp_path"),
         test_name=item.name,
-        artefacts_dir=item.config.getoption("--artefacts-dir"),
+        artefacts_dir=item.config.getoption("--.artefacts-dir"),
         timestamp=current_timestamp(),
     )
 

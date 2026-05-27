@@ -35,8 +35,26 @@ uv run --project play pytest play/tests -m contract
 uv run --project spec pytest spec/tests
 ```
 
+### `spec/` scenarios with real agent (require `claude` CLI)
+
+```
+uv run --project spec pytest spec/tests --agent=real
+```
+
+### `spec/` scenarios with real agent, preserving artefacts (require `claude` CLI)
+
+```
+uv run --project spec pytest spec/tests --agent=real --.artefacts-dir spec/.artefacts
+```
+
 ### `spec/` scenarios with critic (require `claude` CLI)
 
 ```
 uv run --project spec pytest spec/tests --inspector=critic
+```
+
+### `spec/` scenarios with real agent and critic (require `claude` CLI)
+
+```
+uv run --project spec pytest spec/tests --agent=real --inspector=critic
 ```

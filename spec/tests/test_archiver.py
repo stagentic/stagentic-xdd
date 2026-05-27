@@ -11,7 +11,7 @@ class TestArchiver:
         workspace = tmp_path / "workspace"
         workspace.mkdir()
         (workspace / "transcript.md").write_text("some content")
-        artefacts_dir = tmp_path / "artefacts"
+        artefacts_dir = tmp_path / ".artefacts"
         artefacts_dir.mkdir()
 
         archive(phase="call", tmp_path=workspace, test_name="test_foo", artefacts_dir=str(artefacts_dir), timestamp="20260527-101638")
@@ -22,7 +22,7 @@ class TestArchiver:
     def test_archive_does_nothing_outside_call_phase(self, tmp_path):
         workspace = tmp_path / "workspace"
         workspace.mkdir()
-        artefacts = tmp_path / "artefacts"
+        artefacts = tmp_path / ".artefacts"
         artefacts.mkdir()
 
         archive(phase="setup", tmp_path=workspace, test_name="test_foo", artefacts_dir=str(artefacts), timestamp="20260527-101638")
@@ -32,7 +32,7 @@ class TestArchiver:
     def test_archive_does_nothing_when_artefacts_dir_is_not_set(self, tmp_path):
         workspace = tmp_path / "workspace"
         workspace.mkdir()
-        artefacts = tmp_path / "artefacts"
+        artefacts = tmp_path / ".artefacts"
         artefacts.mkdir()
 
         archive(phase="call", tmp_path=workspace, test_name="test_foo", artefacts_dir=None, timestamp="20260527-101638")
