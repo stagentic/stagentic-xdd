@@ -64,7 +64,10 @@ class TestCritic:
         assert transcriber_calls[0] == working_dir / "critique.md"
 
     def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'))
+        markdown = '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
+        session = ClaudeSession(
+            **_using(claude=lambda *_, **__: markdown)
+        )
 
         Critic(session=session).evaluate(
             evidence=evidence,
@@ -73,7 +76,9 @@ class TestCritic:
         )
 
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'))
+        session = ClaudeSession(**_using(
+            claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'
+        ))
 
         with pytest.raises(AssertionError) as excinfo:
             Critic(session=session).evaluate(
@@ -121,7 +126,9 @@ class TestCritic:
         assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
     def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]'))
+        session = ClaudeSession(**_using(
+            claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]'
+        ))
 
         with pytest.raises(ValueError, match="unaccounted"):
             Critic(session=session).evaluate(
