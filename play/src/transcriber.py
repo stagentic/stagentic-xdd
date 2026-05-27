@@ -24,32 +24,20 @@ class Transcriber:
 
 
 def _render_item(item, timestamp):
-    kind = item.get("type")
-    if kind == "text":
-        return f"`{timestamp}`\n\n{item['text']}\n\n"
-    if kind == "thinking":
-        return f"`{timestamp}` [THINKING]\n\n"
-    if kind == "tool_use":
+    kind = item.get("type", "").upper().replace("_", " ")
+    if item.get("type") == "tool_use":
         name = item.get("name", "")
         key = _tool_key(name, item.get("input", {}))
-        return f"`{timestamp}` [TOOL] **{name}** `{key}`\n\n"
-    if kind == "tool_result":
-        result_content = item.get("content", "")
-        if result_content:
-            return f"```\n{result_content}\n```\n\n"
-    return ""
-
-
-def _render_entry(entry, timestamp):
-    kind = entry.get("type")
-    if kind == "ai-title":
-        return f"`{timestamp}` [TITLE] {entry.get('aiTitle', '')}\n\n"
-    if kind == "queue-operation":
-        op = entry.get("operation", "")
-        return f"`{timestamp}` [QUEUE] {op}\n\n"
-    if kind == "last-prompt":
-        return f"`{timestamp}` [LAST-PROMPT]\n\n"
-    return ""
+        return f"`{timestamp}` [{kind}] {name} `{key}`\n\n"
+    if item.get("type") == "tool_result":
+        content = item.get("content") or ""
+        if content:
+            return f"`{timestamp}` [{kind}]\n\n```\n{content}\n```\n\n"
+        return f"`{timestamp}` [{kind}]\n\n"
+    content = item.get("text") or item.get("content") or ""
+    if content:
+        return f"`{timestamp}` [{kind}]\n\n{content}\n\n"
+    return f"`{timestamp}` [{kind}]\n\n"
 
 
 def _tool_key(name, tool_input):
@@ -58,7 +46,15 @@ def _tool_key(name, tool_input):
     field = key_fields.get(name)
     if field:
         return tool_input.get(field, "")
-    return str(tool_input)
+    return next(iter(tool_input.values()), "") if tool_input else ""
+
+
+def _render_entry(entry, timestamp):
+    kind = entry.get("type", "").upper().replace("_", " ")
+    content = entry.get("aiTitle") or entry.get("content") or entry.get("operation") or ""
+    if content:
+        return f"`{timestamp}` [{kind}] {content}\n\n"
+    return f"`{timestamp}` [{kind}]\n\n" if kind else ""
 
 
 def _format_time(timestamp):
