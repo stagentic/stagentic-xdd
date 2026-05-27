@@ -40,6 +40,13 @@ subdirectory name should follow the convention used in
 `experiments/agentic-screenplay-spike/.artefacts/` (e.g.
 `20260527-143012-<scenario-slug>/`).
 
+**Naming convention** when artefacts are preserved:
+- Folder: `<timestamp>-<test_function_name>/` (e.g. `20260527-060502-test_write_a_failing_test/`)
+- File: `<task-name>-<sid-prefix-8>.md` (e.g. `1-first-test-for-miles-to-km-converter-cabd5050.md`)
+- Critic transcript (future): same folder, distinguished by suffix (e.g. `-critic-<sid>.md`)
+
+For now, `transcript.md` in `tmp_path` is sufficient. The naming convention and folder structure land with `--artefacts-dir`.
+
 Two implementation options:
 
 **Option A: `archiver` fixture**
