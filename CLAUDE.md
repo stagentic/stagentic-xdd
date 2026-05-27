@@ -57,11 +57,12 @@ The bootstrap approach is fixed in
     `scene/` directory holds the canned workspace state after the
     task completes. See ADR 0007 for the chain pattern.
 - `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
-  Framework code — `Auditor`, `Critic`, and `ClaudeCli` — that scenarios
-  reach via the `inspector` pytest fixture. Has its own pyproject.toml
-  and unit-test suite. Test doubles live in `play/tests/test_doubles/`;
-  contract tests (marked `contract`) live in `play/tests/contract/`;
-  integration tests (marked `integration`) live in `play/tests/integration/`.
+  Framework code — `Agent`, `FakeAgent`, `Transcriber`, `Auditor`, `Critic`,
+  and `ClaudeCli` — that scenarios reach via pytest fixtures. Has its own
+  pyproject.toml and unit-test suite. Test doubles live in
+  `play/tests/test_doubles/`; contract tests (marked `contract`) live in
+  `play/tests/contract/`; integration tests (marked `integration`) live in
+  `play/tests/integration/`.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
@@ -77,11 +78,13 @@ The bootstrap approach is fixed in
 A scenario in `spec/tests/test_*.py` does three things:
 
 1. Copies the previous task's `scene/` into a tmp workspace.
-2. Calls `_fake_agent_performs(task=…, workspace=…)`, which copies
-   the target task's `scene/` over the workspace and returns the
-   transcript path.
-3. Calls `inspector.evaluate(evidence=transcript, working_dir=working_dir,
-   scorecard=_have(...))` to evaluate a scorecard against the transcript.
+2. Calls `agent.perform(task=…, working_dir=…)` via the `agent` pytest
+   fixture (in `spec/conftest.py`). The fixture selects a `FakeAgent`
+   or real `Agent` depending on `--agent`. The real agent path
+   (`--agent=real`) exists locally but is not yet committed — it
+   lands once the scenario passes, which requires the xdd skill.
+3. Calls `inspector.evaluate(evidence=agent.transcript, working_dir=working_dir,
+   should=_have(...))` to evaluate a scorecard against the transcript.
    `inspector` is a pytest fixture (in `spec/conftest.py`) supplying an
    inspector from `play/`. Auditor scorecard rows carry
    `{characteristic, verify, failure}`; `verify` is Auditor-specific.

@@ -14,16 +14,15 @@ characteristic without deterministic assertions.
 The harness is designed so both sides grow via fixture configuration —
 without rewriting the test:
 
-- A real agent wrapping `claude -p` running the xdd skill will join
-  the fake agent as a selectable option.
+- A real `claude -p` agent is in progress locally as `--agent=real`,
+  but the scenario must pass before that work is committed — the xdd
+  skill has not yet been written.
 
 For an illustrative sketch of the eventual fixture-config matrix
 (real-Claude vs stubbed agent × auditor vs critic), see
 [`experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py`](experiments/agentic-screenplay-spike/screenplay/tests/test_scenarios.py)
 — a prototype shape, not a target architecture.
 
-The immediate next step is to add a real `claude -p` agent as a
-selectable option alongside the fake agent.
 See [`NEXT.md`](NEXT.md) for the current focus and
 [`docs/architecture/decisions/`](docs/architecture/decisions/) for the
 architectural direction.
