@@ -35,6 +35,12 @@ uv run --directory play pytest tests -m contract
 uv run --directory spec pytest tests
 ```
 
+### `spec/` scenarios with critic, preserving artefacts (require `claude` CLI)
+
+```
+uv run --directory spec pytest tests --inspector=critic --.artefacts-dir .artefacts
+```
+
 ### `spec/` scenarios with real agent (require `claude` CLI)
 
 > Not yet available — lands once the scenario passes with the real agent.
