@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 
 import pytest
 
@@ -12,54 +11,52 @@ class TestCritic:
         evidence = tmp_path / "transcript.md"
         evidence.write_text("anything")
         working_dir = tmp_path / "workspace"
-        calls = []
-        transcribed = []
+        claude_cli_calls = []
+        transcriber_calls = []
 
-        def capture(prompt, **kwargs):
-            calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
-            return '[{"characteristic": "always passes", "status": "PASS"}]'
-
-        def capture_transcriber(jsonl_path, output_path):
-            transcribed.append(output_path)
-
-        session = ClaudeSession(claude=capture, transcriber=capture_transcriber, home=tmp_path / "home")
+        session = ClaudeSession(
+            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "always passes", "status": "PASS"}]'),
+            transcriber=_transcriber_spy(transcriber_calls),
+            home=tmp_path / "home",
+        )
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=working_dir,
             should=[{"characteristic": "always passes", "failure": "should never see this"}],
         )
 
-        assert str(evidence) in calls[0]["prompt"]
-        assert str(working_dir) in calls[0]["prompt"]
-        assert calls[0]["workspace"] == working_dir
-        assert transcribed[0] == working_dir / "critique.md"
+        assert str(evidence) in claude_cli_calls[0]["prompt"]
+        assert str(working_dir) in claude_cli_calls[0]["prompt"]
+        assert claude_cli_calls[0]["workspace"] == working_dir
+        assert transcriber_calls[0] == working_dir / "critique.md"
 
     def test_evaluate_includes_characteristics_in_prompt(self, tmp_path):
         evidence = tmp_path / "transcript.md"
         evidence.write_text("anything")
-        calls = []
+        claude_cli_calls = []
 
-        def capture(prompt, **kwargs):
-            calls.append(prompt)
-            return '[{"characteristic": "my characteristic", "status": "PASS"}]'
-
-        session = ClaudeSession(claude=capture, transcriber=lambda *_: None, home=tmp_path / "home")
+        session = ClaudeSession(
+            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "my characteristic", "status": "PASS"}]'),
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
             should=[{"characteristic": "my characteristic", "failure": "x"}],
         )
 
-        assert "my characteristic" in calls[0]
+        assert "my characteristic" in claude_cli_calls[0]["prompt"]
 
     def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, tmp_path):
         evidence = tmp_path / "transcript.md"
         evidence.write_text("anything")
 
-        def always_fail(prompt, **kwargs):
-            return '[{"characteristic": "my characteristic", "status": "FAIL"}]'
-
-        session = ClaudeSession(claude=always_fail, transcriber=lambda *_: None, home=tmp_path / "home")
+        session = ClaudeSession(
+            claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]',
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
 
         with pytest.raises(AssertionError) as excinfo:
             Critic(session=session).evaluate(
@@ -172,3 +169,16 @@ class TestCritic:
                     {"characteristic": "missing from response", "failure": "y"},
                 ],
             )
+
+
+def _claude_spy(calls, *, returns):
+    def spy(prompt, **kwargs):
+        calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
+        return returns
+    return spy
+
+
+def _transcriber_spy(transcribed):
+    def spy(_jsonl_path, output_path):
+        transcribed.append(output_path)
+    return spy

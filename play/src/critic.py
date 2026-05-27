@@ -1,14 +1,6 @@
 import json
 
 
-def _strip_code_fence(result):
-    stripped = result.strip()
-    if stripped.startswith("```"):
-        stripped = stripped.split("\n", 1)[1]
-        stripped = stripped.rsplit("```", 1)[0]
-    return stripped
-
-
 class Critic:
     def __init__(self, *, session):
         self._session = session
@@ -22,7 +14,11 @@ class Critic:
             f"Respond with a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
             f"Characteristics:\n{characteristics}"
         )
-        result = self._session.run(prompt=prompt, working_dir=working_dir, transcript_path=working_dir / "critique.md")
+        result = self._session.run(
+            prompt=prompt,
+            working_dir=working_dir,
+            transcript_path=working_dir / "critique.md"
+        )
         try:
             rows = json.loads(_strip_code_fence(result))
             statuses = {row["characteristic"]: row["status"] for row in rows}
@@ -35,3 +31,11 @@ class Critic:
         failures = [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]
         if failures:
             raise AssertionError(failures)
+
+
+def _strip_code_fence(result):
+    stripped = result.strip()
+    if stripped.startswith("```"):
+        stripped = stripped.split("\n", 1)[1]
+        stripped = stripped.rsplit("```", 1)[0]
+    return stripped

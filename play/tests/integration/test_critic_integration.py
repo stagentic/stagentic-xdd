@@ -25,7 +25,12 @@ def test_critic_passes_when_all_characteristics_are_met(tmp_path):
     transcript = tmp_path / "transcript.md"
     transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
 
-    Critic(session=ClaudeSession(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())).evaluate(
+    session = ClaudeSession(
+        claude=ClaudeCli(),
+        transcriber=Transcriber(),
+        home=Path.home(),
+    )
+    Critic(session=session).evaluate(
         evidence=transcript,
         working_dir=tmp_path,
         should=[
@@ -42,8 +47,14 @@ def test_critic_raises_when_characteristics_are_not_met(tmp_path):
     transcript = tmp_path / "transcript.md"
     transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
+    session = ClaudeSession(
+        claude=ClaudeCli(),
+        transcriber=Transcriber(),
+        home=Path.home(),
+    )
+
     with pytest.raises(AssertionError) as excinfo:
-        Critic(session=ClaudeSession(claude=ClaudeCli(), transcriber=Transcriber(), home=Path.home())).evaluate(
+        Critic(session=session).evaluate(
             evidence=transcript,
             working_dir=tmp_path,
             should=[
