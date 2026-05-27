@@ -1,4 +1,5 @@
 import json
+import uuid
 
 
 class Critic:
@@ -8,7 +9,8 @@ class Critic:
     def evaluate(self, *, evidence, working_dir=None, should):
         _require_claude(self._claude)
         prompt = _build_prompt(evidence, working_dir, should)
-        result = self._claude(prompt, workspace=working_dir)
+        sid = str(uuid.uuid4())
+        result = self._claude(prompt, workspace=working_dir, session_id=sid)
         failures = _failures_from(result, should)
         if failures:
             raise AssertionError(failures)

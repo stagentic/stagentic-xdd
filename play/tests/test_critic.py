@@ -120,6 +120,23 @@ class TestCritic:
                 ],
             )
 
+    def test_evaluate_passes_session_id_to_claude(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+        received_kwargs = []
+
+        def capture(prompt, **kwargs):
+            received_kwargs.append(kwargs)
+            return '[{"characteristic": "always passes", "status": "PASS"}]'
+
+        Critic(claude=capture).evaluate(
+            evidence=dummy_transcript,
+            working_dir=tmp_path,
+            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+        )
+
+        assert "session_id" in received_kwargs[0]
+
     def test_failure_message_lists_every_failed_row(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")

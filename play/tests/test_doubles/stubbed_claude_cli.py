@@ -2,5 +2,5 @@ class StubbedClaudeCli:
     def __init__(self, response):
         self._response = response
 
-    def __call__(self, prompt, *, workspace=None):
+    def __call__(self, prompt, *, workspace=None, session_id=None):
         return self._response
