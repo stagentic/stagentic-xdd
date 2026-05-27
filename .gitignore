@@ -8,6 +8,9 @@
 # macOS
 .DS_Store
 
+# Spec artefacts
+**/.artefacts
+
 # Python
 **/venv*
 **/.pytest_cache
