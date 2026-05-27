@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from test_doubles.stubbed_claude_cli import StubbedClaudeCli
 
@@ -119,6 +121,20 @@ class TestCritic:
                     {"characteristic": "my characteristic", "failure": "my failure"},
                 ],
             )
+
+    def test_evaluate_chains_underlying_parse_error_as_cause(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+
+        with pytest.raises(ValueError) as excinfo:
+            Critic(claude=StubbedClaudeCli("I cannot access those files.")).evaluate(
+                evidence=dummy_transcript,
+                working_dir=tmp_path,
+                should=[
+                    {"characteristic": "my characteristic", "failure": "my failure"},
+                ],
+            )
+        assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
     def test_evaluate_passes_jsonl_path_to_transcriber(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
