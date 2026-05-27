@@ -29,6 +29,18 @@ class TestClaudeCli:
 
         assert "evaluate this transcript" in received[0]
 
+    def test_includes_session_id_in_command_when_provided(self):
+        received = []
+
+        def capture(cmd, **kwargs):
+            received.append(cmd)
+            return StubbedSubprocess(returncode=0, stdout="")(cmd)
+
+        ClaudeCli(subprocess=capture)("my prompt", session_id="abc-123")
+
+        assert "--session-id" in received[0]
+        assert "abc-123" in received[0]
+
     def test_includes_add_dir_in_command_when_workspace_provided(self, tmp_path):
         received = []
 
