@@ -120,6 +120,49 @@ class TestCritic:
                 ],
             )
 
+    def test_evaluate_passes_jsonl_path_to_transcriber(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+        home = tmp_path / "home"
+        working_dir = tmp_path / "workspace"
+        received_jsonl = []
+
+        def capture_transcriber(jsonl_path, output_path):
+            received_jsonl.append(jsonl_path)
+
+        Critic(
+            claude=StubbedClaudeCli('[{"characteristic": "always passes", "status": "PASS"}]'),
+            transcriber=capture_transcriber,
+            home=home,
+        ).evaluate(
+            evidence=dummy_transcript,
+            working_dir=working_dir,
+            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+        )
+
+        encoded_cwd = "-" + str(working_dir).strip("/").replace("/", "-").replace("_", "-")
+        assert received_jsonl[0].parent == home / ".claude" / "projects" / encoded_cwd
+        assert received_jsonl[0].suffix == ".jsonl"
+
+    def test_evaluate_uses_transcriber_to_write_critique_md(self, tmp_path):
+        dummy_transcript = tmp_path / "transcript.md"
+        dummy_transcript.write_text("anything")
+        written_to = []
+
+        def capture_transcriber(jsonl_path, output_path):
+            written_to.append(output_path)
+
+        Critic(
+            claude=StubbedClaudeCli('[{"characteristic": "always passes", "status": "PASS"}]'),
+            transcriber=capture_transcriber,
+        ).evaluate(
+            evidence=dummy_transcript,
+            working_dir=tmp_path,
+            should=[{"characteristic": "always passes", "failure": "should never see this"}],
+        )
+
+        assert written_to == [tmp_path / "critique.md"]
+
     def test_evaluate_passes_session_id_to_claude(self, tmp_path):
         dummy_transcript = tmp_path / "transcript.md"
         dummy_transcript.write_text("anything")

@@ -3,14 +3,23 @@ import uuid
 
 
 class Critic:
-    def __init__(self, claude=None):
+    def __init__(self, claude=None, transcriber=None, home=None):
         self._claude = claude
+        self._transcriber = transcriber
+        self._home = home
 
     def evaluate(self, *, evidence, working_dir=None, should):
         _require_claude(self._claude)
         prompt = _build_prompt(evidence, working_dir, should)
         sid = str(uuid.uuid4())
         result = self._claude(prompt, workspace=working_dir, session_id=sid)
+        if self._transcriber and working_dir:
+            encoded_cwd = "-" + str(working_dir).strip("/").replace("/", "-").replace("_", "-")
+            jsonl_path = (
+                self._home / ".claude" / "projects" / encoded_cwd / f"{sid}.jsonl"
+                if self._home is not None else None
+            )
+            self._transcriber(jsonl_path, working_dir / "critique.md")
         failures = _failures_from(result, should)
         if failures:
             raise AssertionError(failures)
