@@ -1,9 +1,20 @@
+import dataclasses
 import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
 
 import pytest
 
 from claude_session import ClaudeSession
 from critic import Critic
+
+
+@dataclass
+class _SessionParams:
+    claude: Any
+    transcriber: Any
+    home: Path
 
 
 class TestCritic:
@@ -13,19 +24,30 @@ class TestCritic:
         path.write_text("anything")
         return path
 
-    def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path):
+    @pytest.fixture
+    def session_params(self, tmp_path):
+        return _SessionParams(
+            claude=None,
+            transcriber=lambda *_: None,
+            home=tmp_path / "home",
+        )
+
+    @pytest.fixture
+    def _using(self, session_params):
+        def factory(**overrides):
+            return vars(dataclasses.replace(session_params, **overrides))
+        return factory
+
+    def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path, _using):
         working_dir = tmp_path / "workspace"
         claude_cli_calls = []
         transcriber_calls = []
 
-        session = ClaudeSession(
-            claude=_claude_spy(
-                claude_cli_calls,
-                returns='[{"characteristic": "a characteristic", "status": "PASS"}]'
-            ),
+        session = ClaudeSession(**_using(
+            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "a characteristic", "status": "PASS"}]'),
             transcriber=_transcriber_spy(transcriber_calls),
-            home=tmp_path / "home",
-        )
+        ))
+
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=working_dir,
@@ -37,17 +59,13 @@ class TestCritic:
         assert claude_cli_calls[0]["workspace"] == working_dir
         assert transcriber_calls[0] == working_dir / "critique.md"
 
-    def test_evaluate_includes_characteristics_in_prompt(self, evidence, tmp_path):
+    def test_evaluate_includes_characteristics_in_prompt(self, evidence, tmp_path, _using):
         claude_cli_calls = []
 
-        session = ClaudeSession(
-            claude=_claude_spy(
-                claude_cli_calls,
-                returns='[{"characteristic": "my characteristic", "status": "PASS"}]',
-            ),
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+        session = ClaudeSession(**_using(
+            claude=_claude_spy(claude_cli_calls, returns='[{"characteristic": "my characteristic", "status": "PASS"}]'),
+        ))
+
         Critic(session=session).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
@@ -56,12 +74,8 @@ class TestCritic:
 
         assert "my characteristic" in claude_cli_calls[0]["prompt"]
 
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]',
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'))
 
         with pytest.raises(AssertionError) as excinfo:
             Critic(session=session).evaluate(
@@ -73,12 +87,8 @@ class TestCritic:
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: "not valid json.",
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: "not valid json."))
 
         with pytest.raises(ValueError, match="unaccounted") as excinfo:
             Critic(session=session).evaluate(
@@ -89,12 +99,8 @@ class TestCritic:
 
         assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n',
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'))
 
         Critic(session=session).evaluate(
             evidence=evidence,
@@ -102,16 +108,12 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_failure_message_lists_every_failed_row(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: (
-                '[{"characteristic": "first", "status": "FAIL"},'
-                ' {"characteristic": "middle", "status": "PASS"},'
-                ' {"characteristic": "third", "status": "FAIL"}]'
-            ),
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+    def test_failure_message_lists_every_failed_row(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: (
+            '[{"characteristic": "first", "status": "FAIL"},'
+            ' {"characteristic": "middle", "status": "PASS"},'
+            ' {"characteristic": "third", "status": "FAIL"}]'
+        )))
 
         with pytest.raises(AssertionError) as excinfo:
             Critic(session=session).evaluate(
@@ -129,12 +131,8 @@ class TestCritic:
         assert "middle" not in message and "middle failure" not in message
         assert "third" in message and "third failure" in message
 
-    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path):
-        session = ClaudeSession(
-            claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]',
-            transcriber=lambda *_: None,
-            home=tmp_path / "home",
-        )
+    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path, _using):
+        session = ClaudeSession(**_using(claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]'))
 
         with pytest.raises(ValueError, match="unaccounted"):
             Critic(session=session).evaluate(
