@@ -7,8 +7,11 @@ class ClaudeJsonlPath:
         self._working_dir = working_dir
 
     def __str__(self):
-        encoded = "-" + str(self._working_dir).strip("/").replace("/", "-")
-        return str(self._home / ".claude" / "projects" / encoded)
+        return str(self._home / ".claude" / "projects" / _claude_encoded(self._working_dir))
+
+
+def _claude_encoded(path):
+    return "-" + str(path).strip("/").replace("/", "-")
 
 
 class ClaudeSession:
