@@ -88,7 +88,7 @@ class TestClaudeSession:
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
 
-            ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
+            ids = _values_passed_to(claude_cli_spy, "session_id")
             assert ids[0] != ids[1]
 
         @pytest.mark.parametrize(
@@ -213,8 +213,12 @@ class TestClaudeSession:
             assert received_output_path == supplied_transcript_path
 
 
+def _values_passed_to(spy, name):
+    return [call.kwargs[name] for call in spy.call_args_list]
+
+
 def _value_passed_to(spy, name):
-    return spy.call_args.kwargs[name]
+    return _values_passed_to(spy, name)[-1]
 
 
 def _filename_minus_extension_of(path):
