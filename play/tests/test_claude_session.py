@@ -119,7 +119,7 @@ class TestClaudeSession:
             ],
             ids=["/some/home", "/another/home"]
         )
-        def test_jsonl_path_should_encode_the_home(self, supplied_home, dummy, dummy_path):
+        def test_jsonl_path_should_encode_the_home(self, supplied_home, dummy):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
@@ -128,7 +128,7 @@ class TestClaudeSession:
                 home=supplied_home,
             ).run(
                 prompt=dummy,
-                working_dir=dummy_path,
+                working_dir=dummy,
                 transcript_path=dummy
             )
 
