@@ -19,7 +19,7 @@ _RENDERERS = {
 
 
 class Transcriber:
-    def __call__(self, jsonl_path: ClaudeJsonlPath, output_path: Path):
+    def __call__(self, *, jsonl_path: ClaudeJsonlPath, output_path: Path):
         output_path.write_text(self.render(jsonl_path))
 
     def render(self, jsonl_path: ClaudeJsonlPath):

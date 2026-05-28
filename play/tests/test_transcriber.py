@@ -11,7 +11,7 @@ class TestTranscriber:
         output_path = tmp_path / "transcript.md"
         expected = Transcriber().render(jsonl_path)
 
-        Transcriber()(jsonl_path, output_path)
+        Transcriber()(jsonl_path=jsonl_path, output_path=output_path)
 
         assert output_path.read_text() == expected
 

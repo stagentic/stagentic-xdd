@@ -30,8 +30,8 @@ class ClaudeSession:
             session_id=session_id
         )
         self._transcribe_using(
-            self._jsonl_path_for(session_id, working_dir),
-            transcript_path
+            jsonl_path=self._jsonl_path_for(session_id, working_dir),
+            output_path=transcript_path
         )
         return result
 

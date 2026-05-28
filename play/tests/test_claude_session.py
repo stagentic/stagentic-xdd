@@ -132,7 +132,7 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert str(_jsonl_path_passed_to(transcriber_spy)).startswith(str(supplied_home))
+            assert str(_value_passed_to(transcriber_spy, "jsonl_path")).startswith(str(supplied_home))
 
         @pytest.mark.parametrize(
             "supplied_working_dir, expected_fragment", [
@@ -154,7 +154,7 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert expected_fragment in str(_jsonl_path_passed_to(transcriber_spy))
+            assert expected_fragment in str(_value_passed_to(transcriber_spy, "jsonl_path"))
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
@@ -171,7 +171,7 @@ class TestClaudeSession:
             )
 
             session_id_passed_to_cli = _value_passed_to(claude_cli_spy, "session_id")
-            session_id_in_jsonl_path = _filename_minus_extension_of(_jsonl_path_passed_to(transcriber_spy))
+            session_id_in_jsonl_path = _filename_minus_extension_of(_value_passed_to(transcriber_spy, "jsonl_path"))
             assert session_id_in_jsonl_path == session_id_passed_to_cli
 
         @pytest.mark.parametrize(
@@ -193,7 +193,7 @@ class TestClaudeSession:
                 transcript_path=supplied_transcript_path
             )
 
-            assert _transcript_path_passed_to(transcriber_spy) == supplied_transcript_path
+            assert _value_passed_to(transcriber_spy, "output_path") == supplied_transcript_path
 
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
@@ -208,20 +208,11 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert isinstance(_jsonl_path_passed_to(transcriber_spy), ClaudeJsonlPath)
-
+            assert isinstance(_value_passed_to(transcriber_spy, "jsonl_path"), ClaudeJsonlPath)
 
 
 def _value_passed_to(spy, name):
     return spy.call_args.kwargs[name]
-
-
-def _jsonl_path_passed_to(spy):
-    return spy.call_args.args[0]
-
-
-def _transcript_path_passed_to(spy):
-    return spy.call_args.args[1]
 
 
 def _filename_minus_extension_of(path):
