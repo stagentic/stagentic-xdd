@@ -145,7 +145,9 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            received_jsonl_path = str(_value_passed_to(transcriber_spy, "jsonl_path"))
+            received_jsonl_path = str(_value_passed_to(
+                transcriber_spy, "jsonl_path")
+            )
             assert expected_fragment in received_jsonl_path
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
@@ -165,7 +167,7 @@ class TestClaudeSession:
             session_id_passed_to_cli = _value_passed_to(
                 claude_cli_spy, "session_id"
             )
-            session_id_in_jsonl_path = _filename_minus_extension_of(
+            session_id_in_jsonl_path = _filename_minus_extension_from(
                 _value_passed_to(transcriber_spy, "jsonl_path")
             )
             assert session_id_in_jsonl_path == session_id_passed_to_cli
@@ -203,5 +205,5 @@ def _value_passed_to(spy, name):
     return _values_passed_to(spy, name)[-1]
 
 
-def _filename_minus_extension_of(path):
+def _filename_minus_extension_from(path):
     return Path(path).stem
