@@ -27,13 +27,17 @@ Review all production code in `play/src/` and `spec/` and leave it in good
 shape before the xdd skill work begins. Work through each file in turn —
 for each production file, review its tests alongside it.
 
+ClaudeSession and ClaudeJsonlPath have been refactored to the standard expected of all other code. TestClaudeJsonlPath is the current gold standard for tests.
+
+We need to review TestClaudeSession against the standard set by ClaudeJsonlPath. Then, review and work through each of the other files listed and aim for the gold standard set so far.
+
 ### `play/src/`
 
-- [x] `agent.py` (and `tests/test_agent.py`)
-- [x] `auditor.py` (and `tests/test_auditor.py`)
-- [ ] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
-- [ ] `claude_session.py` (and `tests/test_claude_session.py`)
-- [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
+- [ ] `agent.py` (and `tests/test_agent.py`)
+- [ ] `auditor.py` (and `tests/test_auditor.py`)
+- [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
+- [x] `claude_session.py` (and `tests/test_claude_session.py`)
+- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
 
@@ -66,6 +70,13 @@ Once `--agent=real` is green:
   *(cf. `ea7b497`)*
 - Commit `spec/conftest.py`, `TASK.md`, and
   `0-placeholder/scene/.claude/settings.json` together.
+
+## Future options
+
+- **Critic saves results to a file**: instruct the critic prompt to write
+  its scorecard to a specific file (e.g. `scorecard.json`) rather than
+  returning JSON in the response text. The file would contain only JSON,
+  sidestepping the prose-stripping problem entirely.
 
 ## Known constraints
 
