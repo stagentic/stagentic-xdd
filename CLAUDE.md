@@ -116,6 +116,23 @@ See `docs/architecture/conventions/spec-conventions.md` for naming and
 design-intent conventions that should persist across refactors
 (`transcript`, `working_dir`).
 
+## Relevant test suites
+
+Before any commit — whether a proposal or making one autonomously — run the tests relevant to the change:
+
+- **Expand-contract introductions** — new code not yet integrated with anything
+  else (e.g. a new test double, a new utility): run its isolated test file only.
+- **Change in `spec/` only**: run spec configurations in parallel:
+  - `uv run --directory spec pytest tests` — fake agent, auditor (default)
+  - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
+- **Change in `play/` (or anything integrated)**: run all configurations in
+  parallel (issue as separate tool calls in a single message so they run concurrently):
+  - `uv run --directory play pytest` — full play suite (unit, integration, contract)
+  - `uv run --directory play pytest tests/integration` — integration tests (hit real claude; not skipped by default but called out explicitly)
+  - `uv run --directory spec pytest tests` — fake agent, auditor (default)
+  - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
+  - Real agent excluded while the xdd skill is in development.
+
 ## Documentation style
 
 In-repo docs (READMEs, ADRs, CLAUDE.md, etc.) describe the system as it stands now. Do not narrate transitions from earlier states — phrases like *"no longer needs X"*, *"used to depend on Y"*, *"X has been removed"* are wrong shape. New readers land on the current version with no knowledge of prior states; transition language is meaningful only to someone reading the git log.

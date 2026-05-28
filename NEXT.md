@@ -4,23 +4,6 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## Working approach
-
-1. Propose a test — await explicit approval before writing it.
-2. Write the test and run it.
-3. Understand the failure — propose the minimum change to address only that failure.
-4. Await approval — answering a clarifying question is not approval.
-5. Apply the change and repeat from 2 until green.
-6. On green: run all baseline configs below in parallel — all must pass before proposing a commit.
-   Issue them as separate tool calls in a single message so they run concurrently:
-   - `uv run --directory play pytest` — full play unit/integration/contract suite
-   - `uv run --directory play pytest tests/integration` — integration tests (hit real claude; not skipped by default but called out explicitly)
-   - `uv run --directory spec pytest tests` — fake agent, auditor (default)
-   - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
-   - Real agent excluded while the xdd skill is in development.
-7. Commits are proposed only — never applied until the user gives express approval.
-8. Repeat from 1 until the work item is complete.
-
 ## 1. Refactoring pass
 
 Review all production code in `play/src/` and `spec/` and leave it in good
