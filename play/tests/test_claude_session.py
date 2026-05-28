@@ -25,7 +25,7 @@ class TestClaudeSession:
         assert kwargs["workspace"] == working_dir
         assert result == "claude said this"
 
-        (jsonl_path, output_path), _ = transcriber_calls[0]
+        jsonl_path, output_path = transcriber_calls[0]
         assert jsonl_path.parent == Path("/some/home/.claude/projects/-work-dir")
         assert jsonl_path.suffix == ".jsonl"
         assert output_path == transcript_path
@@ -52,6 +52,6 @@ def _claude_spy(calls, *, returns=""):
 
 
 def _transcriber_spy(calls):
-    def spy(*args, **kwargs):
-        calls.append((args, kwargs))
+    def spy(jsonl_path, output_path):
+        calls.append((jsonl_path, output_path))
     return spy
