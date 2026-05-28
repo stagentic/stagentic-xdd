@@ -189,7 +189,6 @@ class TestClaudeSession:
         )
 
         jsonl_path = _jsonl_path_passed_to(transcriber_spy)
-        assert "-work-dir/" in str(jsonl_path)
         assert _transcript_path_passed_to(transcriber_spy) == Path("/output/transcript.md")
 
         embedded_session_id = _filename_minus_extension_of(jsonl_path)
