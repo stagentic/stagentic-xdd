@@ -1,52 +1,44 @@
 from pathlib import Path
+from unittest.mock import MagicMock
 
-from claude_session import ClaudeSession
+from claude_cli import ClaudeCli
 from claude_jsonl_path import ClaudeJsonlPath
+from claude_session import ClaudeSession
 
 
 class TestClaudeSession:
     def test_claude_is_called_transcribes_and_returns_result(self):
-        transcriber_calls = []
+        transcriber_spy = MagicMock()
+        claude_cli_spy = MagicMock(
+            spec=ClaudeCli,
+            return_value=f"claude received my prompt for {Path('/work_dir')} and did its work"
+        )
 
-        working_dir = Path("/work_dir")
-        transcript_path = Path("/output/transcript.md")
         result = ClaudeSession(
-            claude=_claude_spy(returns=lambda p, w: f"claude received {p} for {w} and did its work"),
-            transcriber=_transcriber_spy(transcriber_calls),
+            claude=claude_cli_spy,
+            transcriber=transcriber_spy,
             home=Path("/some/home"),
         ).run(
             prompt="my prompt",
-            working_dir=working_dir,
-            transcript_path=transcript_path,
+            working_dir=Path("/work_dir"),
+            transcript_path=Path("/output/transcript.md")
         )
 
-        assert result == f"claude received my prompt for {working_dir} and did its work"
-
-        jsonl_path, output_path = transcriber_calls[0]
-        assert isinstance(jsonl_path, ClaudeJsonlPath)
-        assert output_path == transcript_path
+        assert result == f"claude received my prompt for {Path('/work_dir')} and did its work"
+        assert isinstance(transcriber_spy.call_args.args[0], ClaudeJsonlPath)
+        assert transcriber_spy.call_args.args[1] == Path("/output/transcript.md")
 
     def test_each_run_uses_a_unique_session_id(self):
-        claude_calls = []
+        claude_cli_spy = MagicMock(spec=ClaudeCli)
+        dummy_transcriber = MagicMock()
+        session = ClaudeSession(
+            claude=claude_cli_spy,
+            transcriber=dummy_transcriber,
+            home=Path("/h")
+        )
 
-        def capture(prompt, **kwargs):
-            claude_calls.append(kwargs["session_id"])
-            return ""
-
-        session = ClaudeSession(claude=capture, transcriber=lambda *_: None, home=Path("/h"))
         session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
         session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
 
-        assert claude_calls[0] != claude_calls[1]
-
-
-def _claude_spy(*, returns=lambda p,w: ""):
-    def spy(prompt, **kwargs):
-        return returns(prompt, kwargs["workspace"])
-    return spy
-
-
-def _transcriber_spy(calls):
-    def spy(jsonl_path, output_path):
-        calls.append((jsonl_path, output_path))
-    return spy
+        ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
+        assert ids[0] != ids[1]
