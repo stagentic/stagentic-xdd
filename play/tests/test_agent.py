@@ -21,15 +21,24 @@ class TestAgent:
             working_dir=working_dir
         )
 
-    def test_prompt_should_be_read_from_task_file(self, workspace, dummy):
+    @pytest.mark.parametrize(
+        "task_text", [
+            "do the thing", "another task"
+        ],
+        ids=["do the thing", "another task"]
+    )
+    def test_prompt_should_be_read_from_task_file(self, task_text, tmp_path, dummy):
+        tasks = tmp_path / "tasks"
+        (tasks / "my-task").mkdir(parents=True)
+        (tasks / "my-task" / "TASK.md").write_text(task_text)
         session_spy = MagicMock()
 
-        Agent(tasks=workspace.tasks, session=session_spy).perform(
+        Agent(tasks=tasks, session=session_spy).perform(
             task="my-task",
             working_dir=dummy
         )
 
-        assert value_passed_to(session_spy.run, "prompt") == "do the thing"
+        assert value_passed_to(session_spy.run, "prompt") == task_text
 
     def test_perform_reads_task_and_delegates_to_session(self, workspace, tmp_path):
         claude_spy = MagicMock(return_value="")
