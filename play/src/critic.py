@@ -31,7 +31,8 @@ def _prompt_for(evidence, working_dir, should):
         f"Transcript: {evidence}\n"
         f"Workspace: {working_dir}\n\n"
         f"Evaluate each of the following characteristics against the transcript and workspace.\n"
-        f"Respond with a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
+        f"Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
+        f"Do not include any other content, no prose, no markdown.\n\n"
         f"Characteristics:\n{characteristics}"
     )
 
