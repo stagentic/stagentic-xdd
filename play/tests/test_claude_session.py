@@ -131,6 +131,21 @@ class TestClaudeSession:
 
             assert str(_jsonl_path_passed_to(transcriber_spy)).startswith(str(supplied_home))
 
+        def test_jsonl_path_should_encode_the_working_dir(self, dummy):
+            transcriber_spy = MagicMock()
+
+            ClaudeSession(
+                claude=dummy,
+                transcriber=transcriber_spy,
+                home=Path("/h"),
+            ).run(
+                prompt=dummy,
+                working_dir=Path("/work-dir"),
+                transcript_path=dummy
+            )
+
+            assert "-work-dir/" in str(_jsonl_path_passed_to(transcriber_spy))
+
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
 
