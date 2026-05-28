@@ -63,6 +63,21 @@ class TestClaudeSession:
             ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
             assert ids[0] != ids[1]
 
+        def test_result_from_cli_should_be_returned(self, dummy):
+            claude_cli_stub = MagicMock(spec=ClaudeCli, return_value="cli result")
+
+            result = ClaudeSession(
+                claude=claude_cli_stub,
+                transcriber=dummy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=dummy
+            )
+
+            assert result == "cli result"
+
         @pytest.mark.parametrize(
             "supplied_working_dir", [
                 Path("/work_dir"), Path("/another/dir")
