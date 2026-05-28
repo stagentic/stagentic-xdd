@@ -5,6 +5,7 @@ import pytest
 
 from agent import Agent
 from claude_session import ClaudeSession
+from test_doubles.spy_interrogation import value_passed_to
 
 
 class TestAgent:
@@ -39,15 +40,8 @@ class TestAgent:
             working_dir=workspace.working_dir
         )
 
-        assert _value_passed_to(claude_spy, "prompt") == "do the thing"
-        assert _value_passed_to(claude_spy, "workspace") == workspace.working_dir
-        assert _value_passed_to(transcriber_spy, "output_path") == workspace.working_dir / "transcript.md"
+        assert value_passed_to(claude_spy, "prompt") == "do the thing"
+        assert value_passed_to(claude_spy, "workspace") == workspace.working_dir
+        assert value_passed_to(transcriber_spy, "output_path") == workspace.working_dir / "transcript.md"
         assert agent.transcript == workspace.working_dir / "transcript.md"
 
-
-def _values_passed_to(spy, name):
-    return [call.kwargs[name] for call in spy.call_args_list]
-
-
-def _value_passed_to(spy, name):
-    return _values_passed_to(spy, name)[-1]

@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from claude_session import ClaudeSession
+from test_doubles.spy_interrogation import value_passed_to
 from critic import Critic
 
 
@@ -56,11 +57,11 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-        assert str(evidence) in _value_passed_to(claude_spy, "prompt")
-        assert str(working_dir) in _value_passed_to(claude_spy, "prompt")
-        assert "a characteristic" in _value_passed_to(claude_spy, "prompt")
-        assert _value_passed_to(claude_spy, "workspace") == working_dir
-        assert _value_passed_to(transcriber_spy, "output_path") == working_dir / "critique.md"
+        assert str(evidence) in value_passed_to(claude_spy, "prompt")
+        assert str(working_dir) in value_passed_to(claude_spy, "prompt")
+        assert "a characteristic" in value_passed_to(claude_spy, "prompt")
+        assert value_passed_to(claude_spy, "workspace") == working_dir
+        assert value_passed_to(transcriber_spy, "output_path") == working_dir / "critique.md"
 
     def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path, _using):
         prose_then_json = (
@@ -165,10 +166,3 @@ class TestCritic:
                 ],
             )
 
-
-def _values_passed_to(spy, name):
-    return [call.kwargs[name] for call in spy.call_args_list]
-
-
-def _value_passed_to(spy, name):
-    return _values_passed_to(spy, name)[-1]
