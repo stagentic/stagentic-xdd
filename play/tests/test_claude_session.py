@@ -25,8 +25,18 @@ class TestClaudeSession:
         )
 
         assert result == f"claude received my prompt for {Path('/work_dir')} and did its work"
-        assert isinstance(transcriber_spy.call_args.args[0], ClaudeJsonlPath)
-        assert transcriber_spy.call_args.args[1] == Path("/output/transcript.md")
+        assert claude_cli_spy.call_args.kwargs["prompt"] == "my prompt"
+        assert claude_cli_spy.call_args.kwargs["workspace"] == Path("/work_dir")
+
+        jsonl_path = _jsonl_path_passed_to(transcriber_spy)
+        assert isinstance(jsonl_path, ClaudeJsonlPath)
+        assert str(jsonl_path).startswith("/some/home")
+
+        assert "-work-dir/" in str(jsonl_path)
+        assert _transcript_path_passed_to(transcriber_spy) == Path("/output/transcript.md")
+
+        embedded_session_id = _filename_minus_extension_of(jsonl_path)
+        assert embedded_session_id == claude_cli_spy.call_args.kwargs["session_id"]
 
     def test_each_run_uses_a_unique_session_id(self):
         claude_cli_spy = MagicMock(spec=ClaudeCli)
@@ -42,3 +52,15 @@ class TestClaudeSession:
 
         ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
         assert ids[0] != ids[1]
+
+
+def _jsonl_path_passed_to(spy):
+    return spy.call_args.args[0]
+
+
+def _transcript_path_passed_to(spy):
+    return spy.call_args.args[1]
+
+
+def _filename_minus_extension_of(path):
+    return Path(path).stem
