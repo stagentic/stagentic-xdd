@@ -49,6 +49,20 @@ class TestClaudeSession:
 
             assert _value_passed_to(claude_cli_spy, "session_id") is not None
 
+        def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            session = ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=dummy,
+                home=dummy,
+            )
+
+            session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
+            session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
+
+            ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
+            assert ids[0] != ids[1]
+
         @pytest.mark.parametrize(
             "supplied_working_dir", [
                 Path("/work_dir"), Path("/another/dir")
@@ -100,20 +114,6 @@ class TestClaudeSession:
         embedded_session_id = _filename_minus_extension_of(jsonl_path)
         assert embedded_session_id == claude_cli_spy.call_args.kwargs["session_id"]
 
-    def test_each_run_uses_a_unique_session_id(self):
-        claude_cli_spy = MagicMock(spec=ClaudeCli)
-        dummy_transcriber = MagicMock()
-        session = ClaudeSession(
-            claude=claude_cli_spy,
-            transcriber=dummy_transcriber,
-            home=Path("/h")
-        )
-
-        session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
-        session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
-
-        ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
-        assert ids[0] != ids[1]
 
 
 def _value_passed_to(spy, name):
