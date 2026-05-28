@@ -47,18 +47,28 @@ class TestClaudeJsonlPath:
 
     def test_path_should_be_rooted_at_any_specified_home(self):
         path = ClaudeJsonlPath(home=Path("/another/home"))
+
         assert str(path).startswith("/another/home")
 
     def test_path_should_be_under_claude_projects(self):
         path = ClaudeJsonlPath(home=Path("/some/home"))
+
         assert str(path).startswith("/some/home/.claude/projects")
 
     def test_path_should_encode_working_dir_slashes_as_hyphens(self):
-        path = ClaudeJsonlPath(home=Path("/some/home"), working_dir=Path("/foo/bar"))
+        path = ClaudeJsonlPath(
+            home=Path("/some/home"),
+            working_dir=Path("/foo/bar")
+        )
+
         assert str(path).endswith("-foo-bar")
 
     def test_path_should_encode_any_working_dir_slashes_as_hyphens(self):
-        path = ClaudeJsonlPath(home=Path("/some/home"), working_dir=Path("/workspace/projectx"))
+        path = ClaudeJsonlPath(
+            home=Path("/some/home"),
+            working_dir=Path("/workspace/projectx")
+        )
+
         assert str(path).endswith("-workspace-projectx")
 
 
