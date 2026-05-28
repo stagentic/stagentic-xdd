@@ -106,6 +106,25 @@ class TestClaudeSession:
             received_workspace = _value_passed_to(claude_cli_spy, "workspace")
             assert received_workspace == supplied_working_dir
 
+    class TestCallsTranscriber:
+        @pytest.fixture
+        def dummy(self): return MagicMock()
+
+        def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
+            transcriber_spy = MagicMock()
+
+            ClaudeSession(
+                claude=dummy,
+                transcriber=transcriber_spy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=dummy
+            )
+
+            assert isinstance(_jsonl_path_passed_to(transcriber_spy), ClaudeJsonlPath)
+
     def test_claude_is_called_transcribes_and_returns_result(self):
         transcriber_spy = MagicMock()
         claude_cli_spy = MagicMock(
