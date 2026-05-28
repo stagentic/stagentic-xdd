@@ -1,3 +1,4 @@
+import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -12,20 +13,27 @@ _DUMMY = MagicMock()
 
 class TestClaudeSession:
     class TestCallsClaudeCli:
-        def test_prompt_should_be_passed_to_cli(self):
+        @pytest.mark.parametrize(
+            "supplied_prompt", [
+                "my prompt",
+                "another prompt"
+            ]
+        )
+        def test_prompt_should_be_passed_to_cli(self, supplied_prompt):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
+
             ClaudeSession(
                 claude=claude_cli_spy,
                 transcriber=_DUMMY,
                 home=Path(_DUMMY_PATH),
             ).run(
-                prompt="my prompt",
+                prompt=supplied_prompt,
                 working_dir=Path(_DUMMY_PATH),
                 transcript_path=Path(_DUMMY_PATH)
             )
 
             received_prompt = _value_passed_to(claude_cli_spy, "prompt")
-            assert received_prompt == "my prompt"
+            assert received_prompt == supplied_prompt
 
     def test_claude_is_called_transcribes_and_returns_result(self):
         transcriber_spy = MagicMock()
