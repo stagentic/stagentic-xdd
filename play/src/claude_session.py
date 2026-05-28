@@ -3,10 +3,10 @@ import uuid
 
 class ClaudeJsonlPath:
     def __init__(self, *, home):
-        pass
+        self._home = home
 
     def __str__(self):
-        return "/some/home"
+        return str(self._home)
 
 
 class ClaudeSession:

@@ -41,9 +41,13 @@ class TestClaudeSession:
 
 
 class TestClaudeJsonlPath:
-    def test_is_rooted_at_a_specified_home(self):
+    def test_path_should_be_rooted_at_a_specified_home(self):
         path = ClaudeJsonlPath(home=Path("/some/home"))
         assert str(path).startswith("/some/home")
+
+    def test_path_should_be_rooted_at_any_specified_home(self):
+        path = ClaudeJsonlPath(home=Path("/another/home"))
+        assert str(path).startswith("/another/home")
 
 
 def _claude_spy(*, returns=lambda p,w: ""):
