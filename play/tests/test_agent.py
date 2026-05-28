@@ -57,15 +57,21 @@ class TestAgent:
 
         assert value_passed_to(session_spy.run, "working_dir") == supplied_working_dir
 
-    def test_transcript_path_should_be_inside_working_dir(self, workspace, dummy):
+    @pytest.mark.parametrize(
+        "supplied_working_dir", [
+            Path("/work"), Path("/other/dir")
+        ],
+        ids=["/work", "/other/dir"]
+    )
+    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, workspace, dummy):
         session_spy = MagicMock()
 
         Agent(tasks=workspace.tasks, session=session_spy).perform(
             task="my-task",
-            working_dir=workspace.working_dir
+            working_dir=supplied_working_dir
         )
 
-        assert value_passed_to(session_spy.run, "transcript_path") == workspace.working_dir / "transcript.md"
+        assert value_passed_to(session_spy.run, "transcript_path") == supplied_working_dir / "transcript.md"
 
     def test_perform_reads_task_and_delegates_to_session(self, workspace, tmp_path):
         claude_spy = MagicMock(return_value="")
