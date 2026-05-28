@@ -20,9 +20,8 @@ class TestClaudeSession:
             transcript_path=transcript_path,
         )
 
-        prompt, kwargs = claude_calls[0]
-        assert prompt == "my prompt"
-        assert kwargs["workspace"] == working_dir
+        assert claude_calls[0]["prompt"] == "my prompt"
+        assert claude_calls[0]["workspace"] == working_dir
         assert result == "claude said this"
 
         jsonl_path, output_path = transcriber_calls[0]
@@ -46,7 +45,7 @@ class TestClaudeSession:
 
 def _claude_spy(calls, *, returns=""):
     def spy(prompt, **kwargs):
-        calls.append((prompt, kwargs))
+        calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
         return returns
     return spy
 
