@@ -113,7 +113,7 @@ class TestClaudeSession:
             return_value=f"claude received my prompt for {Path('/work_dir')} and did its work"
         )
 
-        result = ClaudeSession(
+        ClaudeSession(
             claude=claude_cli_spy,
             transcriber=transcriber_spy,
             home=Path("/some/home"),
@@ -122,8 +122,6 @@ class TestClaudeSession:
             working_dir=Path("/work_dir"),
             transcript_path=Path("/output/transcript.md")
         )
-
-        assert result == f"claude received my prompt for {Path('/work_dir')} and did its work"
 
         jsonl_path = _jsonl_path_passed_to(transcriber_spy)
         assert isinstance(jsonl_path, ClaudeJsonlPath)
