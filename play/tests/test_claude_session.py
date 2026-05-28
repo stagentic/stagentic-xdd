@@ -131,7 +131,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert str(_value_passed_to(transcriber_spy, "jsonl_path")).startswith(str(supplied_home))
+            received_jsonl_path = str(_value_passed_to(transcriber_spy, "jsonl_path"))
+            assert received_jsonl_path.startswith(str(supplied_home))
 
         @pytest.mark.parametrize(
             "supplied_working_dir, expected_fragment", [
@@ -153,7 +154,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert expected_fragment in str(_value_passed_to(transcriber_spy, "jsonl_path"))
+            received_jsonl_path = str(_value_passed_to(transcriber_spy, "jsonl_path"))
+            assert expected_fragment in received_jsonl_path
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
