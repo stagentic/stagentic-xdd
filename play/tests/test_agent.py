@@ -57,6 +57,16 @@ class TestAgent:
 
         assert value_passed_to(session_spy.run, "working_dir") == supplied_working_dir
 
+    def test_transcript_path_should_be_inside_working_dir(self, workspace, dummy):
+        session_spy = MagicMock()
+
+        Agent(tasks=workspace.tasks, session=session_spy).perform(
+            task="my-task",
+            working_dir=workspace.working_dir
+        )
+
+        assert value_passed_to(session_spy.run, "transcript_path") == workspace.working_dir / "transcript.md"
+
     def test_perform_reads_task_and_delegates_to_session(self, workspace, tmp_path):
         claude_spy = MagicMock(return_value="")
         transcriber_spy = MagicMock()
