@@ -20,6 +20,28 @@ We need to review TestClaudeSession against the standard set by ClaudeJsonlPath.
 - [ ] `auditor.py` (and `tests/test_auditor.py`)
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
+
+  `TestClaudeSession` is being split into focused, triangulated tests — one
+  characteristic per test, each written from scratch with a pair of examples.
+  Inner classes group by collaborator:
+
+  **`TestCallsClaudeCli`:** (parametrized pairs use `supplied_x` / `received_x` naming)
+  - [x] `test_prompt_should_be_passed_to_cli` — parametrized: `"my prompt"`, `"another prompt"`
+  - [x] `test_working_dir_should_be_passed_to_cli` — parametrized: `/work_dir`, `/another/dir`
+  - [ ] `test_session_id_should_be_passed_to_cli`
+  - [ ] `test_unique_session_id_should_be_passed_to_cli_on_each_run` (replaces `test_each_run_uses_a_unique_session_id`)
+  - [ ] `test_result_from_cli_should_be_returned`
+
+  **`TestCallsTranscriber`:**
+  - [ ] `test_transcriber_should_receive_a_claude_jsonl_path`
+  - [ ] `test_jsonl_path_should_encode_the_home` — parametrized
+  - [ ] `test_jsonl_path_should_encode_the_working_dir` — parametrized
+  - [ ] `test_jsonl_path_should_encode_the_same_session_id_passed_to_cli`
+  - [ ] `test_transcriber_should_receive_the_transcript_path` — parametrized
+
+  Once all tests are in place, the original `test_claude_is_called_transcribes_and_returns_result`
+  and `test_each_run_uses_a_unique_session_id` are deleted.
+
 - [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
