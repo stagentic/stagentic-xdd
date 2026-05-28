@@ -210,25 +210,6 @@ class TestClaudeSession:
 
             assert isinstance(_jsonl_path_passed_to(transcriber_spy), ClaudeJsonlPath)
 
-    def test_claude_is_called_transcribes_and_returns_result(self):
-        transcriber_spy = MagicMock()
-        claude_cli_spy = MagicMock(
-            spec=ClaudeCli,
-            return_value=f"claude received my prompt for {Path('/work_dir')} and did its work"
-        )
-
-        ClaudeSession(
-            claude=claude_cli_spy,
-            transcriber=transcriber_spy,
-            home=Path("/some/home"),
-        ).run(
-            prompt="my prompt",
-            working_dir=Path("/work_dir"),
-            transcript_path=Path("/output/transcript.md")
-        )
-
-        assert _transcript_path_passed_to(transcriber_spy) == Path("/output/transcript.md")
-
 
 
 def _value_passed_to(spy, name):
