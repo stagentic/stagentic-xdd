@@ -53,6 +53,10 @@ class TestClaudeJsonlPath:
         path = ClaudeJsonlPath(home=Path("/some/home"))
         assert str(path).startswith("/some/home/.claude/projects")
 
+    def test_path_should_encode_working_dir_slashes_as_hyphens(self):
+        path = ClaudeJsonlPath(home=Path("/some/home"), working_dir=Path("/foo/bar"))
+        assert str(path).endswith("-foo-bar")
+
 
 def _claude_spy(*, returns=lambda p,w: ""):
     def spy(prompt, **kwargs):

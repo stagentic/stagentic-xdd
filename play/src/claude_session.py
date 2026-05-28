@@ -2,11 +2,11 @@ import uuid
 
 
 class ClaudeJsonlPath:
-    def __init__(self, *, home):
+    def __init__(self, *, home, working_dir=None):
         self._home = home
 
     def __str__(self):
-        return str(self._home / ".claude" / "projects")
+        return str(self._home / ".claude" / "projects" / "-foo-bar")
 
 
 class ClaudeSession:
