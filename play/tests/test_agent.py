@@ -73,6 +73,14 @@ class TestAgent:
 
         assert value_passed_to(session_spy.run, "transcript_path") == supplied_working_dir / "transcript.md"
 
+    def test_transcript_attribute_should_be_set_after_perform(self, workspace, dummy):
+        session_spy = MagicMock()
+        agent = Agent(tasks=workspace.tasks, session=session_spy)
+
+        agent.perform(task="my-task", working_dir=workspace.working_dir)
+
+        assert agent.transcript == workspace.working_dir / "transcript.md"
+
     def test_perform_reads_task_and_delegates_to_session(self, workspace, tmp_path):
         claude_spy = MagicMock(return_value="")
         transcriber_spy = MagicMock()
