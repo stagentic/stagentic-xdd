@@ -7,7 +7,7 @@ from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
 
 
-_DUMMY_PATH = "/dummy-path"
+_DUMMY_PATH = Path("/dummy-path")
 _DUMMY = MagicMock()
 
 
@@ -25,15 +25,31 @@ class TestClaudeSession:
             ClaudeSession(
                 claude=claude_cli_spy,
                 transcriber=_DUMMY,
-                home=Path(_DUMMY_PATH),
+                home=_DUMMY_PATH,
             ).run(
                 prompt=supplied_prompt,
-                working_dir=Path(_DUMMY_PATH),
-                transcript_path=Path(_DUMMY_PATH)
+                working_dir=_DUMMY_PATH,
+                transcript_path=_DUMMY_PATH
             )
 
             received_prompt = _value_passed_to(claude_cli_spy, "prompt")
             assert received_prompt == supplied_prompt
+
+        def test_working_dir_should_be_passed_to_cli(self):
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+
+            ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=_DUMMY,
+                home=_DUMMY_PATH,
+            ).run(
+                prompt=_DUMMY_PATH,
+                working_dir=Path("/work_dir"),
+                transcript_path=_DUMMY_PATH
+            )
+
+            received_workspace = _value_passed_to(claude_cli_spy, "workspace")
+            assert received_workspace == Path("/work_dir")
 
     def test_claude_is_called_transcribes_and_returns_result(self):
         transcriber_spy = MagicMock()
