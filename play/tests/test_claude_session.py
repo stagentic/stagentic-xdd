@@ -5,21 +5,14 @@ from claude_session import ClaudeSession
 
 class TestClaudeSession:
     def test_claude_is_called_transcribes_and_returns_result(self):
-        received = []
+        claude_calls = []
         transcriber_calls = []
-
-        def capture(prompt, **kwargs):
-            received.append((prompt, kwargs))
-            return "claude said this"
-
-        def fake_transcriber(*args, **kwargs):
-            transcriber_calls.append((args, kwargs))
 
         working_dir = Path("/work_dir")
         transcript_path = Path("/output/transcript.md")
         result = ClaudeSession(
-            claude=capture,
-            transcriber=fake_transcriber,
+            claude=_claude_spy(claude_calls, returns="claude said this"),
+            transcriber=_transcriber_spy(transcriber_calls),
             home=Path("/some/home"),
         ).run(
             prompt="my prompt",
@@ -27,7 +20,7 @@ class TestClaudeSession:
             transcript_path=transcript_path,
         )
 
-        prompt, kwargs = received[0]
+        prompt, kwargs = claude_calls[0]
         assert prompt == "my prompt"
         assert kwargs["workspace"] == working_dir
         assert result == "claude said this"
@@ -38,14 +31,27 @@ class TestClaudeSession:
         assert output_path == transcript_path
 
     def test_each_run_uses_a_unique_session_id(self):
-        captured = []
+        claude_calls = []
 
         def capture(prompt, **kwargs):
-            captured.append(kwargs["session_id"])
+            claude_calls.append(kwargs["session_id"])
             return ""
 
         session = ClaudeSession(claude=capture, transcriber=lambda *_: None, home=Path("/h"))
         session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
         session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
 
-        assert captured[0] != captured[1]
+        assert claude_calls[0] != claude_calls[1]
+
+
+def _claude_spy(calls, *, returns=""):
+    def spy(prompt, **kwargs):
+        calls.append((prompt, kwargs))
+        return returns
+    return spy
+
+
+def _transcriber_spy(calls):
+    def spy(*args, **kwargs):
+        calls.append((args, kwargs))
+    return spy
