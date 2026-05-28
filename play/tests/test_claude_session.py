@@ -134,7 +134,14 @@ class TestClaudeSession:
 
             assert str(_jsonl_path_passed_to(transcriber_spy)).startswith(str(supplied_home))
 
-        def test_jsonl_path_should_encode_the_working_dir(self, dummy, dummy_path):
+        @pytest.mark.parametrize(
+            "supplied_working_dir, expected_fragment", [
+                (Path("/work-dir"), "-work-dir/"),
+                (Path("/another/dir"), "-another-dir/"),
+            ],
+            ids=["/work-dir", "/another/dir"]
+        )
+        def test_jsonl_path_should_encode_the_working_dir(self, supplied_working_dir, expected_fragment, dummy, dummy_path):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
@@ -143,11 +150,11 @@ class TestClaudeSession:
                 home=dummy_path,
             ).run(
                 prompt=dummy,
-                working_dir=Path("/work-dir"),
+                working_dir=supplied_working_dir,
                 transcript_path=dummy
             )
 
-            assert "-work-dir/" in str(_jsonl_path_passed_to(transcriber_spy))
+            assert expected_fragment in str(_jsonl_path_passed_to(transcriber_spy))
 
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
