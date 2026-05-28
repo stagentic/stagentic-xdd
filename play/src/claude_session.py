@@ -12,7 +12,6 @@ class ClaudeSession:
     def run(self, *, prompt, working_dir, transcript_path):
         sid = str(uuid.uuid4())
         result = self._claude(prompt, workspace=working_dir, session_id=sid)
-        encoded_cwd = "-" + str(working_dir).strip("/").replace("/", "-").replace("_", "-")
-        jsonl_path = self._home / ".claude" / "projects" / encoded_cwd / f"{sid}.jsonl"
+        jsonl_path = ClaudeJsonlPath(home=self._home, working_dir=working_dir, session_id=sid)
         self._transcriber(jsonl_path, transcript_path)
         return result

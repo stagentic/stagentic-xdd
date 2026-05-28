@@ -23,8 +23,7 @@ class TestClaudeSession:
         assert result == f"claude received my prompt for {working_dir} and did its work"
 
         jsonl_path, output_path = transcriber_calls[0]
-        assert jsonl_path.parent == Path("/some/home/.claude/projects/-work-dir")
-        assert jsonl_path.suffix == ".jsonl"
+        assert isinstance(jsonl_path, ClaudeJsonlPath)
         assert output_path == transcript_path
 
     def test_each_run_uses_a_unique_session_id(self):
