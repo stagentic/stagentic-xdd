@@ -92,6 +92,15 @@ class TestClaudeJsonlPath:
 
         assert str(path).endswith("abc-123.jsonl")
 
+    def test_path_should_be_usable_as_a_filesystem_path(self):
+        path = ClaudeJsonlPath(
+            home=Path("/some/home"),
+            working_dir=Path("/work_dir"),
+            session_id="sid"
+        )
+
+        assert Path(path) == Path("/some/home/.claude/projects/-work-dir/sid.jsonl")
+
 
 def _claude_spy(*, returns=lambda p,w: ""):
     def spy(prompt, **kwargs):
