@@ -1,6 +1,14 @@
 import uuid
 
 
+class ClaudeJsonlPath:
+    def __init__(self, *, home):
+        pass
+
+    def __str__(self):
+        return "/some/home"
+
+
 class ClaudeSession:
     def __init__(self, claude, transcriber, home):
         self._claude = claude

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from claude_session import ClaudeSession
+from claude_session import ClaudeSession, ClaudeJsonlPath
 
 
 class TestClaudeSession:
@@ -38,6 +38,12 @@ class TestClaudeSession:
         session.run(prompt="p", working_dir=Path("/w"), transcript_path=Path("/t"))
 
         assert claude_calls[0] != claude_calls[1]
+
+
+class TestClaudeJsonlPath:
+    def test_is_rooted_at_a_specified_home(self):
+        path = ClaudeJsonlPath(home=Path("/some/home"))
+        assert str(path).startswith("/some/home")
 
 
 def _claude_spy(*, returns=lambda p,w: ""):
