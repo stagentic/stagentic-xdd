@@ -34,6 +34,28 @@ class TestClaudeSession:
             received_prompt = _value_passed_to(claude_cli_spy, "prompt")
             assert received_prompt == supplied_prompt
 
+        @pytest.mark.parametrize(
+            "supplied_working_dir", [
+                Path("/work_dir"), Path("/another/dir")
+            ],
+            ids=["/work_dir", "/another/dir"]
+        )
+        def test_working_dir_should_be_passed_to_cli(self, supplied_working_dir, dummy):
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+
+            ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=dummy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=supplied_working_dir,
+                transcript_path=dummy
+            )
+
+            received_workspace = _value_passed_to(claude_cli_spy, "workspace")
+            assert received_workspace == supplied_working_dir
+
         def test_session_id_should_be_passed_to_cli(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
 
@@ -84,34 +106,27 @@ class TestClaudeSession:
 
             assert result == cli_result
 
-        @pytest.mark.parametrize(
-            "supplied_working_dir", [
-                Path("/work_dir"), Path("/another/dir")
-            ],
-            ids=["/work_dir", "/another/dir"]
-        )
-        def test_working_dir_should_be_passed_to_cli(self, supplied_working_dir, dummy):
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
-
-            ClaudeSession(
-                claude=claude_cli_spy,
-                transcriber=dummy,
-                home=dummy,
-            ).run(
-                prompt=dummy,
-                working_dir=supplied_working_dir,
-                transcript_path=dummy
-            )
-
-            received_workspace = _value_passed_to(claude_cli_spy, "workspace")
-            assert received_workspace == supplied_working_dir
-
     class TestCallsTranscriber:
         @pytest.fixture
         def dummy(self): return MagicMock()
 
         @pytest.fixture
         def dummy_path(self): return Path("/dummy")
+
+        def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
+            transcriber_spy = MagicMock()
+
+            ClaudeSession(
+                claude=dummy,
+                transcriber=transcriber_spy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=dummy
+            )
+
+            assert isinstance(_value_passed_to(transcriber_spy, "jsonl_path"), ClaudeJsonlPath)
 
         @pytest.mark.parametrize(
             "supplied_home", [
@@ -194,21 +209,6 @@ class TestClaudeSession:
             )
 
             assert _value_passed_to(transcriber_spy, "output_path") == supplied_transcript_path
-
-        def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
-            transcriber_spy = MagicMock()
-
-            ClaudeSession(
-                claude=dummy,
-                transcriber=transcriber_spy,
-                home=dummy,
-            ).run(
-                prompt=dummy,
-                working_dir=dummy,
-                transcript_path=dummy
-            )
-
-            assert isinstance(_value_passed_to(transcriber_spy, "jsonl_path"), ClaudeJsonlPath)
 
 
 def _value_passed_to(spy, name):
