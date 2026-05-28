@@ -3,6 +3,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -25,10 +26,10 @@ class TestCritic:
         return path
 
     @pytest.fixture
-    def session_params(self, tmp_path):
+    def session_params(self, tmp_path, dummy):
         return _SessionParams(
-            claude=None,
-            transcriber=lambda *_: None,
+            claude=dummy,
+            transcriber=dummy,
             home=tmp_path / "home",
         )
 
@@ -40,15 +41,13 @@ class TestCritic:
 
     def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path, _using):
         working_dir = tmp_path / "workspace"
-        claude_cli_calls = []
-        transcriber_calls = []
-
+        claude_spy = MagicMock(
+            return_value='[{"characteristic": "a characteristic", "status": "PASS"}]'
+        )
+        transcriber_spy = MagicMock()
         session = ClaudeSession(**_using(
-            claude=_claude_spy(
-                claude_cli_calls,
-                returns='[{"characteristic": "a characteristic", "status": "PASS"}]'
-            ),
-            transcriber=_transcriber_spy(transcriber_calls),
+            claude=claude_spy,
+            transcriber=transcriber_spy,
         ))
 
         Critic(session=session).evaluate(
@@ -57,11 +56,11 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-        assert str(evidence) in claude_cli_calls[0]["prompt"]
-        assert str(working_dir) in claude_cli_calls[0]["prompt"]
-        assert "a characteristic" in claude_cli_calls[0]["prompt"]
-        assert claude_cli_calls[0]["workspace"] == working_dir
-        assert transcriber_calls[0] == working_dir / "critique.md"
+        assert str(evidence) in _value_passed_to(claude_spy, "prompt")
+        assert str(working_dir) in _value_passed_to(claude_spy, "prompt")
+        assert "a characteristic" in _value_passed_to(claude_spy, "prompt")
+        assert _value_passed_to(claude_spy, "workspace") == working_dir
+        assert _value_passed_to(transcriber_spy, "output_path") == working_dir / "critique.md"
 
     def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path, _using):
         prose_then_json = (
@@ -167,14 +166,9 @@ class TestCritic:
             )
 
 
-def _claude_spy(calls, *, returns):
-    def spy(prompt, **kwargs):
-        calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
-        return returns
-    return spy
+def _values_passed_to(spy, name):
+    return [call.kwargs[name] for call in spy.call_args_list]
 
 
-def _transcriber_spy(transcribed):
-    def spy(_jsonl_path, output_path):
-        transcribed.append(output_path)
-    return spy
+def _value_passed_to(spy, name):
+    return _values_passed_to(spy, name)[-1]

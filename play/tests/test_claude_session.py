@@ -8,9 +8,6 @@ from claude_session import ClaudeSession
 
 class TestClaudeSession:
     class TestCallsClaudeCli:
-        @pytest.fixture
-        def dummy(self): return MagicMock()
-
         @pytest.mark.parametrize(
             "supplied_prompt", [
                 "my prompt", "another prompt"
@@ -95,9 +92,6 @@ class TestClaudeSession:
             assert result == cli_result
 
     class TestCallsTranscriber:
-        @pytest.fixture
-        def dummy(self): return MagicMock()
-
         @pytest.fixture
         def dummy_path(self): return Path("/dummy")
 

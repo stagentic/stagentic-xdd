@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -20,12 +21,12 @@ class TestAgent:
         )
 
     def test_perform_reads_task_and_delegates_to_session(self, workspace, tmp_path):
-        claude_cli_calls = []
-        transcriber_calls = []
+        claude_spy = MagicMock(return_value="")
+        transcriber_spy = MagicMock()
 
         session = ClaudeSession(
-            claude=_claude_spy(claude_cli_calls),
-            transcriber=_transcriber_spy(transcriber_calls),
+            claude=claude_spy,
+            transcriber=transcriber_spy,
             home=tmp_path / "home"
         )
         agent = Agent(
@@ -38,23 +39,15 @@ class TestAgent:
             working_dir=workspace.working_dir
         )
 
-        assert claude_cli_calls[0]["prompt"] == "do the thing"
-        assert claude_cli_calls[0]["workspace"] == workspace.working_dir
-        assert transcriber_calls[0] == workspace.working_dir / "transcript.md"
+        assert _value_passed_to(claude_spy, "prompt") == "do the thing"
+        assert _value_passed_to(claude_spy, "workspace") == workspace.working_dir
+        assert _value_passed_to(transcriber_spy, "output_path") == workspace.working_dir / "transcript.md"
         assert agent.transcript == workspace.working_dir / "transcript.md"
 
 
-def _claude_spy(calls):
-    def spy(prompt, **kwargs):
-        calls.append({
-            "prompt": prompt,
-            "workspace": kwargs["workspace"]
-        })
-        return ""
-    return spy
+def _values_passed_to(spy, name):
+    return [call.kwargs[name] for call in spy.call_args_list]
 
 
-def _transcriber_spy(transcribed):
-    def spy(_jsonl_path, output_path):
-        transcribed.append(output_path)
-    return spy
+def _value_passed_to(spy, name):
+    return _values_passed_to(spy, name)[-1]

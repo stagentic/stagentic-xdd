@@ -30,18 +30,18 @@ class ClaudeSession:
             session_id=session_id
         )
         self._transcribe_using(
-            jsonl_path=self._jsonl_path_for(session_id, working_dir),
+            jsonl_path=_jsonl_path_for(self._home, working_dir, session_id),
             output_path=transcript_path
         )
         return result
 
-    def _jsonl_path_for(
-            self,
-            session_id: str,
-            working_dir: Path
-    ) -> ClaudeJsonlPath:
-        return ClaudeJsonlPath(
-            home=self._home,
-            working_dir=working_dir,
-            session_id=session_id
-        )
+def _jsonl_path_for(
+        home: Path,
+        working_dir: Path,
+        session_id: str
+) -> ClaudeJsonlPath:
+    return ClaudeJsonlPath(
+        home=home,
+        working_dir=working_dir,
+        session_id=session_id
+    )
