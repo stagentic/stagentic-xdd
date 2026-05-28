@@ -71,6 +71,14 @@ class TestClaudeJsonlPath:
 
         assert str(path).endswith("-workspace-projectx")
 
+    def test_path_should_encode_working_dir_underscores_as_hyphens(self):
+        path = ClaudeJsonlPath(
+            home=Path("/some/home"),
+            working_dir=Path("/work_dir")
+        )
+
+        assert str(path).endswith("-work-dir")
+
 
 def _claude_spy(*, returns=lambda p,w: ""):
     def spy(prompt, **kwargs):
