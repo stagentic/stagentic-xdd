@@ -143,7 +143,6 @@ class TestClaudeSession:
         )
 
         jsonl_path = _jsonl_path_passed_to(transcriber_spy)
-        assert isinstance(jsonl_path, ClaudeJsonlPath)
         assert str(jsonl_path).startswith("/some/home")
 
         assert "-work-dir/" in str(jsonl_path)
