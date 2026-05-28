@@ -11,7 +11,7 @@ class ClaudeJsonlPath:
 
 
 def _claude_encoded(path):
-    return "-" + str(path).strip("/").replace("/", "-")
+    return str(path).replace("/", "-")
 
 
 class ClaudeSession:
