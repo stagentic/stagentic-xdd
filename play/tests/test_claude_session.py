@@ -59,24 +59,6 @@ class TestClaudeSession:
             )
             assert received_workspace == supplied_working_dir
 
-        def test_session_id_should_be_passed_to_cli(self, dummy):
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
-
-            ClaudeSession(
-                claude=claude_cli_spy,
-                transcriber=dummy,
-                home=dummy,
-            ).run(
-                prompt=dummy,
-                working_dir=dummy,
-                transcript_path=dummy
-            )
-
-            received_session_id = _value_passed_to(
-                claude_cli_spy, "session_id"
-            )
-            assert received_session_id is not None
-
         def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
             session = ClaudeSession(
