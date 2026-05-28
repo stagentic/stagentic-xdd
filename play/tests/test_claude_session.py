@@ -174,6 +174,21 @@ class TestClaudeSession:
             session_id_in_jsonl_path = _filename_minus_extension_of(_jsonl_path_passed_to(transcriber_spy))
             assert session_id_in_jsonl_path == session_id_passed_to_cli
 
+        def test_transcriber_should_receive_the_transcript_path(self, dummy):
+            transcriber_spy = MagicMock()
+
+            ClaudeSession(
+                claude=dummy,
+                transcriber=transcriber_spy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=Path("/output/transcript.md")
+            )
+
+            assert _transcript_path_passed_to(transcriber_spy) == Path("/output/transcript.md")
+
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
 
