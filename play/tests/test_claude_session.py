@@ -7,49 +7,54 @@ from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
 
 
-_DUMMY_PATH = Path("/dummy-path")
-_DUMMY = MagicMock()
-
-
 class TestClaudeSession:
     class TestCallsClaudeCli:
+        @pytest.fixture
+        def dummy(self): return MagicMock()
+
         @pytest.mark.parametrize(
             "supplied_prompt", [
-                "my prompt",
-                "another prompt"
-            ]
+                "my prompt", "another prompt"
+            ],
+            ids=["my prompt", "another prompt"]
         )
-        def test_prompt_should_be_passed_to_cli(self, supplied_prompt):
+        def test_prompt_should_be_passed_to_cli(self, supplied_prompt, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
 
             ClaudeSession(
                 claude=claude_cli_spy,
-                transcriber=_DUMMY,
-                home=_DUMMY_PATH,
+                transcriber=dummy,
+                home=dummy,
             ).run(
                 prompt=supplied_prompt,
-                working_dir=_DUMMY_PATH,
-                transcript_path=_DUMMY_PATH
+                working_dir=dummy,
+                transcript_path=dummy
             )
 
             received_prompt = _value_passed_to(claude_cli_spy, "prompt")
             assert received_prompt == supplied_prompt
 
-        def test_working_dir_should_be_passed_to_cli(self):
+        @pytest.mark.parametrize(
+            "supplied_working_dir", [
+                Path("/work_dir"), Path("/another/dir")
+            ],
+            ids=["/work_dir", "/another/dir"]
+        )
+        def test_working_dir_should_be_passed_to_cli(self, supplied_working_dir, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
 
             ClaudeSession(
                 claude=claude_cli_spy,
-                transcriber=_DUMMY,
-                home=_DUMMY_PATH,
+                transcriber=dummy,
+                home=dummy,
             ).run(
-                prompt=_DUMMY_PATH,
-                working_dir=Path("/work_dir"),
-                transcript_path=_DUMMY_PATH
+                prompt=dummy,
+                working_dir=supplied_working_dir,
+                transcript_path=dummy
             )
 
             received_workspace = _value_passed_to(claude_cli_spy, "workspace")
-            assert received_workspace == Path("/work_dir")
+            assert received_workspace == supplied_working_dir
 
     def test_claude_is_called_transcribes_and_returns_result(self):
         transcriber_spy = MagicMock()
@@ -69,7 +74,6 @@ class TestClaudeSession:
         )
 
         assert result == f"claude received my prompt for {Path('/work_dir')} and did its work"
-        assert claude_cli_spy.call_args.kwargs["workspace"] == Path("/work_dir")
 
         jsonl_path = _jsonl_path_passed_to(transcriber_spy)
         assert isinstance(jsonl_path, ClaudeJsonlPath)
