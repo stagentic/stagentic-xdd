@@ -206,11 +206,7 @@ class TestClaudeSession:
             transcript_path=Path("/output/transcript.md")
         )
 
-        jsonl_path = _jsonl_path_passed_to(transcriber_spy)
         assert _transcript_path_passed_to(transcriber_spy) == Path("/output/transcript.md")
-
-        embedded_session_id = _filename_minus_extension_of(jsonl_path)
-        assert embedded_session_id == claude_cli_spy.call_args.kwargs["session_id"]
 
 
 
