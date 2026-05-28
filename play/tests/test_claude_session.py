@@ -6,7 +6,27 @@ from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
 
 
+_DUMMY_PATH = "/dummy-path"
+_DUMMY = MagicMock()
+
+
 class TestClaudeSession:
+    class TestCallsClaudeCli:
+        def test_prompt_should_be_passed_to_cli(self):
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=_DUMMY,
+                home=Path(_DUMMY_PATH),
+            ).run(
+                prompt="my prompt",
+                working_dir=Path(_DUMMY_PATH),
+                transcript_path=Path(_DUMMY_PATH)
+            )
+
+            received_prompt = _value_passed_to(claude_cli_spy, "prompt")
+            assert received_prompt == "my prompt"
+
     def test_claude_is_called_transcribes_and_returns_result(self):
         transcriber_spy = MagicMock()
         claude_cli_spy = MagicMock(
@@ -25,7 +45,6 @@ class TestClaudeSession:
         )
 
         assert result == f"claude received my prompt for {Path('/work_dir')} and did its work"
-        assert claude_cli_spy.call_args.kwargs["prompt"] == "my prompt"
         assert claude_cli_spy.call_args.kwargs["workspace"] == Path("/work_dir")
 
         jsonl_path = _jsonl_path_passed_to(transcriber_spy)
@@ -52,6 +71,10 @@ class TestClaudeSession:
 
         ids = [call.kwargs["session_id"] for call in claude_cli_spy.call_args_list]
         assert ids[0] != ids[1]
+
+
+def _value_passed_to(spy, name):
+    return spy.call_args.kwargs[name]
 
 
 def _jsonl_path_passed_to(spy):
