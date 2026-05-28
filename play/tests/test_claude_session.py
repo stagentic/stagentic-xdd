@@ -34,6 +34,21 @@ class TestClaudeSession:
             received_prompt = _value_passed_to(claude_cli_spy, "prompt")
             assert received_prompt == supplied_prompt
 
+        def test_session_id_should_be_passed_to_cli(self, dummy):
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+
+            ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=dummy,
+                home=dummy,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=dummy
+            )
+
+            assert _value_passed_to(claude_cli_spy, "session_id") is not None
+
         @pytest.mark.parametrize(
             "supplied_working_dir", [
                 Path("/work_dir"), Path("/another/dir")
