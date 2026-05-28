@@ -156,6 +156,24 @@ class TestClaudeSession:
 
             assert expected_fragment in str(_jsonl_path_passed_to(transcriber_spy))
 
+        def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
+            transcriber_spy = MagicMock()
+            claude_cli_spy = MagicMock(spec=ClaudeCli)
+
+            ClaudeSession(
+                claude=claude_cli_spy,
+                transcriber=transcriber_spy,
+                home=dummy_path,
+            ).run(
+                prompt=dummy,
+                working_dir=dummy_path,
+                transcript_path=dummy
+            )
+
+            session_id_passed_to_cli = _value_passed_to(claude_cli_spy, "session_id")
+            session_id_in_jsonl_path = _filename_minus_extension_of(_jsonl_path_passed_to(transcriber_spy))
+            assert session_id_in_jsonl_path == session_id_passed_to_cli
+
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
 
