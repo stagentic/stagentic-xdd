@@ -4,9 +4,11 @@ import uuid
 class ClaudeJsonlPath:
     def __init__(self, *, home, working_dir=None):
         self._home = home
+        self._working_dir = working_dir
 
     def __str__(self):
-        return str(self._home / ".claude" / "projects" / "-foo-bar")
+        encoded = "-" + str(self._working_dir).strip("/").replace("/", "-")
+        return str(self._home / ".claude" / "projects" / encoded)
 
 
 class ClaudeSession:
