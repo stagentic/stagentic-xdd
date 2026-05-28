@@ -5,13 +5,12 @@ from claude_session import ClaudeSession
 
 class TestClaudeSession:
     def test_claude_is_called_transcribes_and_returns_result(self):
-        claude_calls = []
         transcriber_calls = []
 
         working_dir = Path("/work_dir")
         transcript_path = Path("/output/transcript.md")
         result = ClaudeSession(
-            claude=_claude_spy(claude_calls, returns="claude said this"),
+            claude=_claude_spy(returns=lambda p, w: f"claude received {p} for {w} and did its work"),
             transcriber=_transcriber_spy(transcriber_calls),
             home=Path("/some/home"),
         ).run(
@@ -20,9 +19,7 @@ class TestClaudeSession:
             transcript_path=transcript_path,
         )
 
-        assert claude_calls[0]["prompt"] == "my prompt"
-        assert claude_calls[0]["workspace"] == working_dir
-        assert result == "claude said this"
+        assert result == f"claude received my prompt for {working_dir} and did its work"
 
         jsonl_path, output_path = transcriber_calls[0]
         assert jsonl_path.parent == Path("/some/home/.claude/projects/-work-dir")
@@ -43,10 +40,9 @@ class TestClaudeSession:
         assert claude_calls[0] != claude_calls[1]
 
 
-def _claude_spy(calls, *, returns=""):
+def _claude_spy(*, returns=lambda p,w: ""):
     def spy(prompt, **kwargs):
-        calls.append({"prompt": prompt, "workspace": kwargs["workspace"]})
-        return returns
+        return returns(prompt, kwargs["workspace"])
     return spy
 
 
