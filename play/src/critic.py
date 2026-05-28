@@ -32,7 +32,6 @@ def _prompt_for(evidence, working_dir, should):
         f"Workspace: {working_dir}\n\n"
         f"Evaluate each of the following characteristics against the transcript and workspace.\n"
         f"Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
-        f"Do not include any other content, no prose, no markdown.\n\n"
         f"Characteristics:\n{characteristics}"
     )
 
@@ -47,9 +46,15 @@ def _statuses_from(result):
 
 def _strip_code_fence(result):
     stripped = result.strip()
-    if stripped.startswith("```"):
+    fence_start = stripped.find("```")
+    if fence_start != -1:
+        stripped = stripped[fence_start:]
         stripped = stripped.split("\n", 1)[1]
         stripped = stripped.rsplit("```", 1)[0]
+        return stripped.strip()
+    array_start = stripped.find("[")
+    if array_start > 0:
+        stripped = stripped[array_start:]
     return stripped
 
 

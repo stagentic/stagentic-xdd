@@ -63,6 +63,32 @@ class TestCritic:
         assert claude_cli_calls[0]["workspace"] == working_dir
         assert transcriber_calls[0] == working_dir / "critique.md"
 
+    def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path, _using):
+        prose_then_json = (
+            'Based on my evaluation:\n\n'
+            '[{"characteristic": "a characteristic", "status": "PASS"}]'
+        )
+        session = ClaudeSession(**_using(claude=lambda *_, **__: prose_then_json))
+
+        Critic(session=session).evaluate(
+            evidence=evidence,
+            working_dir=tmp_path,
+            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
+        )
+
+    def test_evaluate_handles_json_in_code_fence_preceded_by_prose(self, evidence, tmp_path, _using):
+        prose_then_fence = (
+            'Based on the transcript:\n\n'
+            '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
+        )
+        session = ClaudeSession(**_using(claude=lambda *_, **__: prose_then_fence))
+
+        Critic(session=session).evaluate(
+            evidence=evidence,
+            working_dir=tmp_path,
+            should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
+        )
+
     def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
         markdown = '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
         session = ClaudeSession(
