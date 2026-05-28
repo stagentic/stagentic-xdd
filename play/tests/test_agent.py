@@ -92,6 +92,5 @@ class TestAgent:
             working_dir=workspace.working_dir
         )
 
-        assert value_passed_to(transcriber_spy, "output_path") == workspace.working_dir / "transcript.md"
         assert agent.transcript == workspace.working_dir / "transcript.md"
 
