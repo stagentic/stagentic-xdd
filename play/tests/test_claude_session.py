@@ -110,13 +110,16 @@ class TestClaudeSession:
         @pytest.fixture
         def dummy(self): return MagicMock()
 
+        @pytest.fixture
+        def dummy_path(self): return Path("/dummy")
+
         @pytest.mark.parametrize(
             "supplied_home", [
                 Path("/some/home"), Path("/another/home")
             ],
             ids=["/some/home", "/another/home"]
         )
-        def test_jsonl_path_should_encode_the_home(self, supplied_home, dummy):
+        def test_jsonl_path_should_encode_the_home(self, supplied_home, dummy, dummy_path):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
@@ -125,19 +128,19 @@ class TestClaudeSession:
                 home=supplied_home,
             ).run(
                 prompt=dummy,
-                working_dir=dummy,
+                working_dir=dummy_path,
                 transcript_path=dummy
             )
 
             assert str(_jsonl_path_passed_to(transcriber_spy)).startswith(str(supplied_home))
 
-        def test_jsonl_path_should_encode_the_working_dir(self, dummy):
+        def test_jsonl_path_should_encode_the_working_dir(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
                 claude=dummy,
                 transcriber=transcriber_spy,
-                home=Path("/h"),
+                home=dummy_path,
             ).run(
                 prompt=dummy,
                 working_dir=Path("/work-dir"),
