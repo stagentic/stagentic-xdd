@@ -110,6 +110,21 @@ class TestClaudeSession:
         @pytest.fixture
         def dummy(self): return MagicMock()
 
+        def test_jsonl_path_should_encode_the_home(self, dummy):
+            transcriber_spy = MagicMock()
+
+            ClaudeSession(
+                claude=dummy,
+                transcriber=transcriber_spy,
+                home=Path("/some/home"),
+            ).run(
+                prompt=dummy,
+                working_dir=dummy,
+                transcript_path=dummy
+            )
+
+            assert str(_jsonl_path_passed_to(transcriber_spy)).startswith("/some/home")
+
         def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
             transcriber_spy = MagicMock()
 
