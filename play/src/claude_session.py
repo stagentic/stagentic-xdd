@@ -6,7 +6,7 @@ class ClaudeJsonlPath:
         self._home = home
 
     def __str__(self):
-        return str(self._home)
+        return str(self._home / ".claude" / "projects")
 
 
 class ClaudeSession:

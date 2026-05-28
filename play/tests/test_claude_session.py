@@ -49,6 +49,10 @@ class TestClaudeJsonlPath:
         path = ClaudeJsonlPath(home=Path("/another/home"))
         assert str(path).startswith("/another/home")
 
+    def test_path_should_be_under_claude_projects(self):
+        path = ClaudeJsonlPath(home=Path("/some/home"))
+        assert str(path).startswith("/some/home/.claude/projects")
+
 
 def _claude_spy(*, returns=lambda p,w: ""):
     def spy(prompt, **kwargs):
