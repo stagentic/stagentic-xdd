@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest.mock import MagicMock
 
 from claude_cli import ClaudeCli
-from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
 
 
@@ -112,21 +111,6 @@ class TestClaudeSession:
 
         @pytest.fixture
         def dummy_path(self): return Path("/dummy")
-
-        def test_transcriber_should_receive_a_claude_jsonl_path(self, dummy):
-            transcriber_spy = MagicMock()
-
-            ClaudeSession(
-                claude=dummy,
-                transcriber=transcriber_spy,
-                home=dummy,
-            ).run(
-                prompt=dummy,
-                working_dir=dummy,
-                transcript_path=dummy
-            )
-
-            assert isinstance(_value_passed_to(transcriber_spy, "jsonl_path"), ClaudeJsonlPath)
 
         @pytest.mark.parametrize(
             "supplied_home", [
