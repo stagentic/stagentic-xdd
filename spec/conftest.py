@@ -41,4 +41,4 @@ def inspector(request):
 
 @pytest.fixture
 def agent():
-    return FakeAgent(tasks=TASKS)
+    return FakeAgent(tasks_root=TASKS)
