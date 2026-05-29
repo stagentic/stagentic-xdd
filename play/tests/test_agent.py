@@ -40,7 +40,7 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, tasks, dummy):
+    def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, tasks):
         session_spy = MagicMock()
 
         Agent(tasks=tasks, session=session_spy).perform(
@@ -56,7 +56,7 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, tasks, dummy):
+    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, tasks):
         session_spy = MagicMock()
 
         Agent(tasks=tasks, session=session_spy).perform(
@@ -72,7 +72,7 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, tasks, dummy):
+    def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, tasks):
         session_spy = MagicMock()
         agent = Agent(tasks=tasks, session=session_spy)
 
