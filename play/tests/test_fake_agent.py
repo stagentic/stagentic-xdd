@@ -34,7 +34,7 @@ class TestFakeAgent:
         assert (working_dir / "sentinel.txt").exists()
 
     def test_transcript_is_the_path_in_the_working_directory_after_perform(self, tasks_root, working_dir, create_test_task_with):
-        create_test_task_with("touch transcript.md\n")
+        create_test_task_with("true\n")
 
         agent = FakeAgent(tasks_root=tasks_root)
         agent.perform(task="my-task", working_dir=working_dir)
