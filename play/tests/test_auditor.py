@@ -20,10 +20,17 @@ class TestAuditor:
             ],
         )
 
-    def test_verify_receives_the_evidence_text_and_working_dir(self, tmp_path):
+    @pytest.mark.parametrize(
+        "evidence_text, working_dir_name", [
+            ("hello agent", "workspace"),
+            ("different transcript", "other-dir"),
+        ],
+        ids=["hello agent", "different transcript"]
+    )
+    def test_verify_receives_the_evidence_text_and_working_dir(self, evidence_text, working_dir_name, tmp_path):
         transcript = tmp_path / "transcript.md"
-        transcript.write_text("hello agent")
-        working_dir = tmp_path / "workspace"
+        transcript.write_text(evidence_text)
+        working_dir = tmp_path / working_dir_name
 
         seen = []
 
@@ -41,21 +48,28 @@ class TestAuditor:
             ],
         )
 
-        assert seen == [("hello agent", working_dir)]
+        assert seen == [(evidence_text, working_dir)]
 
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence):
+    @pytest.mark.parametrize(
+        "characteristic, failure", [
+            ("my characteristic", "my failure message"),
+            ("another characteristic", "another failure message"),
+        ],
+        ids=["my characteristic", "another characteristic"]
+    )
+    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
                 evidence=evidence,
                 should=[
-                    {"characteristic": "my characteristic",
+                    {"characteristic": characteristic,
                      "verify": lambda transcript, working_dir: False,
-                     "failure": "my failure message"},
+                     "failure": failure},
                 ],
             )
 
-        assert "my characteristic" in str(excinfo.value)
-        assert "my failure message" in str(excinfo.value)
+        assert characteristic in str(excinfo.value)
+        assert failure in str(excinfo.value)
 
     def test_failure_message_lists_every_failed_row(self, evidence):
         with pytest.raises(AssertionError) as excinfo:
