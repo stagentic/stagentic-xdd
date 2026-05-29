@@ -16,8 +16,8 @@ class TestAgent:
 
     @pytest.fixture
     def create_test_task_with(self, tasks_root):
-        def make(prompt="do the thing"):
-            task = tasks_root / "my-task"
+        def make(prompt="do the thing", name="my-task"):
+            task = tasks_root / name
             task.mkdir()
             (task / "TASK.md").write_text(prompt)
         return make
@@ -40,6 +40,24 @@ class TestAgent:
 
             received_prompt = value_passed_to(session_spy.run, "prompt")
             assert received_prompt == supplied_task_content
+
+        @pytest.mark.parametrize(
+            "supplied_task", [
+                "my-task", "another-task"
+            ],
+            ids=["my-task", "another-task"]
+        )
+        def test_prompt_should_be_read_from_the_named_task(self, supplied_task, tasks_root, create_test_task_with, dummy):
+            session_spy = MagicMock(spec=ClaudeSession)
+            create_test_task_with(prompt="the prompt", name=supplied_task)
+
+            Agent(tasks_root=tasks_root, session=session_spy).perform(
+                task=supplied_task,
+                working_dir=dummy
+            )
+
+            received_prompt = value_passed_to(session_spy.run, "prompt")
+            assert received_prompt == "the prompt"
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
