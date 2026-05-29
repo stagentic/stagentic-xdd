@@ -1,7 +1,6 @@
+import pytest
 from pathlib import Path
 from unittest.mock import MagicMock
-
-import pytest
 
 from agent import Agent
 from claude_session import ClaudeSession
