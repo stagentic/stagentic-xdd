@@ -33,7 +33,8 @@ class TestAgent:
             working_dir=dummy
         )
 
-        assert value_passed_to(session_spy.run, "prompt") == task_text
+        received_prompt = value_passed_to(session_spy.run, "prompt")
+        assert received_prompt == task_text
 
     @pytest.mark.parametrize(
         "supplied_working_dir", [
@@ -49,7 +50,8 @@ class TestAgent:
             working_dir=supplied_working_dir
         )
 
-        assert value_passed_to(session_spy.run, "working_dir") == supplied_working_dir
+        received_working_dir = value_passed_to(session_spy.run, "working_dir")
+        assert received_working_dir == supplied_working_dir
 
     @pytest.mark.parametrize(
         "supplied_working_dir", [
@@ -65,7 +67,8 @@ class TestAgent:
             working_dir=supplied_working_dir
         )
 
-        assert value_passed_to(session_spy.run, "transcript_path") == supplied_working_dir / "transcript.md"
+        received_transcript_path = value_passed_to(session_spy.run, "transcript_path")
+        assert received_transcript_path == supplied_working_dir / "transcript.md"
 
     @pytest.mark.parametrize(
         "supplied_working_dir", [
