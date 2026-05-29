@@ -9,7 +9,7 @@ from test_doubles.spy_interrogation import value_passed_to
 
 class TestAgent:
     @pytest.fixture
-    def workspace(self, tmp_path):
+    def tasks(self, tmp_path):
         tasks = tmp_path / "tasks"
         (tasks / "my-task").mkdir(parents=True)
         (tasks / "my-task" / "TASK.md").write_text("do the thing")
@@ -40,10 +40,10 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, workspace, dummy):
+    def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, tasks, dummy):
         session_spy = MagicMock()
 
-        Agent(tasks=workspace, session=session_spy).perform(
+        Agent(tasks=tasks, session=session_spy).perform(
             task="my-task",
             working_dir=supplied_working_dir
         )
@@ -56,10 +56,10 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, workspace, dummy):
+    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, tasks, dummy):
         session_spy = MagicMock()
 
-        Agent(tasks=workspace, session=session_spy).perform(
+        Agent(tasks=tasks, session=session_spy).perform(
             task="my-task",
             working_dir=supplied_working_dir
         )
@@ -72,9 +72,9 @@ class TestAgent:
         ],
         ids=["/work", "/other/dir"]
     )
-    def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, workspace, dummy):
+    def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, tasks, dummy):
         session_spy = MagicMock()
-        agent = Agent(tasks=workspace, session=session_spy)
+        agent = Agent(tasks=tasks, session=session_spy)
 
         agent.perform(task="my-task", working_dir=supplied_working_dir)
 
