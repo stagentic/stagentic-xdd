@@ -4,12 +4,16 @@ from claude_session import ClaudeSession
 
 
 class Agent:
-    def __init__(self, *, tasks: Path, session: ClaudeSession):
-        self._tasks = tasks
+    def __init__(
+            self, *,
+            tasks_root: Path,
+            session: ClaudeSession
+    ):
+        self._tasks_root = tasks_root
         self._session = session
 
     def perform(self, *, task: str, working_dir: Path):
-        prompt = (self._tasks / task / "TASK.md").read_text()
+        prompt = (self._tasks_root / task / "TASK.md").read_text()
         self.transcript = working_dir / "transcript.md"
 
         self._session.run(
