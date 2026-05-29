@@ -16,72 +16,72 @@ class TestAgent:
         (tasks / "my-task" / "TASK.md").write_text("do the thing")
         return tasks
 
-    @pytest.mark.parametrize(
-        "task_text", [
-            "do the thing", "another task"
-        ],
-        ids=["do the thing", "another task"]
-    )
-    def test_prompt_should_be_read_from_task_file(self, task_text, tmp_path, dummy):
-        tasks = tmp_path / "tasks"
-        (tasks / "my-task").mkdir(parents=True)
-        (tasks / "my-task" / "TASK.md").write_text(task_text)
-        session_spy = MagicMock(spec=ClaudeSession)
-
-        Agent(tasks=tasks, session=session_spy).perform(
-            task="my-task",
-            working_dir=dummy
+    class TestCallsSession:
+        @pytest.mark.parametrize(
+            "task_text", [
+                "do the thing", "another task"
+            ],
+            ids=["do the thing", "another task"]
         )
+        def test_prompt_should_be_read_from_task_file(self, task_text, tmp_path, dummy):
+            tasks = tmp_path / "tasks"
+            (tasks / "my-task").mkdir(parents=True)
+            (tasks / "my-task" / "TASK.md").write_text(task_text)
+            session_spy = MagicMock(spec=ClaudeSession)
 
-        received_prompt = value_passed_to(session_spy.run, "prompt")
-        assert received_prompt == task_text
+            Agent(tasks=tasks, session=session_spy).perform(
+                task="my-task",
+                working_dir=dummy
+            )
 
-    @pytest.mark.parametrize(
-        "supplied_working_dir", [
-            Path("/work"), Path("/other/dir")
-        ],
-        ids=["/work", "/other/dir"]
-    )
-    def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, tasks):
-        session_spy = MagicMock(spec=ClaudeSession)
+            received_prompt = value_passed_to(session_spy.run, "prompt")
+            assert received_prompt == task_text
 
-        Agent(tasks=tasks, session=session_spy).perform(
-            task="my-task",
-            working_dir=supplied_working_dir
+        @pytest.mark.parametrize(
+            "supplied_working_dir", [
+                Path("/work"), Path("/other/dir")
+            ],
+            ids=["/work", "/other/dir"]
         )
+        def test_working_dir_should_be_passed_to_session(self, supplied_working_dir, tasks):
+            session_spy = MagicMock(spec=ClaudeSession)
 
-        received_working_dir = value_passed_to(session_spy.run, "working_dir")
-        assert received_working_dir == supplied_working_dir
+            Agent(tasks=tasks, session=session_spy).perform(
+                task="my-task",
+                working_dir=supplied_working_dir
+            )
 
-    @pytest.mark.parametrize(
-        "supplied_working_dir", [
-            Path("/work"), Path("/other/dir")
-        ],
-        ids=["/work", "/other/dir"]
-    )
-    def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, tasks):
-        session_spy = MagicMock(spec=ClaudeSession)
+            received_working_dir = value_passed_to(session_spy.run, "working_dir")
+            assert received_working_dir == supplied_working_dir
 
-        Agent(tasks=tasks, session=session_spy).perform(
-            task="my-task",
-            working_dir=supplied_working_dir
+        @pytest.mark.parametrize(
+            "supplied_working_dir", [
+                Path("/work"), Path("/other/dir")
+            ],
+            ids=["/work", "/other/dir"]
         )
+        def test_transcript_path_should_be_inside_working_dir(self, supplied_working_dir, tasks):
+            session_spy = MagicMock(spec=ClaudeSession)
 
-        received_transcript_path = value_passed_to(session_spy.run, "transcript_path")
-        assert received_transcript_path == supplied_working_dir / "transcript.md"
+            Agent(tasks=tasks, session=session_spy).perform(
+                task="my-task",
+                working_dir=supplied_working_dir
+            )
 
-    @pytest.mark.parametrize(
-        "supplied_working_dir", [
-            Path("/work"), Path("/other/dir")
-        ],
-        ids=["/work", "/other/dir"]
-    )
-    def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, tasks):
-        session_spy = MagicMock(spec=ClaudeSession)
-        agent = Agent(tasks=tasks, session=session_spy)
+            received_transcript_path = value_passed_to(session_spy.run, "transcript_path")
+            assert received_transcript_path == supplied_working_dir / "transcript.md"
 
-        agent.perform(task="my-task", working_dir=supplied_working_dir)
+    class TestExposesTranscript:
+        @pytest.mark.parametrize(
+            "supplied_working_dir", [
+                Path("/work"), Path("/other/dir")
+            ],
+            ids=["/work", "/other/dir"]
+        )
+        def test_transcript_attribute_should_be_set_after_perform(self, supplied_working_dir, tasks):
+            session_spy = MagicMock(spec=ClaudeSession)
+            agent = Agent(tasks=tasks, session=session_spy)
 
-        assert agent.transcript == supplied_working_dir / "transcript.md"
+            agent.perform(task="my-task", working_dir=supplied_working_dir)
 
-
+            assert agent.transcript == supplied_working_dir / "transcript.md"
