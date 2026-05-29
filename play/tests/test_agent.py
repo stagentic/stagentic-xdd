@@ -11,10 +11,10 @@ from test_doubles.spy_interrogation import value_passed_to
 class TestAgent:
     @pytest.fixture
     def make_tasks(self, tmp_path):
-        def make(task_text="do the thing"):
+        def make(supplied_task_text="do the thing"):
             tasks = tmp_path / "tasks"
             (tasks / "my-task").mkdir(parents=True)
-            (tasks / "my-task" / "TASK.md").write_text(task_text)
+            (tasks / "my-task" / "TASK.md").write_text(supplied_task_text)
             return tasks
         return make
 
@@ -24,21 +24,21 @@ class TestAgent:
 
     class TestCallsSession:
         @pytest.mark.parametrize(
-            "task_text", [
+            "supplied_task_text", [
                 "do the thing", "another task"
             ],
             ids=["do the thing", "another task"]
         )
-        def test_prompt_should_be_read_from_task_file(self, task_text, make_tasks, dummy):
+        def test_prompt_should_be_read_from_task_file(self, supplied_task_text, make_tasks, dummy):
             session_spy = MagicMock(spec=ClaudeSession)
 
-            Agent(tasks=make_tasks(task_text), session=session_spy).perform(
+            Agent(tasks=make_tasks(supplied_task_text), session=session_spy).perform(
                 task="my-task",
                 working_dir=dummy
             )
 
             received_prompt = value_passed_to(session_spy.run, "prompt")
-            assert received_prompt == task_text
+            assert received_prompt == supplied_task_text
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
