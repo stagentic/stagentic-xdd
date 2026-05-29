@@ -18,17 +18,23 @@ class TestFakeAgent:
 
     @pytest.fixture
     def create_test_task_with(self, tasks_root):
-        def make(script):
-            task = tasks_root / "my-task"
+        def make(script, name="my-task"):
+            task = tasks_root / name
             task.mkdir()
             (task / "fake-task.sh").write_text(script)
         return make
 
-    def test_perform_runs_the_named_task_script_in_the_working_directory(self, tasks_root, working_dir, create_test_task_with):
-        create_test_task_with("touch sentinel.txt\n")
+    @pytest.mark.parametrize(
+        "supplied_task", [
+            "my-task", "another-task"
+        ],
+        ids=["my-task", "another-task"]
+    )
+    def test_perform_runs_the_named_task_script_in_the_working_directory(self, supplied_task, tasks_root, working_dir, create_test_task_with):
+        create_test_task_with("touch sentinel.txt\n", name=supplied_task)
 
         FakeAgent(tasks_root=tasks_root).perform(
-            task="my-task", working_dir=working_dir,
+            task=supplied_task, working_dir=working_dir,
         )
 
         assert (working_dir / "sentinel.txt").exists()
