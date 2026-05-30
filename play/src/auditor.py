@@ -2,6 +2,8 @@ from pathlib import Path
 
 
 class Auditor:
+    # noinspection PyMethodMayBeStatic
+    # - to preserve consistency with Critic.evaluate
     def evaluate(self, *, evidence: Path, working_dir: Path | None = None, should: list[dict]):
         if not should: raise ValueError("scorecard must not be empty")
 
