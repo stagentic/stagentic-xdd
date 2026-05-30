@@ -3,10 +3,12 @@ from pathlib import Path
 
 class Auditor:
     def evaluate(self, *, evidence: Path, working_dir: Path | None = None, should: list[dict]):
+        if not should: raise ValueError("scorecard must not be empty")
+
         evidence_content = evidence.read_text()
         failures = _failures_from(evidence_content, should, working_dir)
-        if failures:
-            raise AssertionError(_formatted(failures))
+
+        if failures: raise AssertionError(_formatted(failures))
 
 
 def _failures_from(content: str, should: list[dict], working_dir: Path | None) -> list[dict]:

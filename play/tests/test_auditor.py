@@ -91,3 +91,10 @@ class TestAuditor:
             "- first characteristic: first failure\n"
             "- third characteristic: third failure"
         )
+
+    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence):
+        with pytest.raises(ValueError, match="scorecard must not be empty"):
+            Auditor().evaluate(
+                evidence=evidence,
+                should=[],
+            )
