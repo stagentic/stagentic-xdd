@@ -8,12 +8,12 @@ class Auditor:
         if not should: raise ValueError("scorecard must not be empty")
 
         evidence_content = evidence.read_text()
-        failures = _failures_from(evidence_content, should, working_dir)
+        failures = _failures_from(evidence_content, working_dir, should)
 
         if failures: raise AssertionError(_formatted(failures))
 
 
-def _failures_from(content: str, should: list[dict], working_dir: Path) -> list[dict]:
+def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
 
 
