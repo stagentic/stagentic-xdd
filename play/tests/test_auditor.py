@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import MagicMock
 
 from auditor import Auditor
 
@@ -32,23 +33,19 @@ class TestAuditor:
         transcript.write_text(evidence_text)
         working_dir = tmp_path / working_dir_name
 
-        seen = []
-
-        def verification_spy(transcript, working_dir):
-            seen.append((transcript, working_dir))
-            return True
+        verify = MagicMock(return_value=True)
 
         Auditor().evaluate(
             evidence=transcript,
             working_dir=working_dir,
             should=[
                 {"characteristic": "captures input",
-                 "verify": verification_spy,
+                 "verify": verify,
                  "failure": "n/a"},
             ],
         )
 
-        assert seen == [(evidence_text, working_dir)]
+        verify.assert_called_once_with(evidence_text, working_dir)
 
     @pytest.mark.parametrize(
         "characteristic, failure", [
