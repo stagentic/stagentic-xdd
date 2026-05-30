@@ -18,6 +18,9 @@ class TestAuditor:
                 {"characteristic": "always passes",
                  "verify": lambda transcript, working_dir: True,
                  "failure": "should never see this"},
+                {"characteristic": "also always passes",
+                 "verify": lambda transcript, working_dir: True,
+                 "failure": "should never see this either"},
             ],
         )
 
