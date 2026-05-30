@@ -10,8 +10,8 @@ Review all production code in `play/src/` and `spec/` and leave it in good
 shape before the xdd skill work begins. Work through each file in turn —
 for each production file, review its tests alongside it.
 
-`claude_cli.py`, `claude_session.py`, `agent.py` are the current gold standard for this repo's production code.
-`TestClaudeJsonlPath`, `TestClaudeSession`, `TestAgent` are the gold standard for tests.
+`claude_cli.py`, `claude_session.py`, `agent.py` are the current reference standard for this repo's production code.
+`TestClaudeJsonlPath`, `TestClaudeSession`, `TestAgent` are the current reference standard for tests.
 
 Work through each remaining file in turn — for each production file, review
 its tests alongside it and bring them to the same standard.
@@ -22,7 +22,7 @@ its tests alongside it and bring them to the same standard.
 - [x] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
-- [ ] `auditor.py` (and `tests/test_auditor.py`)
+- [x] `auditor.py` (and `tests/test_auditor.py`)
 - [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
 
