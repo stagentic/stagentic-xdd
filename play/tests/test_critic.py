@@ -27,13 +27,17 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-        session_spy.run.assert_called_once()
-        prompt = session_spy.run.call_args.kwargs["prompt"]
-        assert str(evidence) in prompt
-        assert str(working_dir) in prompt
-        assert "a characteristic" in prompt
-        assert session_spy.run.call_args.kwargs["working_dir"] == working_dir
-        assert session_spy.run.call_args.kwargs["transcript_path"] == working_dir / "critique.md"
+        session_spy.run.assert_called_once_with(
+            prompt=(
+                f"Transcript: {evidence}\n"
+                f"Workspace: {working_dir}\n\n"
+                "Evaluate each of the following characteristics against the transcript and workspace.\n"
+                "Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
+                "Characteristics:\n- a characteristic"
+            ),
+            working_dir=working_dir,
+            transcript_path=working_dir / "critique.md",
+        )
 
     def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path):
         prose_then_json = (
