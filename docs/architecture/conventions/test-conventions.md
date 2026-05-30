@@ -36,9 +36,11 @@ When a test asserts that a value passed in flows through to a destination, param
 
 ## Pin exact composed output once via `==`
 
-When the production code composes a value (a path, a message, a command) from inputs, write one assertion that pins the exact composed string or structure via `==`, alongside per-property partial checks (`startswith`, `in`).
+When the production code composes a value from inputs, write one assertion that pins the exact composed string or structure via `==`.
 
-**Why:** the per-property checks prove each component is present; the exact-match assertion documents the *shape* — the prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source. The single exact-match catches accidental drift in the composition.
+**Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path.
+
+**Why:** the exact-match documents the shape — prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source, and catches accidental drift in the composition. Per-property tests make behavioural facts explicit that a whole-story exact-match alone wouldn't surface.
 
 ## Stub callable → lambda; spy callable → `MagicMock`
 
