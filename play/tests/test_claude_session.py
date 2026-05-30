@@ -15,7 +15,7 @@ class TestClaudeSession:
             ids=["my prompt", "another prompt"]
         )
         def test_prompt_should_be_passed_to_cli(self, supplied_prompt, dummy):
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
                 claude=claude_cli_spy,
@@ -27,8 +27,11 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            claude_cli_spy.assert_called_once()
-            assert claude_cli_spy.call_args.kwargs["prompt"] == supplied_prompt
+            claude_cli_spy.assert_called_once_with(
+                prompt=supplied_prompt,
+                workspace=ANY,
+                session_id=ANY,
+            )
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
@@ -37,7 +40,7 @@ class TestClaudeSession:
             ids=["/work_dir", "/another/dir"]
         )
         def test_working_dir_should_be_passed_to_cli(self, supplied_working_dir, dummy):
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
                 claude=claude_cli_spy,
@@ -49,11 +52,14 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            claude_cli_spy.assert_called_once()
-            assert claude_cli_spy.call_args.kwargs["workspace"] == supplied_working_dir
+            claude_cli_spy.assert_called_once_with(
+                prompt=ANY,
+                workspace=supplied_working_dir,
+                session_id=ANY,
+            )
 
         def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            claude_cli_spy = MagicMock(spec=ClaudeCli())
             session = ClaudeSession(
                 claude=claude_cli_spy,
                 transcriber=dummy,
@@ -74,7 +80,7 @@ class TestClaudeSession:
             ids=["cli result", "another cli result"]
         )
         def test_result_from_cli_should_be_returned(self, cli_result, dummy):
-            claude_cli_stub = MagicMock(spec=ClaudeCli, return_value=cli_result)
+            claude_cli_stub = MagicMock(spec=ClaudeCli(), return_value=cli_result)
 
             result = ClaudeSession(
                 claude=claude_cli_stub,
@@ -141,7 +147,7 @@ class TestClaudeSession:
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
-            claude_cli_spy = MagicMock(spec=ClaudeCli)
+            claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
                 claude=claude_cli_spy,
