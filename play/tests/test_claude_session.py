@@ -1,10 +1,9 @@
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 from claude_cli import ClaudeCli
 from claude_session import ClaudeSession
-from test_doubles.spy_interrogation import value_passed_to, values_passed_to
 
 
 class TestClaudeSession:
@@ -28,10 +27,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            received_prompt = value_passed_to(
-                claude_cli_spy, "prompt"
-            )
-            assert received_prompt == supplied_prompt
+            claude_cli_spy.assert_called_once()
+            assert claude_cli_spy.call_args.kwargs["prompt"] == supplied_prompt
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
@@ -52,10 +49,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            received_workspace = value_passed_to(
-                claude_cli_spy, "workspace"
-            )
-            assert received_workspace == supplied_working_dir
+            claude_cli_spy.assert_called_once()
+            assert claude_cli_spy.call_args.kwargs["workspace"] == supplied_working_dir
 
         def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli)
@@ -68,8 +63,9 @@ class TestClaudeSession:
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
 
-            ids = values_passed_to(claude_cli_spy, "session_id")
-            assert ids[0] != ids[1]
+            assert claude_cli_spy.call_count == 2
+            first, second = claude_cli_spy.call_args_list
+            assert first.kwargs["session_id"] != second.kwargs["session_id"]
 
         @pytest.mark.parametrize(
             "cli_result", [
@@ -115,9 +111,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            received_jsonl_path = str(value_passed_to(
-                transcriber_spy, "jsonl_path")
-            )
+            transcriber_spy.assert_called_once()
+            received_jsonl_path = str(transcriber_spy.call_args.kwargs["jsonl_path"])
             assert received_jsonl_path.startswith(str(supplied_home))
 
         @pytest.mark.parametrize(
@@ -140,9 +135,8 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            received_jsonl_path = str(value_passed_to(
-                transcriber_spy, "jsonl_path")
-            )
+            transcriber_spy.assert_called_once()
+            received_jsonl_path = str(transcriber_spy.call_args.kwargs["jsonl_path"])
             assert expected_fragment in received_jsonl_path
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
@@ -159,11 +153,11 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            session_id_passed_to_cli = value_passed_to(
-                claude_cli_spy, "session_id"
-            )
+            claude_cli_spy.assert_called_once()
+            transcriber_spy.assert_called_once()
+            session_id_passed_to_cli = claude_cli_spy.call_args.kwargs["session_id"]
             session_id_in_jsonl_path = _filename_minus_extension_from(
-                value_passed_to(transcriber_spy, "jsonl_path")
+                transcriber_spy.call_args.kwargs["jsonl_path"]
             )
             assert session_id_in_jsonl_path == session_id_passed_to_cli
 
@@ -186,10 +180,10 @@ class TestClaudeSession:
                 transcript_path=supplied_transcript_path
             )
 
-            received_output_path = value_passed_to(
-                transcriber_spy, "output_path"
+            transcriber_spy.assert_called_once_with(
+                jsonl_path=ANY,
+                output_path=supplied_transcript_path,
             )
-            assert received_output_path == supplied_transcript_path
 
 
 def _filename_minus_extension_from(path):
