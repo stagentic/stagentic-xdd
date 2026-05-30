@@ -88,12 +88,7 @@ class TestAuditor:
                 ],
             )
 
-        message = str(excinfo.value)
-        assert "first characteristic" in message
-        assert "first failure" in message
-
-        assert "middle characteristic" not in message
-        assert "middle failure" not in message
-
-        assert "third characteristic" in message
-        assert "third failure" in message
+        assert str(excinfo.value) == (
+            "- first characteristic: first failure\n"
+            "- third characteristic: third failure"
+        )
