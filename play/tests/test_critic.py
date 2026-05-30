@@ -1,21 +1,10 @@
-import dataclasses
 import json
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Any
-from unittest.mock import MagicMock, ANY
+from unittest.mock import MagicMock
 
 import pytest
 
 from claude_session import ClaudeSession
 from critic import Critic
-
-
-@dataclass
-class _SessionParams:
-    claude: Any
-    transcriber: Any
-    home: Path
 
 
 class TestCritic:
@@ -25,94 +14,72 @@ class TestCritic:
         path.write_text("anything")
         return path
 
-    @pytest.fixture
-    def session_params(self, tmp_path, dummy):
-        return _SessionParams(
-            claude=dummy,
-            transcriber=dummy,
-            home=tmp_path / "home",
-        )
-
-    @pytest.fixture
-    def _using(self, session_params):
-        def factory(**overrides):
-            return vars(dataclasses.replace(session_params, **overrides))
-        return factory
-
-    def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path, _using):
+    def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path):
         working_dir = tmp_path / "workspace"
-        claude_spy = MagicMock(
-            return_value='[{"characteristic": "a characteristic", "status": "PASS"}]'
+        session_spy = MagicMock(spec=ClaudeSession)
+        session_spy.run.return_value = (
+            '[{"characteristic": "a characteristic", "status": "PASS"}]'
         )
-        transcriber_spy = MagicMock()
-        session = ClaudeSession(**_using(
-            claude=claude_spy,
-            transcriber=transcriber_spy,
-        ))
 
-        Critic(session=session).evaluate(
+        Critic(session=session_spy).evaluate(
             evidence=evidence,
             working_dir=working_dir,
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-        claude_spy.assert_called_once()
-        prompt = claude_spy.call_args.kwargs["prompt"]
+        session_spy.run.assert_called_once()
+        prompt = session_spy.run.call_args.kwargs["prompt"]
         assert str(evidence) in prompt
         assert str(working_dir) in prompt
         assert "a characteristic" in prompt
-        assert claude_spy.call_args.kwargs["workspace"] == working_dir
+        assert session_spy.run.call_args.kwargs["working_dir"] == working_dir
+        assert session_spy.run.call_args.kwargs["transcript_path"] == working_dir / "critique.md"
 
-        transcriber_spy.assert_called_once_with(
-            jsonl_path=ANY,
-            output_path=working_dir / "critique.md",
-        )
-
-    def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path, _using):
+    def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path):
         prose_then_json = (
             'Based on my evaluation:\n\n'
             '[{"characteristic": "a characteristic", "status": "PASS"}]'
         )
-        session = ClaudeSession(**_using(claude=lambda *_, **__: prose_then_json))
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = prose_then_json
 
-        Critic(session=session).evaluate(
+        Critic(session=session_stub).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_handles_json_in_code_fence_preceded_by_prose(self, evidence, tmp_path, _using):
+    def test_evaluate_handles_json_in_code_fence_preceded_by_prose(self, evidence, tmp_path):
         prose_then_fence = (
             'Based on the transcript:\n\n'
             '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
         )
-        session = ClaudeSession(**_using(claude=lambda *_, **__: prose_then_fence))
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = prose_then_fence
 
-        Critic(session=session).evaluate(
+        Critic(session=session_stub).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path, _using):
+    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path):
         markdown = '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
-        session = ClaudeSession(
-            **_using(claude=lambda *_, **__: markdown)
-        )
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = markdown
 
-        Critic(session=session).evaluate(
+        Critic(session=session_stub).evaluate(
             evidence=evidence,
             working_dir=tmp_path,
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(
-            claude=lambda *_, **__: '[{"characteristic": "my characteristic", "status": "FAIL"}]'
-        ))
+    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path):
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = '[{"characteristic": "my characteristic", "status": "FAIL"}]'
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(session=session).evaluate(
+            Critic(session=session_stub).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
                 should=[{"characteristic": "my characteristic", "failure": "my failure message"}],
@@ -121,15 +88,16 @@ class TestCritic:
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_failure_message_lists_every_failed_row(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: (
+    def test_failure_message_lists_every_failed_row(self, evidence, tmp_path):
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = (
             '[{"characteristic": "first", "status": "FAIL"},'
             ' {"characteristic": "middle", "status": "PASS"},'
             ' {"characteristic": "third", "status": "FAIL"}]'
-        )))
+        )
 
         with pytest.raises(AssertionError) as excinfo:
-            Critic(session=session).evaluate(
+            Critic(session=session_stub).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
                 should=[
@@ -144,11 +112,12 @@ class TestCritic:
         assert "middle" not in message and "middle failure" not in message
         assert "third" in message and "third failure" in message
 
-    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(claude=lambda *_, **__: "not valid json."))
+    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path):
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = "not valid json."
 
         with pytest.raises(ValueError, match="not valid JSON") as excinfo:
-            Critic(session=session).evaluate(
+            Critic(session=session_stub).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
                 should=[{"characteristic": "a characteristic", "failure": "my failure"}],
@@ -156,13 +125,12 @@ class TestCritic:
 
         assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
-    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path, _using):
-        session = ClaudeSession(**_using(
-            claude=lambda *_, **__: '[{"characteristic": "a characteristic", "status": "PASS"}]'
-        ))
+    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path):
+        session_stub = MagicMock(spec=ClaudeSession)
+        session_stub.run.return_value = '[{"characteristic": "a characteristic", "status": "PASS"}]'
 
         with pytest.raises(ValueError, match="unaccounted"):
-            Critic(session=session).evaluate(
+            Critic(session=session_stub).evaluate(
                 evidence=evidence,
                 working_dir=tmp_path,
                 should=[
@@ -170,4 +138,3 @@ class TestCritic:
                     {"characteristic": "another characteristic", "failure": "y"},
                 ],
             )
-
