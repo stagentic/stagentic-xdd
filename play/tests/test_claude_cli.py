@@ -15,13 +15,15 @@ class TestClaudeCli:
             session_id="abc-123"
         )
 
-        subprocess.assert_called_once()
-        cmd = subprocess.call_args.args[0]
-        kwargs = subprocess.call_args.kwargs
-        assert "evaluate this" in cmd
-        assert "--session-id" in cmd and "abc-123" in cmd
-        assert "--add-dir" in cmd and str(tmp_path) in cmd
-        assert kwargs["cwd"] == tmp_path
+        subprocess.assert_called_once_with(
+            ["claude", "--permission-mode", "acceptEdits",
+             "--session-id", "abc-123",
+             "--add-dir", str(tmp_path),
+             "-p", "evaluate this"],
+            cwd=tmp_path,
+            capture_output=True,
+            text=True,
+        )
 
     def test_returns_stdout_when_subprocess_succeeds(self):
         successful = StubbedSubprocess(returncode=0, stdout="PASS\n")
