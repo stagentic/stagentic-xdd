@@ -19,8 +19,14 @@ everyone gets wrong about TDD/BDD" argument.
 - `COMMANDS.md` (repo root) — key developer commands (test runners, linter).
 - `docs/architecture/conventions/` — naming and design-intent
   conventions that should persist across refactors. Consult when
-  touching the affected area (e.g. `spec-conventions.md` before
-  refactoring or renaming inside `spec/`).
+  touching the affected area:
+  - `test-conventions.md` — MagicMock interrogation forms and broader
+    test shape (parametrise, exact-match, naming, ordering).
+  - `src-conventions.md` — production code style for `play/src/`
+    (type hints, required vs optional, runtime guards, helper param
+    order, IDE suppression rationale).
+  - `spec-conventions.md` — naming intent in `spec/` (the
+    `transcript` placeholder, the `working_dir` unified subject).
 - `docs/writing-style.md` — prose conventions (label-agnostic
   framing; quote actual stated reasons). Consult when writing
   commits, ADRs, or doc bodies.
