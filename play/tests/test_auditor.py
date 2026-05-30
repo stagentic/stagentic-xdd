@@ -15,19 +15,13 @@ class TestAuditor:
     def working_dir(self, tmp_path):
         return tmp_path
 
-    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence, working_dir):
-        Auditor().evaluate(
-            evidence=evidence,
-            working_dir=working_dir,
-            should=[
-                {"characteristic": "always passes",
-                 "verify": lambda transcript, working_dir: True,
-                 "failure": "should never see this"},
-                {"characteristic": "also always passes",
-                 "verify": lambda transcript, working_dir: True,
-                 "failure": "should never see this either"},
-            ],
-        )
+    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence, working_dir):
+        with pytest.raises(ValueError, match="scorecard must not be empty"):
+            Auditor().evaluate(
+                evidence=evidence,
+                working_dir=working_dir,
+                should=[],
+            )
 
     @pytest.mark.parametrize(
         "evidence_text, working_dir_name", [
@@ -54,6 +48,20 @@ class TestAuditor:
         )
 
         verify.assert_called_once_with(evidence_text, working_dir)
+
+    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence, working_dir):
+        Auditor().evaluate(
+            evidence=evidence,
+            working_dir=working_dir,
+            should=[
+                {"characteristic": "always passes",
+                 "verify": lambda transcript, working_dir: True,
+                 "failure": "should never see this"},
+                {"characteristic": "also always passes",
+                 "verify": lambda transcript, working_dir: True,
+                 "failure": "should never see this either"},
+            ],
+        )
 
     @pytest.mark.parametrize(
         "characteristic, failure", [
@@ -98,11 +106,3 @@ class TestAuditor:
             "- first characteristic: first failure\n"
             "- third characteristic: third failure"
         )
-
-    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence, working_dir):
-        with pytest.raises(ValueError, match="scorecard must not be empty"):
-            Auditor().evaluate(
-                evidence=evidence,
-                working_dir=working_dir,
-                should=[],
-            )
