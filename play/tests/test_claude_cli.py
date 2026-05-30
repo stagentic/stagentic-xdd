@@ -1,22 +1,23 @@
 import pytest
+from unittest.mock import MagicMock
 from test_doubles.stubbed_subprocess import StubbedSubprocess
 
 from claude_cli import ClaudeCli
 
 
 class TestClaudeCli:
-    @pytest.fixture
-    def calls(self):
-        return []
+    def test_submits_full_command_to_subprocess(self, tmp_path):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
 
-    def test_submits_full_command_to_subprocess(self, calls, tmp_path):
-        ClaudeCli(subprocess=_subprocess_spy(calls))(
+        ClaudeCli(subprocess=subprocess)(
             "evaluate this",
             workspace=tmp_path,
             session_id="abc-123"
         )
 
-        cmd, kwargs = calls[0]
+        subprocess.assert_called_once()
+        cmd = subprocess.call_args.args[0]
+        kwargs = subprocess.call_args.kwargs
         assert "evaluate this" in cmd
         assert "--session-id" in cmd and "abc-123" in cmd
         assert "--add-dir" in cmd and str(tmp_path) in cmd
@@ -29,16 +30,23 @@ class TestClaudeCli:
 
         assert result == "PASS\n"
 
-    def test_omits_session_id_from_command_when_not_provided(self, calls):
-        ClaudeCli(subprocess=_subprocess_spy(calls))("any prompt")
+    def test_omits_session_id_from_command_when_not_provided(self):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
 
-        cmd, _ = calls[0]
+        ClaudeCli(subprocess=subprocess)("any prompt")
+
+        subprocess.assert_called_once()
+        cmd = subprocess.call_args.args[0]
         assert "--session-id" not in cmd
 
-    def test_omits_workspace_from_command_when_not_provided(self, calls):
-        ClaudeCli(subprocess=_subprocess_spy(calls))("any prompt")
+    def test_omits_workspace_from_command_when_not_provided(self):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
 
-        cmd, kwargs = calls[0]
+        ClaudeCli(subprocess=subprocess)("any prompt")
+
+        subprocess.assert_called_once()
+        cmd = subprocess.call_args.args[0]
+        kwargs = subprocess.call_args.kwargs
         assert "--add-dir" not in cmd
         assert kwargs["cwd"] is None
 
@@ -47,10 +55,3 @@ class TestClaudeCli:
 
         with pytest.raises(RuntimeError):
             ClaudeCli(subprocess=failing)("any prompt")
-
-
-def _subprocess_spy(calls):
-    def spy(cmd, **kwargs):
-        calls.append((cmd, kwargs))
-        return StubbedSubprocess(returncode=0, stdout="")(cmd)
-    return spy
