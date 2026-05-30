@@ -68,8 +68,7 @@ class TestAuditor:
                 ],
             )
 
-        assert characteristic in str(excinfo.value)
-        assert failure in str(excinfo.value)
+        assert str(excinfo.value) == f"- {characteristic}: {failure}"
 
     def test_failure_message_should_list_every_failed_row(self, evidence):
         with pytest.raises(AssertionError) as excinfo:
