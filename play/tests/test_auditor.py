@@ -11,9 +11,14 @@ class TestAuditor:
         path.write_text("anything")
         return path
 
-    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence):
+    @pytest.fixture
+    def working_dir(self, tmp_path):
+        return tmp_path
+
+    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence, working_dir):
         Auditor().evaluate(
             evidence=evidence,
+            working_dir=working_dir,
             should=[
                 {"characteristic": "always passes",
                  "verify": lambda transcript, working_dir: True,
@@ -57,10 +62,11 @@ class TestAuditor:
         ],
         ids=["my characteristic", "another characteristic"]
     )
-    def test_failure_message_should_carry_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence):
+    def test_failure_message_should_carry_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence, working_dir):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
                 evidence=evidence,
+                working_dir=working_dir,
                 should=[
                     {"characteristic": characteristic,
                      "verify": lambda transcript, working_dir: False,
@@ -70,10 +76,11 @@ class TestAuditor:
 
         assert str(excinfo.value) == f"- {characteristic}: {failure}"
 
-    def test_failure_message_should_list_every_failed_row(self, evidence):
+    def test_failure_message_should_list_every_failed_row(self, evidence, working_dir):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
                 evidence=evidence,
+                working_dir=working_dir,
                 should=[
                     {"characteristic": "first characteristic",
                      "verify": lambda transcript, working_dir: False,
@@ -92,9 +99,10 @@ class TestAuditor:
             "- third characteristic: third failure"
         )
 
-    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence):
+    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence, working_dir):
         with pytest.raises(ValueError, match="scorecard must not be empty"):
             Auditor().evaluate(
                 evidence=evidence,
+                working_dir=working_dir,
                 should=[],
             )

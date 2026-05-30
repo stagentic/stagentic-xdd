@@ -4,7 +4,7 @@ from pathlib import Path
 class Auditor:
     # noinspection PyMethodMayBeStatic
     # - to preserve consistency with Critic.evaluate
-    def evaluate(self, *, evidence: Path, working_dir: Path | None = None, should: list[dict]):
+    def evaluate(self, *, evidence: Path, working_dir: Path, should: list[dict]):
         if not should: raise ValueError("scorecard must not be empty")
 
         evidence_content = evidence.read_text()
@@ -13,7 +13,7 @@ class Auditor:
         if failures: raise AssertionError(_formatted(failures))
 
 
-def _failures_from(content: str, should: list[dict], working_dir: Path | None) -> list[dict]:
+def _failures_from(content: str, should: list[dict], working_dir: Path) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
 
 
