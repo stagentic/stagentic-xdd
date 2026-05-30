@@ -1,10 +1,9 @@
 import pytest
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 from agent import Agent
 from claude_session import ClaudeSession
-from test_doubles.spy_interrogation import value_passed_to
 
 
 class TestAgent:
@@ -38,8 +37,11 @@ class TestAgent:
                 working_dir=dummy
             )
 
-            received_prompt = value_passed_to(session_spy.run, "prompt")
-            assert received_prompt == supplied_task_content
+            session_spy.run.assert_called_once_with(
+                prompt=supplied_task_content,
+                working_dir=ANY,
+                transcript_path=ANY,
+            )
 
         @pytest.mark.parametrize(
             "supplied_task", [
@@ -56,8 +58,11 @@ class TestAgent:
                 working_dir=dummy
             )
 
-            received_prompt = value_passed_to(session_spy.run, "prompt")
-            assert received_prompt == "the prompt"
+            session_spy.run.assert_called_once_with(
+                prompt="the prompt",
+                working_dir=ANY,
+                transcript_path=ANY,
+            )
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
@@ -74,8 +79,11 @@ class TestAgent:
                 working_dir=supplied_working_dir
             )
 
-            received_working_dir = value_passed_to(session_spy.run, "working_dir")
-            assert received_working_dir == supplied_working_dir
+            session_spy.run.assert_called_once_with(
+                prompt=ANY,
+                working_dir=supplied_working_dir,
+                transcript_path=ANY,
+            )
 
         @pytest.mark.parametrize(
             "supplied_working_dir", [
@@ -92,8 +100,11 @@ class TestAgent:
                 working_dir=supplied_working_dir
             )
 
-            received_transcript_path = value_passed_to(session_spy.run, "transcript_path")
-            assert received_transcript_path == supplied_working_dir / "transcript.md"
+            session_spy.run.assert_called_once_with(
+                prompt=ANY,
+                working_dir=ANY,
+                transcript_path=supplied_working_dir / "transcript.md",
+            )
 
     class TestExposesTranscript:
         @pytest.mark.parametrize(
