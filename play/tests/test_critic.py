@@ -3,12 +3,11 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 import pytest
 
 from claude_session import ClaudeSession
-from test_doubles.spy_interrogation import value_passed_to
 from critic import Critic
 
 
@@ -57,11 +56,17 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-        assert str(evidence) in value_passed_to(claude_spy, "prompt")
-        assert str(working_dir) in value_passed_to(claude_spy, "prompt")
-        assert "a characteristic" in value_passed_to(claude_spy, "prompt")
-        assert value_passed_to(claude_spy, "workspace") == working_dir
-        assert value_passed_to(transcriber_spy, "output_path") == working_dir / "critique.md"
+        claude_spy.assert_called_once()
+        prompt = claude_spy.call_args.kwargs["prompt"]
+        assert str(evidence) in prompt
+        assert str(working_dir) in prompt
+        assert "a characteristic" in prompt
+        assert claude_spy.call_args.kwargs["workspace"] == working_dir
+
+        transcriber_spy.assert_called_once_with(
+            jsonl_path=ANY,
+            output_path=working_dir / "critique.md",
+        )
 
     def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path, _using):
         prose_then_json = (
