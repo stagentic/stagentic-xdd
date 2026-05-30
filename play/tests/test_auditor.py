@@ -11,7 +11,7 @@ class TestAuditor:
         path.write_text("anything")
         return path
 
-    def test_evaluate_returns_none_when_all_characteristics_pass(self, evidence):
+    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence):
         Auditor().evaluate(
             evidence=evidence,
             should=[
@@ -31,7 +31,7 @@ class TestAuditor:
         ],
         ids=["hello agent", "different transcript"]
     )
-    def test_verify_receives_the_evidence_text_and_working_dir(self, evidence_text, working_dir_name, tmp_path):
+    def test_verify_should_receive_the_evidence_text_and_working_dir(self, evidence_text, working_dir_name, tmp_path):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(evidence_text)
         working_dir = tmp_path / working_dir_name
@@ -57,7 +57,7 @@ class TestAuditor:
         ],
         ids=["my characteristic", "another characteristic"]
     )
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence):
+    def test_failure_message_should_carry_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
                 evidence=evidence,
@@ -71,7 +71,7 @@ class TestAuditor:
         assert characteristic in str(excinfo.value)
         assert failure in str(excinfo.value)
 
-    def test_failure_message_lists_every_failed_row(self, evidence):
+    def test_failure_message_should_list_every_failed_row(self, evidence):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
                 evidence=evidence,
