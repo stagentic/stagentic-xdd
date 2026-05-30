@@ -39,7 +39,15 @@ class TestFakeAgent:
 
         assert (working_dir / "sentinel.txt").exists()
 
-    def test_transcript_is_the_path_in_the_working_directory_after_perform(self, tasks_root, working_dir, create_test_task_with):
+    @pytest.mark.parametrize(
+        "working_dir_name", [
+            "workspace", "other-workspace"
+        ],
+        ids=["workspace", "other-workspace"]
+    )
+    def test_transcript_is_the_path_in_the_working_directory_after_perform(self, working_dir_name, tmp_path, tasks_root, create_test_task_with):
+        working_dir = tmp_path / working_dir_name
+        working_dir.mkdir()
         create_test_task_with("true\n")
 
         agent = FakeAgent(tasks_root=tasks_root)
