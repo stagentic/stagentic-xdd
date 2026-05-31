@@ -35,21 +35,9 @@ comes after.
 
 ## Development pattern: TDAB
 
-This plugin is developed using **TDAB** (Test-Driven Agentic Behaviours):
-each new agent behaviour is specified as a scenario, exercised against a
-fixture, and evaluated against a scorecard rubric (because agent behaviour
-is non-deterministic and resists ordinary assertions).
-
-The bootstrap approach is fixed in
-`docs/architecture/decisions/0001-start-with-tdab-and-vanilla-pytest.md`:
-
-- Vanilla pytest from day one — no DSL, no framework abstractions yet.
-- Stub the agent first, then swap in `claude -p` once the harness is green.
-- Then-step evolves *Auditor* (in-process Python asserts) → *Critic*
-  (`claude -p` running a scorecard prompt), selected by pytest fixture.
-- Framework code (`stagentic-play`) emerges in green-only refactoring, not
-  upfront. Spikes under `experiments/` are a source of ideas, not a target
-  shape.
+This plugin is developed using **TDAB** (Test-Driven Agentic Behaviours).
+The approach is explained in ADR 0001
+(`docs/architecture/decisions/0001-start-with-tdab-and-vanilla-pytest.md`).
 
 ## Layout
 
