@@ -1,6 +1,6 @@
 # Writing style
 
-Conventions for prose produced by anyone contributing to this repository — commit messages, ADRs, doc text, comments. `CLAUDE.md` covers the basics (subject format, motivation-first bodies, the "what's true after this commit" framing). This document carries the rules that are easier to miss.
+Conventions for prose produced by anyone contributing to this repository — commit messages, ADRs, doc text, comments. `docs/commit-style.md` covers the commit basics (subject format, motivation-first bodies, the "what's true after this commit" framing). This document carries the rules that are easier to miss.
 
 ## Label-agnostic framing
 

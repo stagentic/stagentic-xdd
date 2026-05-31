@@ -22,10 +22,14 @@ everyone gets wrong about TDD/BDD" argument.
   touching the affected area:
   - `test-conventions.md` — test shape for `play/tests/`.
   - `src-conventions.md` — production code style for `play/src/`.
-  - `spec-conventions.md` — naming intent for `spec/`.
+  - `spec-conventions.md` — structures and naming intent for `spec/`.
 - `docs/writing-style.md` — prose conventions (label-agnostic
   framing; quote actual stated reasons). Consult when writing
   commits, ADRs, or doc bodies.
+- `docs/commit-style.md` — commit subject/body shape, conventional-commits
+  format, ADR-commit layering, commit-proposal format.
+- `docs/document-style.md` — in-repo doc conventions (current-state framing,
+  environment-agnostic mechanisms).
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.
@@ -104,36 +108,6 @@ Before any commit — whether a proposal or making one autonomously — run the 
   - `uv run --directory spec pytest tests` — fake agent, auditor (default)
   - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
   - Real agent excluded while the xdd skill is in development.
-
-## Documentation style
-
-In-repo docs (READMEs, ADRs, CLAUDE.md, etc.) describe the system as it stands now. Do not narrate transitions from earlier states — phrases like *"no longer needs X"*, *"used to depend on Y"*, *"X has been removed"* are wrong shape. New readers land on the current version with no knowledge of prior states; transition language is meaningful only to someone reading the git log.
-
-Ask: *"would this sentence make sense to a reader who has never seen any previous version of this file?"* If a clause references a previous state to contextualise the current one, delete it — the current state stands on its own.
-
-Docs must be environment-agnostic. Describe mechanisms in terms of files, commands, and Claude Code features — never in terms of a specific environment (containers, host OS, install method, directory layout, etc.). A reader on any setup should find the docs accurate.
-
-See `docs/writing-style.md` for label-agnostic framing rules (do not reach for "BDD-flavoured", "Gherkin-style", etc.) and the discipline of quoting actual stated reasons in commit bodies and ADRs.
-
-## Commit message style
-
-A commit message answers *why*, not *what* — the diff already records every edited line. The message earns its place by stating the motivating problem, constraint, or goal the change serves.
-
-**Subjects:** declarative, answering *why* the change is being made — the rationale, need, or constraint it serves. e.g. *"X needs Y"*, *"X requires Y"*, *"A enables B"*, *"A will enable B"*, *"A easier to B with C"*. Imperative voice (`add X`, `remove Y`) and mechanism-narrating phrases (`X directive added`, `Y section removed`) are wrong shape.
-
-**Bodies:** motivation first, framed around the current rationale. Don't contrast with previous approaches — the git log holds that history. Brief supporting detail on mechanism is fine, but only after the why is clear.
-
-**Format:** conventional commits — `<type>(<scope>): <subject>`.
-
-**ADR commits:** layer the ADR status immediately after the type/scope prefix:
-- `Status: Proposed` → `docs(adr): proposal: <subject>`
-- `Status: Accepted` → `docs(adr): decision: <subject>`
-- Other statuses (Rejected, Superseded, Deprecated) — use the status word by analogy.
-
-**Commit proposals:** when proposing a commit for approval, always show the
-complete message verbatim — subject, blank line, body (if any), blank line,
-and trailer — exactly as it will be passed to `git commit -m`. After the
-message block, list the files to be staged.
 
 ## ADR conventions
 
