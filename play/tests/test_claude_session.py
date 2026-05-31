@@ -8,6 +8,7 @@ from claude_session import ClaudeSession
 from transcriber import Transcriber
 
 _FAKE_SESSION_ID = "fake-sid"
+_ANOTHER_FAKE_SESSION_ID = "another-fake-sid"
 
 
 class TestClaudeSession:
@@ -107,13 +108,13 @@ class TestClaudeSession:
             assert result == "another cli result"
 
     class TestCallsTranscriber:
-        @patch("claude_session.uuid.uuid4", return_value="another-fake-sid")
+        @patch("claude_session.uuid.uuid4", return_value=_ANOTHER_FAKE_SESSION_ID)
         def test_jsonl_path_should_be_built_from_home_working_dir_and_cli_session_id(self, _uuid, dummy):
             transcriber_spy = MagicMock(spec=Transcriber())
             home = Path("/another/home")
             working_dir = Path("/another/dir")
             expected_jsonl_path = ClaudeJsonlPath(
-                home=home, working_dir=working_dir, session_id="another-fake-sid"
+                home=home, working_dir=working_dir, session_id=_ANOTHER_FAKE_SESSION_ID
             )
 
             ClaudeSession(
