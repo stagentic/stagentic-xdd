@@ -11,9 +11,6 @@ _FAKE_SESSION_ID = "fake-sid"
 
 
 class TestClaudeSession:
-    @pytest.fixture
-    def dummy_path(self): return Path("/dummy")
-
     @patch("claude_session.uuid.uuid4", return_value=_FAKE_SESSION_ID)
     def test_run_calls_cli_and_transcriber_and_returns_the_cli_result(self, _uuid):
         prompt = "my prompt"
@@ -56,18 +53,15 @@ class TestClaudeSession:
 
             ClaudeSession(
                 claude=claude_cli_spy,
-                transcriber=dummy,
-                home=dummy,
+                transcriber=dummy, home=dummy,
             ).run(
                 prompt="another prompt",
-                working_dir=dummy,
-                transcript_path=dummy
+                working_dir=dummy, transcript_path=dummy
             )
 
             claude_cli_spy.assert_called_once_with(
                 prompt="another prompt",
-                workspace=ANY,
-                session_id=ANY,
+                workspace=ANY, session_id=ANY,
             )
 
         def test_working_dir_should_be_passed_to_cli(self, dummy):
@@ -75,26 +69,22 @@ class TestClaudeSession:
 
             ClaudeSession(
                 claude=claude_cli_spy,
-                transcriber=dummy,
-                home=dummy,
+                transcriber=dummy, home=dummy,
             ).run(
-                prompt=dummy,
                 working_dir=Path("/another/dir"),
-                transcript_path=dummy
+                prompt=dummy, transcript_path=dummy
             )
 
             claude_cli_spy.assert_called_once_with(
-                prompt=ANY,
                 workspace=Path("/another/dir"),
-                session_id=ANY,
+                prompt=ANY, session_id=ANY,
             )
 
         def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
             session = ClaudeSession(
                 claude=claude_cli_spy,
-                transcriber=dummy,
-                home=dummy,
+                transcriber=dummy, home=dummy,
             )
 
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
@@ -109,12 +99,9 @@ class TestClaudeSession:
 
             result = ClaudeSession(
                 claude=claude_cli_stub,
-                transcriber=dummy,
-                home=dummy,
+                transcriber=dummy, home=dummy,
             ).run(
-                prompt=dummy,
-                working_dir=dummy,
-                transcript_path=dummy
+                prompt=dummy, working_dir=dummy, transcript_path=dummy
             )
 
             assert result == "another cli result"
