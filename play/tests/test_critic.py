@@ -14,7 +14,7 @@ class TestCritic:
         path.write_text("anything")
         return path
 
-    def test_evaluate_builds_prompt_and_delegates_to_session(self, evidence, tmp_path):
+    def test_evaluate_should_build_prompt_and_delegates_to_session(self, evidence, tmp_path):
         working_dir = tmp_path / "workspace"
         session_spy = MagicMock(spec=ClaudeSession)
         session_spy.run.return_value = (
@@ -39,7 +39,7 @@ class TestCritic:
             transcript_path=working_dir / "critique.md",
         )
 
-    def test_evaluate_handles_json_preceded_by_prose(self, evidence, tmp_path):
+    def test_evaluation_should_tolerate_prose_before_json(self, evidence, tmp_path):
         prose_then_json = (
             'Based on my evaluation:\n\n'
             '[{"characteristic": "a characteristic", "status": "PASS"}]'
@@ -53,7 +53,7 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_handles_json_in_code_fence_preceded_by_prose(self, evidence, tmp_path):
+    def test_evaluation_should_tolerate_prose_before_a_fenced_json(self, evidence, tmp_path):
         prose_then_fence = (
             'Based on the transcript:\n\n'
             '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
@@ -67,7 +67,7 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_handles_json_wrapped_in_markdown_code_fence(self, evidence, tmp_path):
+    def test_evaluation_should_tolerate_a_fenced_json(self, evidence, tmp_path):
         markdown = '```json\n[{"characteristic": "a characteristic", "status": "PASS"}]\n```\n'
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = markdown
@@ -78,7 +78,7 @@ class TestCritic:
             should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
         )
 
-    def test_evaluate_raises_with_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path):
+    def test_failure_message_should_carry_the_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = '[{"characteristic": "my characteristic", "status": "FAIL"}]'
 
@@ -92,7 +92,7 @@ class TestCritic:
         assert "my characteristic" in str(excinfo.value)
         assert "my failure message" in str(excinfo.value)
 
-    def test_failure_message_lists_every_failed_row(self, evidence, tmp_path):
+    def test_failure_message_should_list_every_failed_row(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = (
             '[{"characteristic": "first", "status": "FAIL"},'
@@ -116,7 +116,7 @@ class TestCritic:
         assert "middle" not in message and "middle failure" not in message
         assert "third" in message and "third failure" in message
 
-    def test_evaluate_raises_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path):
+    def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = "not valid json."
 
@@ -129,7 +129,7 @@ class TestCritic:
 
         assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
-    def test_evaluate_raises_ValueError_when_characteristic_is_missing_from_response(self, evidence, tmp_path):
+    def test_evaluation_should_raise_ValueError_when_a_characteristic_is_missing_from_the_response(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = '[{"characteristic": "a characteristic", "status": "PASS"}]'
 
