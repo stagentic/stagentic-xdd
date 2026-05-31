@@ -31,7 +31,7 @@ def test_critic_passes_when_all_characteristics_are_met(tmp_path):
         home=Path.home(),
     )
     Critic(session=session).evaluate(
-        evidence=transcript,
+        evidence_source=transcript,
         working_dir=tmp_path,
         should=[
             {"characteristic": "Transcript shows the agent ran pytest",
@@ -55,7 +55,7 @@ def test_critic_raises_when_characteristics_are_not_met(tmp_path):
 
     with pytest.raises(AssertionError) as excinfo:
         Critic(session=session).evaluate(
-            evidence=transcript,
+            evidence_source=transcript,
             working_dir=tmp_path,
             should=[
                 {"characteristic": "Transcript shows the agent ran pytest",

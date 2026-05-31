@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from typing import Any
 
 
@@ -6,9 +7,9 @@ class Critic:
     def __init__(self, *, session):
         self._session = session
 
-    def evaluate(self, *, evidence, working_dir, should):
+    def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
         result = self._session.run(
-            prompt=_prompt_for(evidence, working_dir, should),
+            prompt=_prompt_for(evidence_source, working_dir, should),
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
@@ -25,10 +26,10 @@ class Critic:
         )
 
 
-def _prompt_for(evidence, working_dir, should):
+def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:
     characteristics = "\n".join(f"- {row['characteristic']}" for row in should)
     return (
-        f"Transcript: {evidence}\n"
+        f"Transcript: {evidence_source}\n"
         f"Workspace: {working_dir}\n\n"
         f"Evaluate each of the following characteristics against the transcript and workspace.\n"
         f"Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"

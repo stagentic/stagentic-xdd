@@ -13,7 +13,7 @@ class TestRedGreenCommit:
 
         agent.perform(task="1-first-test-for-miles-to-km-converter", working_dir=working_dir)
         inspector.evaluate(
-            evidence=agent.transcript,
+            evidence_source=agent.transcript,
             working_dir=working_dir,
             should=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",

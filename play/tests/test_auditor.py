@@ -6,7 +6,7 @@ from auditor import Auditor
 
 class TestAuditor:
     @pytest.fixture
-    def evidence(self, tmp_path):
+    def evidence_source(self, tmp_path):
         path = tmp_path / "transcript.md"
         path.write_text("anything")
         return path
@@ -15,10 +15,10 @@ class TestAuditor:
     def working_dir(self, tmp_path):
         return tmp_path
 
-    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence, working_dir):
+    def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence_source, working_dir):
         with pytest.raises(ValueError, match="scorecard must not be empty"):
             Auditor().evaluate(
-                evidence=evidence,
+                evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[],
             )
@@ -38,7 +38,7 @@ class TestAuditor:
         verify = MagicMock(return_value=True)
 
         Auditor().evaluate(
-            evidence=transcript,
+            evidence_source=transcript,
             working_dir=working_dir,
             should=[
                 {"characteristic": "captures input",
@@ -49,9 +49,9 @@ class TestAuditor:
 
         verify.assert_called_once_with(evidence_text, working_dir)
 
-    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence, working_dir):
+    def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence_source, working_dir):
         Auditor().evaluate(
-            evidence=evidence,
+            evidence_source=evidence_source,
             working_dir=working_dir,
             should=[
                 {"characteristic": "always passes",
@@ -70,10 +70,10 @@ class TestAuditor:
         ],
         ids=["my characteristic", "another characteristic"]
     )
-    def test_failure_message_should_carry_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence, working_dir):
+    def test_failure_message_should_carry_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence_source, working_dir):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
-                evidence=evidence,
+                evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[
                     {"characteristic": characteristic,
@@ -84,10 +84,10 @@ class TestAuditor:
 
         assert str(excinfo.value) == f"- {characteristic}: {failure}"
 
-    def test_failure_message_should_list_every_failed_row(self, evidence, working_dir):
+    def test_failure_message_should_list_every_failed_row(self, evidence_source, working_dir):
         with pytest.raises(AssertionError) as excinfo:
             Auditor().evaluate(
-                evidence=evidence,
+                evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[
                     {"characteristic": "first characteristic",

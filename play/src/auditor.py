@@ -4,10 +4,10 @@ from pathlib import Path
 class Auditor:
     # noinspection PyMethodMayBeStatic
     # - to preserve consistency with Critic.evaluate
-    def evaluate(self, *, evidence: Path, working_dir: Path, should: list[dict]):
+    def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
         if not should: raise ValueError("scorecard must not be empty")
 
-        evidence_content = evidence.read_text()
+        evidence_content = evidence_source.read_text()
         failures = _failures_from(evidence_content, working_dir, should)
 
         if failures: raise AssertionError(_formatted(failures))
