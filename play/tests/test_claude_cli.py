@@ -52,6 +52,33 @@ class TestClaudeCli:
         assert "--add-dir" not in cmd
         assert kwargs["cwd"] is None
 
+    def test_prompt_should_be_passed_to_subprocess(self):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
+
+        ClaudeCli(subprocess=subprocess)("another prompt")
+
+        cmd = subprocess.call_args.args[0]
+        assert "another prompt" in cmd
+
+    def test_workspace_should_be_passed_as_add_dir_and_cwd(self, tmp_path):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
+
+        ClaudeCli(subprocess=subprocess)("any prompt", workspace=tmp_path)
+
+        cmd = subprocess.call_args.args[0]
+        assert "--add-dir" in cmd
+        assert str(tmp_path) in cmd
+        assert subprocess.call_args.kwargs["cwd"] == tmp_path
+
+    def test_session_id_should_be_passed_to_subprocess(self):
+        subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
+
+        ClaudeCli(subprocess=subprocess)("any prompt", session_id="xyz-789")
+
+        cmd = subprocess.call_args.args[0]
+        assert "--session-id" in cmd
+        assert "xyz-789" in cmd
+
     def test_raises_RuntimeError_when_subprocess_fails(self):
         failing = StubbedSubprocess(returncode=1, stderr="something went wrong")
 
