@@ -14,7 +14,7 @@ class TestCritic:
         path.write_text("anything")
         return path
 
-    def test_evaluate_should_build_prompt_and_delegate_to_session(self, evidence, tmp_path):
+    def test_evaluation_should_build_prompt_and_delegate_to_session(self, evidence, tmp_path):
         working_dir = tmp_path / "workspace"
         session_spy = MagicMock(spec=ClaudeSession)
         session_spy.run.return_value = (
@@ -39,7 +39,7 @@ class TestCritic:
             transcript_path=working_dir / "critique.md",
         )
 
-    def test_failure_message_should_carry_the_characteristic_and_failure_when_a_row_fails(self, evidence, tmp_path):
+    def test_evaluation_should_fail_when_a_characteristic_fails(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = '[{"characteristic": "my characteristic", "status": "FAIL"}]'
 
