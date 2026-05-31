@@ -21,6 +21,30 @@ class TestAgent:
             (task / "TASK.md").write_text(prompt)
         return make
 
+    def test_perform_calls_session_with_the_task_and_exposes_the_transcript(self, tasks_root, create_test_task_with):
+        task_content = "do the thing"
+        task_name = "my-task"
+        working_dir = Path("/work")
+        transcript_path = working_dir / "transcript.md"
+        session_spy = MagicMock(spec=ClaudeSession)
+        create_test_task_with(prompt=task_content, name=task_name)
+
+        agent = Agent(
+            tasks_root=tasks_root,
+            session=session_spy,
+        )
+        agent.perform(
+            task=task_name,
+            working_dir=working_dir,
+        )
+
+        session_spy.run.assert_called_once_with(
+            prompt=task_content,
+            working_dir=working_dir,
+            transcript_path=transcript_path,
+        )
+        assert agent.transcript == transcript_path
+
     class TestCallsSession:
         @pytest.mark.parametrize(
             "supplied_task_content", [
