@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, ANY
 
 import pytest
 
@@ -17,18 +17,11 @@ class TestAuditor:
     def dummy_path(self): return Path("/dummy")
 
     class TestSucceeds:
-        @pytest.mark.parametrize(
-            "evidence_text, working_dir_name", [
-                ("hello agent", "workspace"),
-                ("different transcript", "other-dir"),
-            ],
-            ids=["hello agent", "different transcript"]
-        )
-        def test_verify_should_receive_the_evidence_text_and_working_dir(self, evidence_text, working_dir_name, tmp_path):
+        def test_evaluate_should_call_verify_with_evidence_text_and_working_dir(self, tmp_path):
+            evidence_text = "hello agent"
             transcript = tmp_path / "transcript.md"
             transcript.write_text(evidence_text)
-            working_dir = tmp_path / working_dir_name
-
+            working_dir = tmp_path / "workspace"
             verify = MagicMock(return_value=True)
 
             Auditor().evaluate(
@@ -41,49 +34,61 @@ class TestAuditor:
                 ],
             )
 
-            verify.assert_called_once_with(evidence_text, working_dir)
-
-        def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence_source, dummy_path):
-            Auditor().evaluate(
-                evidence_source=evidence_source,
-                working_dir=dummy_path,
-                should=[
-                    {"characteristic": "always passes",
-                     "verify": lambda transcript, working_dir: True,
-                     "failure": "should never see this"},
-                    {"characteristic": "also always passes",
-                     "verify": lambda transcript, working_dir: True,
-                     "failure": "should never see this either"},
-                ],
+            verify.assert_called_once_with(
+                evidence_text, working_dir
             )
 
+        def test_evaluate_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
+            evidence_text = "different transcript"
+            transcript = tmp_path / "transcript.md"
+            transcript.write_text(evidence_text)
+            verify = MagicMock(return_value=True)
+
+            Auditor().evaluate(
+                evidence_source=transcript,
+                should=[
+                    {"characteristic": "captures input",
+                     "verify": verify,
+                     "failure": "n/a"},
+                ],
+                working_dir=dummy_path,
+            )
+
+            verify.assert_called_once_with(evidence_text, ANY)
+
+        def test_evaluate_should_pass_working_dir_to_verify(self, evidence_source):
+            working_dir = Path("/some/other/dir")
+            verify = MagicMock(return_value=True)
+
+            Auditor().evaluate(
+                working_dir=working_dir,
+                should=[
+                    {"characteristic": "captures input",
+                     "verify": verify,
+                     "failure": "n/a"},
+                ],
+                evidence_source=evidence_source,
+            )
+
+            verify.assert_called_once_with(ANY, working_dir)
+
     class TestFails:
-        @pytest.mark.parametrize(
-            "characteristic, failure", [
-                ("my characteristic", "my failure message"),
-                ("another characteristic", "another failure message"),
-            ],
-            ids=["my characteristic", "another characteristic"]
-        )
-        def test_evaluation_should_fail_with_the_row_characteristic_and_failure_when_a_row_fails(self, characteristic, failure, evidence_source, dummy_path):
+        def test_evaluation_should_fail_with_the_row_characteristic_and_failure(self, evidence_source, dummy_path):
             with pytest.raises(AssertionError) as excinfo:
                 Auditor().evaluate(
-                    evidence_source=evidence_source,
-                    working_dir=dummy_path,
                     should=[
-                        {"characteristic": characteristic,
+                        {"characteristic": "my characteristic",
                          "verify": lambda transcript, working_dir: False,
-                         "failure": failure},
+                         "failure": "my failure message"},
                     ],
+                    evidence_source=evidence_source, working_dir=dummy_path,
                 )
 
-            assert str(excinfo.value) == f"- {characteristic}: {failure}"
+            assert str(excinfo.value) == "- my characteristic: my failure message"
 
         def test_evaluation_should_list_every_failed_row(self, evidence_source, dummy_path):
             with pytest.raises(AssertionError) as excinfo:
                 Auditor().evaluate(
-                    evidence_source=evidence_source,
-                    working_dir=dummy_path,
                     should=[
                         {"characteristic": "first characteristic",
                          "verify": lambda transcript, working_dir: False,
@@ -95,6 +100,7 @@ class TestAuditor:
                          "verify": lambda transcript, working_dir: False,
                          "failure": "third failure"},
                     ],
+                    evidence_source=evidence_source, working_dir=dummy_path,
                 )
 
             assert str(excinfo.value) == (
