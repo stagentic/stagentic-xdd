@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from typing import Any
 
 from claude_session import ClaudeSession
 
@@ -61,11 +60,11 @@ def _strip_code_fence(result):
     return stripped
 
 
-def _unaccounted_for(should, statuses: dict[Any, Any]) -> list[Any]:
+def _unaccounted_for(should, statuses: dict[str, str]) -> list[dict]:
     return [row for row in should if row["characteristic"] not in statuses]
 
 
-def _names_of(unaccounted: list[Any]) -> str:
+def _names_of(unaccounted: list[dict]) -> str:
     return ", ".join(row["characteristic"] for row in unaccounted)
 
 
