@@ -81,3 +81,31 @@ A **whole-story test** specifies a small behaviour in its entirety, e.g. the ful
 **Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed (*Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
 **Why:** the whole-story conveys the integrated behaviour that a reader otherwise has to assemble from focused tests. Placing it at the end means each per-property test builds up understanding incrementally — the whole-story then reads as recognisable pieces clicking together, not a wall of new information.
+
+## Per-fact test layout: relevant kwargs at the top
+
+In per-fact tests, lay out multi-line kwarg blocks so the relevant slots sit at the top of each call (constructor, method call, `assert_called_once_with`). Irrelevant slots go below. Bundling adapts to the counts so the top stays focused.
+
+**1 relevant + ≥1 irrelevant** — relevant alone on top; irrelevants bundled on a single line below:
+
+```python
+ClaudeSession(
+    transcriber=transcriber_spy,      # relevant — alone on top
+    claude=dummy, home=dummy,         # irrelevant — bundled below
+)
+```
+
+**≥2 relevant + 1 irrelevant** — relevants bundled together on top; the lone irrelevant on its own line below:
+
+```python
+ClaudeSession(
+    transcriber=transcriber_spy, home=home,   # relevant — bundled on top
+    claude=dummy,                              # irrelevant — alone below
+)
+```
+
+Apply the same shape at every kwarg block in the test — constructor, method call, `assert_called_once_with`. A reader's eye learns the layout once and recognises it across the test.
+
+**Why:** what appears at the top of a kwarg block draws the reader's eye. Placing relevant data at the top signals what the test is about; bundling adapts to the counts so the top stays concise.
+
+**Whole-story tests are exempt** — they follow production signature order. They aren't focused on one slot, so there's no "relevance-first" to express. See *Whole-story tests*.
