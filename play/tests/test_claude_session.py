@@ -120,24 +120,25 @@ class TestClaudeSession:
             assert result == "another cli result"
 
     class TestCallsTranscriber:
-        def test_jsonl_path_should_be_built_from_home_working_dir_and_cli_session_id(self, dummy):
+        @patch("claude_session.uuid.uuid4", return_value="another-fake-sid")
+        def test_jsonl_path_should_be_built_from_home_working_dir_and_cli_session_id(self, _uuid, dummy):
             transcriber_spy = MagicMock(spec=Transcriber())
-            claude_cli_spy = MagicMock(spec=ClaudeCli())
             home = Path("/another/home")
             working_dir = Path("/another/dir")
+            expected_jsonl_path = ClaudeJsonlPath(
+                home=home, working_dir=working_dir, session_id="another-fake-sid"
+            )
 
             ClaudeSession(
-                transcriber=transcriber_spy,
-                home=home,
-                claude=claude_cli_spy,
+                transcriber=transcriber_spy, home=home,
+                claude=dummy,
             ).run(
                 working_dir=working_dir,
                 prompt=dummy, transcript_path=dummy,
             )
 
-            session_id = claude_cli_spy.call_args.kwargs["session_id"]
             transcriber_spy.assert_called_once_with(
-                jsonl_path=ClaudeJsonlPath(home=home, working_dir=working_dir, session_id=session_id),
+                jsonl_path=expected_jsonl_path,
                 output_path=ANY,
             )
 
