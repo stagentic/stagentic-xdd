@@ -34,11 +34,13 @@ When a test asserts that a value passed in flows through to a destination, param
 
 **When this doesn't apply:** structural assertions that don't carry a value — e.g. "no exception raised when all checks pass" or "the path is under `.claude/projects`" — are correctly exercised with a single example, because the property isn't "this value flowed through" but "this structural fact holds."
 
+The two cases may also be split across a whole-story test and a sibling per-property test, provided the values differ — see *Whole-story tests*.
+
 ## Pin exact composed output once via `==`
 
 When the production code composes a value from inputs, write one assertion that pins the exact composed string or structure via `==`.
 
-**Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path.
+**Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path. Whole-story tests embody this convention's exact-match pinning — see *Whole-story tests*.
 
 **Why:** the exact-match documents the shape — prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source, and catches accidental drift in the composition. Per-property tests make behavioural facts explicit that a whole-story exact-match alone wouldn't surface.
 
@@ -60,8 +62,22 @@ Tests inside a `TestX` class are ordered to mirror the execution flow of the pro
 
 **Why:** a reader walking the file in order encounters tests in the same direction the production code runs — guard checks first, then the work, then the results. The file reads as a sequence of "here's what happens next" rather than an unordered grab bag.
 
+Whole-story tests sit at the end of the happy-path section, after per-property tests — see *Whole-story tests*.
+
 ## Test naming: `test_<subject>_should_<behaviour>`
 
 Test methods are named `test_<subject>_should_<behaviour>` (e.g. `test_evaluation_should_not_raise_when_all_characteristics_pass`, `test_failure_message_should_list_every_failed_row`). The subject is the thing whose behaviour is being asserted (the evaluation, the failure message, the path); the behaviour describes what the subject does or does not do.
 
 **Why:** the test name reads as a behavioural claim, not as a description of the method called or the mechanism. A reader scanning the file sees what the code *does*, not which method is invoked.
+
+## Whole-story tests
+
+A **whole-story test** specifies a small behaviour in its entirety, e.g. the full series of calls to delegates, where per-property tests may assert smaller related behaviours. It conveys the integrated behaviour at a glance, while per-property tests cover each focused fact.
+
+**Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (cf. *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
+
+**Position:** at the end of the happy-path section, after per-property tests and before unhappy-path tests. Per-property tests narrate the mechanism step by step in execution order (*Test order follows the production code's execution flow*); the whole-story arrives as the integrated outcome, with pieces the reader has already met.
+
+**Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed (*Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
+
+**Why:** the whole-story conveys the integrated behaviour that a reader otherwise has to assemble from focused tests. Placing it at the end means each per-property test builds up understanding incrementally — the whole-story then reads as recognisable pieces clicking together, not a wall of new information.
