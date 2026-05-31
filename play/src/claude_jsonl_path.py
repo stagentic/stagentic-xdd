@@ -1,27 +1,23 @@
+from dataclasses import dataclass
 from pathlib import Path
 
 
+@dataclass(frozen=True, kw_only=True)
 class ClaudeJsonlPath:
-    def __init__(
-            self, *,
-            home: Path,
-            working_dir: Path,
-            session_id: str
-    ):
-        self._home = home
-        self._working_dir = working_dir
-        self._session_id = session_id
+    home: Path
+    working_dir: Path
+    session_id: str
 
     def __fspath__(self):
         return str(self)
 
     def __str__(self):
         return str(
-            self._home /
+            self.home /
             ".claude" /
             "projects" /
-            _claude_encoded(self._working_dir) /
-            f"{self._session_id}.jsonl"
+            _claude_encoded(self.working_dir) /
+            f"{self.session_id}.jsonl"
         )
 
 
