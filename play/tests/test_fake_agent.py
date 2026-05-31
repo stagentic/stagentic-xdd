@@ -27,7 +27,8 @@ class TestFakeAgent:
         return make
 
     def test_perform_should_run_the_task_script_in_working_dir_and_make_the_transcript_available(self, tasks_root, working_dir, create_test_task_with):
-        create_test_task_with(script="touch sentinel.txt\n", name=_TASK_NAME)
+        sentinel_file = "sentinel.txt"
+        create_test_task_with(script=f"touch {sentinel_file}\n", name=_TASK_NAME)
 
         agent = FakeAgent(tasks_root=tasks_root)
         agent.perform(
@@ -35,17 +36,19 @@ class TestFakeAgent:
             working_dir=working_dir,
         )
 
-        assert (working_dir / "sentinel.txt").exists()
+        assert (working_dir / sentinel_file).exists()
         assert agent.transcript == working_dir / "transcript.md"
 
     def test_perform_runs_the_named_task_script_in_the_working_directory(self, tasks_root, working_dir, create_test_task_with):
-        create_test_task_with(script="touch sentinel.txt\n", name="another-task")
+        task_name = "another-task"
+        sentinel_file = "sentinel.txt"
+        create_test_task_with(script=f"touch {sentinel_file}\n", name=task_name)
 
         FakeAgent(tasks_root=tasks_root).perform(
-            task="another-task", working_dir=working_dir,
+            task=task_name, working_dir=working_dir,
         )
 
-        assert (working_dir / "sentinel.txt").exists()
+        assert (working_dir / sentinel_file).exists()
 
     def test_transcript_is_the_path_in_the_working_directory_after_perform(self, tmp_path, tasks_root, create_test_task_with):
         working_dir = tmp_path / "other-workspace"
