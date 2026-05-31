@@ -109,7 +109,7 @@ class TestClaudeSession:
 
     class TestCallsTranscriber:
         @patch("claude_session.uuid.uuid4", return_value=_ANOTHER_FAKE_SESSION_ID)
-        def test_jsonl_path_should_be_built_from_home_working_dir_and_cli_session_id(self, _uuid, dummy):
+        def test_jsonl_path_should_be_built_from_home_working_dir_and_session_id(self, _uuid, dummy):
             transcriber_spy = MagicMock(spec=Transcriber())
             home = Path("/another/home")
             working_dir = Path("/another/dir")
