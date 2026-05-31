@@ -14,6 +14,8 @@ class Critic:
             working_dir: Path,
             should: list[dict]
     ):
+        if not should: raise ValueError("scorecard must not be empty")
+
         result = self._session.run(
             prompt=_prompt_for(evidence_source, working_dir, should),
             working_dir=working_dir,

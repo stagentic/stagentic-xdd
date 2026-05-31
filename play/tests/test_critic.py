@@ -150,6 +150,15 @@ class TestCritic:
             assert "third" in message and "third failure" in message
 
     class TestErrors:
+        def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            with pytest.raises(ValueError, match="scorecard must not be empty"):
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[],
+                )
+
         def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, dummy_path, dummy_characteristic):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = "not valid json."
