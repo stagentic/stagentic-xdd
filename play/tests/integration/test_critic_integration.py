@@ -21,39 +21,19 @@ _TRANSCRIPT_PYTEST_RAN_AND_FAILED = """\
 
 
 @pytest.mark.integration
-def test_critic_passes_when_all_characteristics_are_met(tmp_path):
-    transcript = tmp_path / "transcript.md"
-    transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
+class TestCritic:
+    @pytest.fixture
+    def session(self):
+        return ClaudeSession(
+            claude=ClaudeCli(),
+            transcriber=Transcriber(),
+            home=Path.home(),
+        )
 
-    session = ClaudeSession(
-        claude=ClaudeCli(),
-        transcriber=Transcriber(),
-        home=Path.home(),
-    )
-    Critic(session=session).evaluate(
-        evidence_source=transcript,
-        working_dir=tmp_path,
-        should=[
-            {"characteristic": "Transcript shows the agent ran pytest",
-             "failure": "No pytest invocation found in the transcript"},
-            {"characteristic": "Transcript shows a PASS pytest result",
-             "failure": "No FAILED result found in the transcript"},
-        ],
-    )
+    def test_evaluation_should_pass_when_all_characteristics_are_met(self, session, tmp_path):
+        transcript = tmp_path / "transcript.md"
+        transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
 
-
-@pytest.mark.integration
-def test_critic_raises_when_characteristics_are_not_met(tmp_path):
-    transcript = tmp_path / "transcript.md"
-    transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
-
-    session = ClaudeSession(
-        claude=ClaudeCli(),
-        transcriber=Transcriber(),
-        home=Path.home(),
-    )
-
-    with pytest.raises(AssertionError) as excinfo:
         Critic(session=session).evaluate(
             evidence_source=transcript,
             working_dir=tmp_path,
@@ -61,13 +41,29 @@ def test_critic_raises_when_characteristics_are_not_met(tmp_path):
                 {"characteristic": "Transcript shows the agent ran pytest",
                  "failure": "No pytest invocation found in the transcript"},
                 {"characteristic": "Transcript shows a PASS pytest result",
-                 "failure": "No PASS result found in the transcript"},
+                 "failure": "No FAILED result found in the transcript"},
             ],
         )
 
-    message = str(excinfo.value)
-    assert "Transcript shows the agent ran pytest" not in message
-    assert "No pytest invocation found in the transcript" not in message
+    def test_evaluation_should_fail_when_a_characteristic_is_not_met(self, session, tmp_path):
+        transcript = tmp_path / "transcript.md"
+        transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
-    assert "Transcript shows a PASS pytest result" in message
-    assert "No PASS result found in the transcript" in message
+        with pytest.raises(AssertionError) as excinfo:
+            Critic(session=session).evaluate(
+                evidence_source=transcript,
+                working_dir=tmp_path,
+                should=[
+                    {"characteristic": "Transcript shows the agent ran pytest",
+                     "failure": "No pytest invocation found in the transcript"},
+                    {"characteristic": "Transcript shows a PASS pytest result",
+                     "failure": "No PASS result found in the transcript"},
+                ],
+            )
+
+        message = str(excinfo.value)
+        assert "Transcript shows the agent ran pytest" not in message
+        assert "No pytest invocation found in the transcript" not in message
+
+        assert "Transcript shows a PASS pytest result" in message
+        assert "No PASS result found in the transcript" in message
