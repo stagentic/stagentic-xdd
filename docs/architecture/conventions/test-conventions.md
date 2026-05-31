@@ -62,7 +62,7 @@ Tests inside a `TestX` class are ordered to mirror the execution flow of the pro
 
 **Why:** a reader walking the file in order encounters tests in the same direction the production code runs — guard checks first, then the work, then the results. The file reads as a sequence of "here's what happens next" rather than an unordered grab bag.
 
-Whole-story tests sit at the end of the happy-path section, after per-property tests — see *Whole-story tests*.
+Whole-story tests lead their containing scope, before per-property tests — see *Whole-story tests*.
 
 ## Test naming: `test_<subject>_should_<behaviour>`
 
@@ -76,11 +76,11 @@ A **whole-story test** specifies a small behaviour in its entirety, e.g. the ful
 
 **Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (cf. *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
-**Position:** at the end of the happy-path section, after per-property tests and before unhappy-path tests. Per-property tests narrate the mechanism step by step in execution order (*Test order follows the production code's execution flow*); the whole-story arrives as the integrated outcome, with pieces the reader has already met.
+**Position:** at the top of the containing scope — the start of the file when collaborator groupings (`TestCallsX`) follow, or the start of `TestSucceeds` when outcome groupings (`TestSucceeds`/`TestFails`/`TestErrors`) are used. Per-property tests then follow in execution-flow order (*Test order follows the production code's execution flow*).
 
 **Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed (*Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
-**Why:** the whole-story conveys the integrated behaviour that a reader otherwise has to assemble from focused tests. Placing it at the end means each per-property test builds up understanding incrementally — the whole-story then reads as recognisable pieces clicking together, not a wall of new information.
+**Why:** the whole-story conveys the integrated behaviour that a reader otherwise has to assemble from focused tests. Leading with it gives the reader the headline first; per-property tests then drill into specific facts the whole-story has already introduced.
 
 ## Per-fact test layout: relevant kwargs at the top
 
