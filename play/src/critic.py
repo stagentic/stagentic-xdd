@@ -2,9 +2,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+from claude_session import ClaudeSession
+
 
 class Critic:
-    def __init__(self, *, session):
+    def __init__(self, *, session: ClaudeSession):
         self._session = session
 
     def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
