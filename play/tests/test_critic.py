@@ -39,6 +39,36 @@ class TestCritic:
             transcript_path=working_dir / "critique.md",
         )
 
+    def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, tmp_path):
+        evidence = tmp_path / "different_transcript.md"
+        evidence.write_text("anything")
+        session_spy = MagicMock(spec=ClaudeSession)
+        session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
+
+        Critic(session=session_spy).evaluate(
+            evidence=evidence,
+            working_dir=tmp_path,
+            should=[{"characteristic": "any", "failure": "n/a"}],
+        )
+
+        assert str(evidence) in session_spy.run.call_args.kwargs["prompt"]
+
+    def test_evaluation_should_pass_distinct_working_dir_to_session(self, evidence, tmp_path):
+        working_dir = tmp_path / "different_workspace"
+        session_spy = MagicMock(spec=ClaudeSession)
+        session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
+
+        Critic(session=session_spy).evaluate(
+            evidence=evidence,
+            working_dir=working_dir,
+            should=[{"characteristic": "any", "failure": "n/a"}],
+        )
+
+        prompt = session_spy.run.call_args.kwargs["prompt"]
+        assert str(working_dir) in prompt
+        assert session_spy.run.call_args.kwargs["working_dir"] == working_dir
+        assert session_spy.run.call_args.kwargs["transcript_path"] == working_dir / "critique.md"
+
     def test_evaluation_should_fail_when_a_characteristic_fails(self, evidence, tmp_path):
         session_stub = MagicMock(spec=ClaudeSession)
         session_stub.run.return_value = '[{"characteristic": "my characteristic", "status": "FAIL"}]'
