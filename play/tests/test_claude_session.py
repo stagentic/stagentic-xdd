@@ -5,49 +5,50 @@ from unittest.mock import MagicMock, ANY, patch
 from claude_cli import ClaudeCli
 from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
+from transcriber import Transcriber
+
+_FAKE_SESSION_ID = "fake-sid"
 
 
 class TestClaudeSession:
     @pytest.fixture
     def dummy_path(self): return Path("/dummy")
 
-    @patch("claude_session.uuid.uuid4", return_value="fake-sid")
+    @patch("claude_session.uuid.uuid4", return_value=_FAKE_SESSION_ID)
     def test_run_calls_cli_and_transcriber_and_returns_the_cli_result(self, _uuid):
         prompt = "my prompt"
         working_dir = Path("/some_work_dir")
-        home = Path("/some/home")
+        claude_home = Path("/some/claude_home")
         transcript_path = Path("/output/transcript.md")
         cli_result = "cli result"
 
         claude_spy = MagicMock(spec=ClaudeCli(), return_value=cli_result)
-        transcriber_spy = MagicMock()
+        transcriber_spy = MagicMock(spec=Transcriber())
 
         result = ClaudeSession(
             claude=claude_spy,
             transcriber=transcriber_spy,
-            home=home,
+            home=claude_home,
         ).run(
             prompt=prompt,
             working_dir=working_dir,
             transcript_path=transcript_path,
         )
 
-        expected_session_id = "fake-sid"
         claude_spy.assert_called_once_with(
             prompt=prompt,
             workspace=working_dir,
-            session_id=expected_session_id,
+            session_id=_FAKE_SESSION_ID,
         )
         expected_jsonl_path = ClaudeJsonlPath(
-            home=home,
+            home=claude_home,
             working_dir=working_dir,
-            session_id=expected_session_id,
+            session_id=_FAKE_SESSION_ID,
         )
         transcriber_spy.assert_called_once_with(
             jsonl_path=expected_jsonl_path,
             output_path=transcript_path,
         )
-
         assert result == cli_result
 
     class TestCallsClaudeCli:
