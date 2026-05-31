@@ -9,6 +9,8 @@ everyone gets wrong about TDD/BDD" argument.
 
 ## Where to look first
 
+Read these thoroughly when relevant; don't rely on the one-line summary alone:
+
 - `docs/architecture/decisions/` — architectural directions. Accepted
   ones must be adhered to; proposed ones are still under evaluation.
 - `NEXT.md` (repo root, if present) — the immediate next step,
