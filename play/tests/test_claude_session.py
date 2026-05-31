@@ -13,7 +13,7 @@ _ANOTHER_FAKE_SESSION_ID = "another-fake-sid"
 
 class TestClaudeSession:
     @patch("claude_session.uuid.uuid4", return_value=_FAKE_SESSION_ID)
-    def test_run_calls_cli_and_transcriber_and_returns_the_cli_result(self, _uuid):
+    def test_run_should_call_cli_and_transcriber_and_return_the_cli_result(self, _uuid):
         prompt = "my prompt"
         working_dir = Path("/some_work_dir")
         claude_home = Path("/some/claude_home")

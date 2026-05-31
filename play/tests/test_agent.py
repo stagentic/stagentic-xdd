@@ -23,7 +23,7 @@ class TestAgent:
             (task / "TASK.md").write_text(prompt)
         return make
 
-    def test_perform_calls_session_with_the_task_and_exposes_the_transcript(self, tasks_root, create_test_task_with):
+    def test_perform_should_call_session_with_the_task_and_make_the_transcript_available(self, tasks_root, create_test_task_with):
         task_prompt = "do the thing"
         working_dir = Path("/work")
         transcript_path = working_dir / "transcript.md"
