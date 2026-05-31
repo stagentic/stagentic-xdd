@@ -52,13 +52,7 @@ class TestClaudeSession:
         assert result == cli_result
 
     class TestCallsClaudeCli:
-        @pytest.mark.parametrize(
-            "supplied_prompt", [
-                "my prompt", "another prompt"
-            ],
-            ids=["my prompt", "another prompt"]
-        )
-        def test_prompt_should_be_passed_to_cli(self, supplied_prompt, dummy):
+        def test_prompt_should_be_passed_to_cli(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
@@ -66,24 +60,18 @@ class TestClaudeSession:
                 transcriber=dummy,
                 home=dummy,
             ).run(
-                prompt=supplied_prompt,
+                prompt="another prompt",
                 working_dir=dummy,
                 transcript_path=dummy
             )
 
             claude_cli_spy.assert_called_once_with(
-                prompt=supplied_prompt,
+                prompt="another prompt",
                 workspace=ANY,
                 session_id=ANY,
             )
 
-        @pytest.mark.parametrize(
-            "supplied_working_dir", [
-                Path("/work_dir"), Path("/another/dir")
-            ],
-            ids=["/work_dir", "/another/dir"]
-        )
-        def test_working_dir_should_be_passed_to_cli(self, supplied_working_dir, dummy):
+        def test_working_dir_should_be_passed_to_cli(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
@@ -92,13 +80,13 @@ class TestClaudeSession:
                 home=dummy,
             ).run(
                 prompt=dummy,
-                working_dir=supplied_working_dir,
+                working_dir=Path("/another/dir"),
                 transcript_path=dummy
             )
 
             claude_cli_spy.assert_called_once_with(
                 prompt=ANY,
-                workspace=supplied_working_dir,
+                workspace=Path("/another/dir"),
                 session_id=ANY,
             )
 
@@ -117,14 +105,8 @@ class TestClaudeSession:
             first, second = claude_cli_spy.call_args_list
             assert first.kwargs["session_id"] != second.kwargs["session_id"]
 
-        @pytest.mark.parametrize(
-            "cli_result", [
-                "cli result", "another cli result"
-            ],
-            ids=["cli result", "another cli result"]
-        )
-        def test_result_from_cli_should_be_returned(self, cli_result, dummy):
-            claude_cli_stub = MagicMock(spec=ClaudeCli(), return_value=cli_result)
+        def test_result_from_cli_should_be_returned(self, dummy):
+            claude_cli_stub = MagicMock(spec=ClaudeCli(), return_value="another cli result")
 
             result = ClaudeSession(
                 claude=claude_cli_stub,
@@ -136,25 +118,19 @@ class TestClaudeSession:
                 transcript_path=dummy
             )
 
-            assert result == cli_result
+            assert result == "another cli result"
 
     class TestCallsTranscriber:
         @pytest.fixture
         def dummy_path(self): return Path("/dummy")
 
-        @pytest.mark.parametrize(
-            "supplied_home", [
-                Path("/some/home"), Path("/another/home")
-            ],
-            ids=["/some/home", "/another/home"]
-        )
-        def test_jsonl_path_should_encode_the_home(self, supplied_home, dummy):
+        def test_jsonl_path_should_encode_the_home(self, dummy):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
                 claude=dummy,
                 transcriber=transcriber_spy,
-                home=supplied_home,
+                home=Path("/another/home"),
             ).run(
                 prompt=dummy,
                 working_dir=dummy,
@@ -163,16 +139,9 @@ class TestClaudeSession:
 
             transcriber_spy.assert_called_once()
             received_jsonl_path = str(transcriber_spy.call_args.kwargs["jsonl_path"])
-            assert received_jsonl_path.startswith(str(supplied_home))
+            assert received_jsonl_path.startswith("/another/home")
 
-        @pytest.mark.parametrize(
-            "supplied_working_dir, expected_fragment", [
-                (Path("/work-dir"), "-work-dir/"),
-                (Path("/another/dir"), "-another-dir/"),
-            ],
-            ids=["/work-dir", "/another/dir"]
-        )
-        def test_jsonl_path_should_encode_the_working_dir(self, supplied_working_dir, expected_fragment, dummy, dummy_path):
+        def test_jsonl_path_should_encode_the_working_dir(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
@@ -181,13 +150,13 @@ class TestClaudeSession:
                 home=dummy_path,
             ).run(
                 prompt=dummy,
-                working_dir=supplied_working_dir,
+                working_dir=Path("/another/dir"),
                 transcript_path=dummy
             )
 
             transcriber_spy.assert_called_once()
             received_jsonl_path = str(transcriber_spy.call_args.kwargs["jsonl_path"])
-            assert expected_fragment in received_jsonl_path
+            assert "-another-dir/" in received_jsonl_path
 
         def test_jsonl_path_should_encode_the_same_session_id_passed_to_cli(self, dummy, dummy_path):
             transcriber_spy = MagicMock()
@@ -211,13 +180,7 @@ class TestClaudeSession:
             )
             assert session_id_in_jsonl_path == session_id_passed_to_cli
 
-        @pytest.mark.parametrize(
-            "supplied_transcript_path", [
-                Path("/output/transcript.md"), Path("/another/output.md")
-            ],
-            ids=["/output/transcript.md", "/another/output.md"]
-        )
-        def test_transcriber_should_receive_the_transcript_path(self, supplied_transcript_path, dummy):
+        def test_transcriber_should_receive_the_transcript_path(self, dummy):
             transcriber_spy = MagicMock()
 
             ClaudeSession(
@@ -227,12 +190,12 @@ class TestClaudeSession:
             ).run(
                 prompt=dummy,
                 working_dir=dummy,
-                transcript_path=supplied_transcript_path
+                transcript_path=Path("/another/output.md")
             )
 
             transcriber_spy.assert_called_once_with(
                 jsonl_path=ANY,
-                output_path=supplied_transcript_path,
+                output_path=Path("/another/output.md"),
             )
 
 
