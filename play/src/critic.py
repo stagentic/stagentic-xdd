@@ -38,7 +38,7 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
     )
 
 
-def _statuses_from(result):
+def _statuses_from(result: str) -> dict[str, str]:
     try:
         rows = json.loads(_strip_code_fence(result))
         return {row["characteristic"]: row["status"] for row in rows}
@@ -46,7 +46,7 @@ def _statuses_from(result):
         raise ValueError(f"response was not valid JSON: {result!r}") from err
 
 
-def _strip_code_fence(result):
+def _strip_code_fence(result: str) -> str:
     stripped = result.strip()
     fence_start = stripped.find("```")
     if fence_start != -1:
@@ -60,7 +60,7 @@ def _strip_code_fence(result):
     return stripped
 
 
-def _unaccounted_for(should, statuses: dict[str, str]) -> list[dict]:
+def _unaccounted_for(should: list[dict], statuses: dict[str, str]) -> list[dict]:
     return [row for row in should if row["characteristic"] not in statuses]
 
 
@@ -68,9 +68,9 @@ def _names_of(unaccounted: list[dict]) -> str:
     return ", ".join(row["characteristic"] for row in unaccounted)
 
 
-def _all_failures(should, statuses):
+def _all_failures(should: list[dict], statuses: dict[str, str]) -> list[dict]:
     return [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]
 
 
-def _formatted(failures):
+def _formatted(failures: list[dict]) -> str:
     return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
