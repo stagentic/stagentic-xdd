@@ -83,28 +83,10 @@ Each `tasks/N-name/scene/` is also the starting fixture for task
 `N+1`; `0-placeholder/` is the genesis. Adding a scenario means adding
 the next task directory.
 
-Each `scene/` is itself a runnable Python project — `uv sync && uv
-run pytest tests/` at the scene root works. Conventions:
-
-- `pyproject.toml` at scene root with
-  `[tool.pytest.ini_options] pythonpath = ["src"]` and
-  `[tool.uv] package = false`.
-- `uv.lock` committed for deterministic `uv sync`.
-- Production code lives in `src/`, tests in `tests/`; tests
-  import directly (e.g. `from conversion import miles_to_km`,
-  no `src.` prefix).
-
-`0-placeholder/scene/` carries the same `pyproject.toml` and
-`uv.lock` (byte-identical copies) so the agent's `uv run` in the
-inherited workspace lands in the scene's own project rather than
-walking up to `spec/pyproject.toml`. Project setup is shared
-infrastructure, not something each task produces.
-
-See ADR 0007 for the rationale behind the task chain, the scorecard
-shape, and the planned auditor → critic and fake → real agent swaps.
-See `docs/architecture/conventions/spec-conventions.md` for naming and
-design-intent conventions that should persist across refactors
-(`transcript`, `working_dir`).
+See ADR 0007 for the task-chain rationale and the planned
+auditor → critic and fake → real agent swaps. See
+`docs/architecture/conventions/spec-conventions.md` for spec
+conventions (`transcript`, `working_dir`, scene projects).
 
 ## Relevant test suites
 
