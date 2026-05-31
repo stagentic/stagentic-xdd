@@ -8,22 +8,27 @@ class Critic:
     def __init__(self, *, session: ClaudeSession):
         self._session = session
 
-    def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
+    def evaluate(
+            self, *,
+            evidence_source: Path,
+            working_dir: Path,
+            should: list[dict]
+    ):
         result = self._session.run(
             prompt=_prompt_for(evidence_source, working_dir, should),
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
-        statuses = _statuses_from(result)
 
-        unaccounted = _unaccounted_for(should, statuses)
-        if unaccounted: raise ValueError(
-            f"unaccounted characteristics: {_names_of(unaccounted)}"
+        statuses = _statuses_from(result)
+        any_unaccounted_for = _unaccounted_for(should, statuses)
+        if any_unaccounted_for: raise ValueError(
+            f"unaccounted characteristics: {_names_of(any_unaccounted_for)}"
         )
 
-        failures = _all_failures(should, statuses)
-        if failures: raise AssertionError(
-            _formatted(failures)
+        any_failures = _all_failures(should, statuses)
+        if any_failures: raise AssertionError(
+            _formatted(any_failures)
         )
 
 
