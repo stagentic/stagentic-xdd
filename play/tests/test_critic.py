@@ -82,6 +82,24 @@ class TestCritic:
 
             assert str(excinfo.value) == "- first: first failure\n- third: third failure"
 
+    class TestPasses:
+        def test_evaluation_should_not_raise_when_all_characteristics_pass(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "first", "status": "PASS"},'
+                ' {"characteristic": "second", "status": "PASS"}]'
+            )
+
+            with does_not_raise():
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "first", "failure": "should never see this"},
+                        {"characteristic": "second", "failure": "neither this"},
+                    ],
+                )
+
     class TestBuildsPrompt:
         def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
             evidence_source = tmp_path / "different_transcript.md"
@@ -174,24 +192,6 @@ class TestCritic:
                 working_dir=dummy_path,
                 should=dummy_characteristic,
             )
-
-    class TestPasses:
-        def test_evaluation_should_not_raise_when_all_characteristics_pass(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "first", "status": "PASS"},'
-                ' {"characteristic": "second", "status": "PASS"}]'
-            )
-
-            with does_not_raise():
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[
-                        {"characteristic": "first", "failure": "should never see this"},
-                        {"characteristic": "second", "failure": "neither this"},
-                    ],
-                )
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
