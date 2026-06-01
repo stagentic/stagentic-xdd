@@ -6,26 +6,6 @@ order of work: tidy each unit in place first, so the structural
 extraction question (last) is re-evaluated against an already-tidy
 file.
 
-## Pattern consistency: `_X_problem` helpers
-
-The three `_X_problem` helpers don't share a consistent shape:
-
-- `_duplicates_problem` — clean detect/format split via
-  `_duplicated_in` + `_formatted_duplicates`.
-- `_unaccounted_problem` — half-split: `_unaccounted_for` for detect,
-  inline f-string + `_names_of` for format.
-- `_unexpected_problem` — fully inline.
-
-Either give each one a `_X_in` detector + `_formatted_X` formatter,
-or inline all three. Address `_names_of` asymmetry (below) alongside,
-since it lives in the same trio.
-
-## `_names_of` asymmetry
-
-`_names_of` is only used by `_unaccounted_problem`.
-`_unexpected_problem` inlines the equivalent `', '.join(...)` call.
-Either both extract or both inline.
-
 ## `_formatted_malformed` density
 
 The body is a single dense expression — nested generator + join +
