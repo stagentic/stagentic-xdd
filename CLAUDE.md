@@ -32,6 +32,8 @@ Read these thoroughly when relevant; don't rely on the one-line summary alone:
   format, ADR-commit layering, commit-proposal format.
 - `docs/document-style.md` — in-repo doc conventions (current-state framing,
   environment-agnostic mechanisms).
+- `docs/working-practices.md` — workflow practices: lead with the
+  proposed commit; separate behavioural from structural changes.
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.
