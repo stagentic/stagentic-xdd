@@ -8,13 +8,13 @@
 
 Review all production code in `play/src/` and `spec/` and leave it in good
 shape before the xdd skill work begins. Work through each file in turn —
-for each production file, review its tests alongside it.
+for each production file, review the test first, then the implementation,
+and bring both to the same standard.
 
 `claude_cli.py`, `claude_session.py`, `agent.py` are the current reference standard for this repo's production code.
 `TestClaudeJsonlPath`, `TestClaudeSession`, `TestAgent` are the current reference standard for tests.
 
-Work through each remaining file in turn — for each production file, review
-its tests alongside it and bring them to the same standard.
+Some unchecked boxes link to a per-file punch list at `docs/architecture/improvements/<file>.md` — items tracked separately so they don't bury NEXT.md.
 
 ### `play/src/`
 
