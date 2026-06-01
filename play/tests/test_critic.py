@@ -233,3 +233,20 @@ class TestCritic:
                 )
 
             assert str(excinfo.value) == "unaccounted characteristics: second, third"
+
+        def test_evaluation_should_list_every_unexpected_characteristic(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "expected", "status": "PASS"},'
+                ' {"characteristic": "first invented", "status": "PASS"},'
+                ' {"characteristic": "second invented", "status": "FAIL"}]'
+            )
+
+            with pytest.raises(ValueError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[{"characteristic": "expected", "failure": "x"}],
+                )
+
+            assert str(excinfo.value) == "unexpected characteristics: first invented, second invented"

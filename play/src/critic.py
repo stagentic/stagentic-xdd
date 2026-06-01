@@ -28,6 +28,12 @@ class Critic:
             f"unaccounted characteristics: {_names_of(any_unaccounted_for)}"
         )
 
+        expected_names = {row["characteristic"] for row in should}
+        unexpected = [name for name in statuses if name not in expected_names]
+        if unexpected: raise ValueError(
+            f"unexpected characteristics: {', '.join(unexpected)}"
+        )
+
         any_failures = _all_failures(should, statuses)
         if any_failures: raise AssertionError(
             _formatted(any_failures)
