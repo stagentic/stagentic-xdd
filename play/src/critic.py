@@ -1,5 +1,6 @@
 import json
 from collections import Counter
+from collections.abc import Callable
 from pathlib import Path
 
 from claude_session import ClaudeSession
@@ -24,12 +25,12 @@ class Critic:
         )
 
         rows = _rows_from(result)
-
-        malformed = _malformed_in(rows)
-        if malformed: raise ValueError(_formatted_malformed(malformed))
+        _raise_if(
+            _malformed_in(rows),
+            ValueError, _formatted_malformed
+        )
 
         statuses = _statuses_from(rows)
-
         problems = [p for p in (
             _duplicates_problem(rows),
             _unaccounted_problem(should, statuses),
@@ -64,6 +65,10 @@ def _statuses_from(rows: list[dict]) -> dict[str, str]:
 
 
 _REQUIRED_KEYS = ("characteristic", "status")
+
+
+def _raise_if(items: list, error: type[Exception], format: Callable[[list], str]) -> None:
+    if items: raise error(format(items))
 
 
 def _malformed_in(rows: list[dict]) -> list[dict]:
