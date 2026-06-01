@@ -37,3 +37,32 @@ When the design intent overrides an IDE warning (e.g. `Auditor.evaluate` reads a
 **Why:** silencing a warning without explanation leaves the next reader to re-derive the design intent. The comment (`# - to preserve consistency with Critic.evaluate`) records the rationale next to the suppression so a future reader sees both at once.
 
 **Trigger to revisit:** if the symmetry argument no longer holds (e.g. `Critic` itself becomes static), revisit the suppression.
+
+## Private functions follow call order from the public method
+
+Private module-level functions in a file are defined in the order they are called from the public method. Depth-first: each helper appears, then its directly-called internal helpers right after it. Constants used only by one helper sit just before that helper.
+
+**Why:** reading the file top-to-bottom matches the execution flow. A reader doesn't have to jump around to follow a single call's progression. When a helper is reused (e.g. `_raise_if` called from multiple sites), its position is fixed by its *first* call from the public method.
+
+## Orchestrator methods read at a single level of abstraction
+
+The body of a public method that orchestrates helpers (e.g. `Critic.evaluate`, `Auditor.evaluate`) reads as a sequence of declarative steps at the same level of abstraction. Each statement is a helper call that names *what* the step does; no inline mechanism (variable assignments mid-flow, if-guards, list comprehensions) sits alongside the calls.
+
+**Why:** the orchestrator says *what* the subject does step by step. A mix of declarative calls and inline mechanism forces a reader to switch levels mid-method — the helper calls describe intent, the inline mechanism describes *how*. Extracting the mechanism into a helper restores the single-level reading.
+
+## Naming-suffix vocabulary for private helpers
+
+Private helper suffixes carry consistent meaning:
+
+- `_X_in(collection)` — return the X's *in* the given collection (`_duplicated_in`, `_problems_in`, `_failures_in`, `_unaccounted_in`).
+- `_X_for(inputs)` — return the X accountable *for* the given inputs (`_unaccounted_for`).
+- `_X_of(thing)` — return X derived *of* the thing (`_names_of`).
+- `_X_from(source)` — return X extracted *from* the source (`_rows_from`, `_statuses_from`).
+
+**Why:** a consistent suffix vocabulary lets the reader infer the helper's shape from its name. A new helper that breaks the vocabulary (e.g. `_problems_by(...)` when `_problems_in(...)` would fit) makes the reader pause to figure out what's different.
+
+## Kwarg-style helpers compose into prose at the call site
+
+When a helper takes more than one configuration parameter — typically a detector, an exception type, and a formatter — make the configuration kwargs keyword-only and name them so the call site reads as English. `_rows_unless(result, has_problem=_malformed, raising_error=ValueError, with_message=_formatted_malformed)` reads as *"rows unless [it] has_problem, raising_error, with_message"*.
+
+**Why:** a prose-reading call site documents the intent at the point of use. A positional alternative (`_rows_unless(result, _malformed, ValueError, _formatted_malformed)`) saves keystrokes but forces the reader to remember the slot order or open the helper's `def`. The keyword-only signature (`*` separator) enforces the readability — callers can't accidentally fall back to positional and lose the prose.
