@@ -24,11 +24,14 @@ class Critic:
         )
 
         rows = _rows_from(result)
-        _raise_if_duplicates(rows)
-
         statuses = _statuses_from(rows)
-        _raise_if_unaccounted(should, statuses)
-        _raise_if_unexpected(should, statuses)
+
+        problems = [p for p in (
+            _duplicates_problem(rows),
+            _unaccounted_problem(should, statuses),
+            _unexpected_problem(should, statuses),
+        ) if p]
+        if problems: raise ValueError("\n\n".join(problems))
 
         any_failures = _all_failures(should, statuses)
         if any_failures: raise AssertionError(_formatted(any_failures))
@@ -56,24 +59,20 @@ def _statuses_from(rows: list[dict]) -> dict[str, str]:
     return {row["characteristic"]: row["status"] for row in rows}
 
 
-def _raise_if_duplicates(rows: list[dict]) -> None:
+def _duplicates_problem(rows: list[dict]) -> str | None:
     duplicated = _duplicated_in(rows)
-    if duplicated: raise ValueError(_formatted_duplicates(rows, duplicated))
+    return _formatted_duplicates(rows, duplicated) if duplicated else None
 
 
-def _raise_if_unaccounted(should: list[dict], statuses: dict[str, str]) -> None:
+def _unaccounted_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
     unaccounted = _unaccounted_for(should, statuses)
-    if unaccounted: raise ValueError(
-        f"unaccounted characteristics: {_names_of(unaccounted)}"
-    )
+    return f"unaccounted characteristics: {_names_of(unaccounted)}" if unaccounted else None
 
 
-def _raise_if_unexpected(should: list[dict], statuses: dict[str, str]) -> None:
+def _unexpected_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
     expected_names = {row["characteristic"] for row in should}
     unexpected = [name for name in statuses if name not in expected_names]
-    if unexpected: raise ValueError(
-        f"unexpected characteristics: {', '.join(unexpected)}"
-    )
+    return f"unexpected characteristics: {', '.join(unexpected)}" if unexpected else None
 
 
 def _duplicated_in(rows: list[dict]) -> set[str]:
