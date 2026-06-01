@@ -187,11 +187,12 @@ class TestCritic:
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = agent_response
 
-            Critic(session=session_stub).evaluate(
-                evidence_source=dummy_path,
-                working_dir=dummy_path,
-                should=dummy_characteristic,
-            )
+            with does_not_raise():
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=dummy_characteristic,
+                )
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
