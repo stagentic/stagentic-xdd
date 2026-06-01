@@ -223,7 +223,8 @@ class TestCritic:
             session_stub.run.return_value = (
                 '[{"name": "alpha", "status": "PASS"},'
                 ' {"characteristic": "beta", "status": "PASS"},'
-                ' {"characteristic": "gamma", "result": "FAIL"}]'
+                ' {"characteristic": "gamma", "result": "FAIL"},'
+                ' {"name": "delta", "result": "FAIL"}]'
             )
 
             with pytest.raises(ValueError) as excinfo:
@@ -234,13 +235,15 @@ class TestCritic:
                         {"characteristic": "alpha", "failure": "x"},
                         {"characteristic": "beta", "failure": "y"},
                         {"characteristic": "gamma", "failure": "z"},
+                        {"characteristic": "delta", "failure": "w"},
                     ],
                 )
 
             assert str(excinfo.value) == (
                 "malformed rows:\n"
                 "- missing 'characteristic': {'name': 'alpha', 'status': 'PASS'}\n"
-                "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}"
+                "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}\n"
+                "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}"
             )
 
         def test_evaluation_should_list_every_duplicated_characteristic(self, dummy_path):
