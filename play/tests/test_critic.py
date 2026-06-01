@@ -25,14 +25,20 @@ class TestCritic:
             working_dir = tmp_path / "workspace"
             session_spy = MagicMock(spec=ClaudeSession)
             session_spy.run.return_value = (
-                '[{"characteristic": "a characteristic", "status": "FAIL"}]'
+                '[{"characteristic": "alpha", "status": "FAIL"},'
+                ' {"characteristic": "beta", "status": "PASS"},'
+                ' {"characteristic": "gamma", "status": "FAIL"}]'
             )
 
             with pytest.raises(AssertionError) as excinfo:
                 Critic(session=session_spy).evaluate(
                     evidence_source=evidence_source,
                     working_dir=working_dir,
-                    should=[{"characteristic": "a characteristic", "failure": "the failure reason"}],
+                    should=[
+                        {"characteristic": "alpha", "failure": "alpha reason"},
+                        {"characteristic": "beta", "failure": "beta reason"},
+                        {"characteristic": "gamma", "failure": "gamma reason"},
+                    ],
                 )
 
             session_spy.run.assert_called_once_with(
@@ -41,12 +47,18 @@ class TestCritic:
                     f"Workspace: {working_dir}\n\n"
                     "Evaluate each of the following characteristics against the transcript and workspace.\n"
                     "Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
-                    "Characteristics:\n- a characteristic"
+                    "Characteristics:\n"
+                    "- alpha\n"
+                    "- beta\n"
+                    "- gamma"
                 ),
                 working_dir=working_dir,
                 transcript_path=working_dir / "critique.md",
             )
-            assert str(excinfo.value) == "- a characteristic: the failure reason"
+            assert str(excinfo.value) == (
+                "- alpha: alpha reason\n"
+                "- gamma: gamma reason"
+            )
 
         def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
