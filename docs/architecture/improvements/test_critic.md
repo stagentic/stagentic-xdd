@@ -3,21 +3,6 @@
 Known improvements for `play/tests/test_critic.py`, accumulated
 during the refactoring pass.
 
-## Naming consistency
-
-Most `TestErrors` tests are
-`test_evaluation_should_list_every_X_characteristic`. Outliers:
-
-- `test_evaluation_should_raise_when_the_scorecard_is_empty` —
-  different verb structure (no `list_every_X`).
-- `test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json` —
-  long, includes the exception type in the name.
-- `test_evaluation_should_report_every_validation_problem_together` —
-  different verb (`report` rather than `list`).
-
-The variation may be intentional; worth a normalised pass if consistency
-reads better than the current per-test specificity.
-
 ## Fixture scoping
 
 `dummy_path` and `dummy_characteristic` are class-level fixtures on
