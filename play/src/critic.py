@@ -24,10 +24,11 @@ class Critic:
             transcript_path=working_dir / "critique.md",
         )
 
-        rows = _rows_from(result)
-        _raise_if(
-            _malformed_in(rows),
-            ValueError, _formatted_malformed
+        rows = _rows_unless(
+            result,
+            has_problem=_malformed,
+            raising_error=ValueError,
+            with_message=_formatted_malformed,
         )
 
         statuses = _statuses_from(rows)
@@ -71,7 +72,18 @@ def _raise_if(items: list, error: type[Exception], format: Callable[[list], str]
     if items: raise error(format(items))
 
 
-def _malformed_in(rows: list[dict]) -> list[dict]:
+def _rows_unless(
+        result: str, *,
+        has_problem: Callable[[list[dict]], list],
+        raising_error: type[Exception],
+        with_message: Callable[[list], str],
+) -> list[dict]:
+    rows = _rows_from(result)
+    _raise_if(has_problem(rows), raising_error, with_message)
+    return rows
+
+
+def _malformed(rows: list[dict]) -> list[dict]:
     return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
 
 
