@@ -190,6 +190,10 @@ class TestCritic:
                 "bracketed-prose-before-json",
                 'Based on [1] the evidence:\n[{"characteristic": "any", "status": "PASS"}]'
             ),
+            case(
+                "closing-fence-without-newline",
+                '```json\n[{"characteristic": "any", "status": "PASS"}]```'
+            ),
         ])
         def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
             session_stub = MagicMock(spec=ClaudeSession)
