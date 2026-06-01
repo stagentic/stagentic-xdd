@@ -71,6 +71,12 @@ Once `--agent=real` is green:
   its scorecard to a specific file (e.g. `scorecard.json`) rather than
   returning JSON in the response text. The file would contain only JSON,
   sidestepping the prose-stripping problem entirely.
+- **Mix mechanical and judgement characteristics in one scorecard**:
+  the auditor today verifies rows that carry a `verify` lambda; the
+  critic today judges rows that carry only prose. A scorecard given
+  to the critic could mix both shapes — the critic would judge the
+  prose rows and delegate the lambda-bearing rows to the auditor.
+  Other routing approaches are possible.
 
 ## Known constraints
 
