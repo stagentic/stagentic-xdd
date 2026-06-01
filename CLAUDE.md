@@ -98,7 +98,21 @@ conventions (`transcript`, `working_dir`, scene projects).
 
 ## Relevant test suites
 
-Before any commit — whether a proposal or making one autonomously — run the tests relevant to the change:
+### Full baseline
+
+Default suite. Run at the start of every new session, and any time the
+"Change in `play/` beyond a single test file" rule applies. Issue as
+separate tool calls in a single message so they run concurrently.
+
+- [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
+- [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
+- [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
+- [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
+- Real agent excluded while the xdd skill is in development.
+
+### Before any commit
+
+Whether proposing one or making one autonomously, run the tests relevant to the change:
 
 - **Single `test_`-prefixed file changed alone**: run only that file
   (e.g. `uv run --directory play pytest tests/test_critic.py`).
@@ -111,13 +125,7 @@ Before any commit — whether a proposal or making one autonomously — run the 
   - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
   - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
 - **Change in `play/` beyond a single test file** (or anything integrated):
-  run all configurations in parallel (issue as separate tool calls in a
-  single message so they run concurrently):
-  - [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
-  - [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
-  - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
-  - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
-  - Real agent excluded while the xdd skill is in development.
+  the [Full baseline](#full-baseline).
 
 ## ADR conventions
 
