@@ -18,17 +18,21 @@ Whole-story tests lead their containing scope, before per-property tests — see
 
 ## Whole-story tests
 
-A **whole-story test** specifies a small behaviour in its entirety, e.g. the full series of calls to delegates, where per-property tests may assert smaller related behaviours. It conveys the integrated behaviour at a glance, while per-property tests cover each focused fact.
+A **whole-story test** pins *everything the subject does* — such as every call to every collaborator, in one test. Per-property tests drill into smaller specific facts the whole-story covers. The whole-story test may be written first or last (the latter allowing for the code to be built up one test at a time).
 
-**Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (cf. *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
+**Not every exact-match (`==`) test is a whole-story test.** Pinning one error message via `==` is just exact-match pinning of one aspect (see *Pin exact composed output once via `==`*); it tells the reader *the format of one error*, not *everything the subject does*.
+
+**Term discipline:** always refer to it as a "whole-story test" (the noun phrase), not the bare adjective "a whole-story". The noun makes clear it is a kind of test, not a kind of assertion.
+
+**Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
 **Position:** at the top of the containing scope — the start of the file when collaborator groupings (`TestCallsX`) follow, or the start of `TestSucceeds` when outcome groupings (`TestSucceeds`/`TestFails`/`TestErrors`) are used. Per-property tests then follow in execution-flow order (*Test order follows the production code's execution flow*).
 
-**Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed (*Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
+**Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed for mutation coverage (see *Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
-**Don't split into per-fact tests.** When a whole-story test exists, per-property tests don't earn their place by virtue of being possible — they earn their place when value, presence, or absence alters behaviour (cf. *Pin exact composed output once via `==`*). Fragmenting a whole-story test into one test per fact loses the integrated narrative the whole-story conveys.
+**Don't split into per-fact tests.** When a whole-story test exists, per-property tests don't earn their place by virtue of being possible — they earn their place when value, presence, or absence alters behaviour (see *Pin exact composed output once via `==`*). Fragmenting a whole-story test into one test per fact loses the integrated narrative the whole-story conveys.
 
-**Why:** the whole-story conveys the integrated behaviour that a reader otherwise has to assemble from focused tests. Leading with it gives the reader the headline first; per-property tests then drill into specific facts the whole-story has already introduced.
+**Why:** without a whole-story test, the integrated behaviour exists only as something the reader assembles from focused tests.
 
 ## Per-fact test layout: relevant kwargs at the top
 
