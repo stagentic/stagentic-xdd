@@ -20,13 +20,17 @@ Whole-story tests lead their containing scope, before per-property tests — see
 
 A **whole-story test** pins *everything the subject does* — such as every call to every collaborator, in one test. Per-property tests drill into smaller specific facts the whole-story covers. The whole-story test may be written first or last (the latter allowing for the code to be built up one test at a time).
 
+**The whole-story test shows the subject's distinguishing outcome.** When the subject's purpose is to dispatch a call to a collaborator (e.g. `ClaudeSession.run`), the whole-story shows that call going through. When the subject's purpose is to raise — to assert, to signal a failure — the whole-story shows it raising, because without the raise the test stops short of what the subject *does*. The reader sees the subject end-to-end, not just up to the work that precedes the user-facing outcome.
+
 **Not every exact-match (`==`) test is a whole-story test.** Pinning one error message via `==` is just exact-match pinning of one aspect (see *Pin exact composed output once via `==`*); it tells the reader *the format of one error*, not *everything the subject does*.
 
 **Term discipline:** always refer to it as a "whole-story test" (the noun phrase), not the bare adjective "a whole-story". The noun makes clear it is a kind of test, not a kind of assertion.
 
 **Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
-**Position:** at the top of the containing scope — the start of the file when collaborator groupings (`TestCallsX`) follow, or the start of `TestSucceeds` when outcome groupings (`TestSucceeds`/`TestFails`/`TestErrors`) are used. Per-property tests then follow in execution-flow order (*Test order follows the production code's execution flow*).
+**Position:** the whole-story leads its containing class. For collaborator-grouping files (`TestCallsX`), the containing class is the file's lead class. For outcome-grouping files (`TestPasses`/`TestFails`/`TestErrors`), the containing class is the outcome class that captures the subject's distinguishing behaviour — `TestFails` when the subject's job is to raise (e.g. Critic asserting), or `TestPasses`/`TestSucceeds` when the subject's job is silent completion. Per-property tests within each class follow in execution-flow order (*Test order follows the production code's execution flow*).
+
+Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths. The outcome class containing the whole-story leads.
 
 **Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed for mutation coverage (see *Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
@@ -69,6 +73,23 @@ When the production code composes a value from inputs, write one assertion that 
 **Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path. Whole-story tests embody this convention's exact-match pinning — see *Whole-story tests*.
 
 **Why:** the exact-match documents the shape — prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source, and catches accidental drift in the composition. Per-property tests make behavioural facts explicit that a whole-story exact-match alone wouldn't surface.
+
+## Explicit no-raise via `does_not_raise`
+
+When a test asserts that the subject does *not* raise — typically the pass scenario where the subject completes silently — wrap the call in `does_not_raise()` from `contextlib.nullcontext`:
+
+```python
+from contextlib import nullcontext as does_not_raise
+
+with does_not_raise():
+    Critic(session=session_stub).evaluate(...)
+```
+
+The context manager does nothing at runtime — pytest would still fail the test if an exception leaked through without it. But the line reads as the assertion: the reader sees `with does_not_raise()` and knows the behavioural claim. Without it, the claim is only inferable from the absence of `pytest.raises`.
+
+**Why:** the pass outcome is a behavioural claim in its own right, on par with the raise scenarios. Making it explicit puts the two claims on the same footing.
+
+The alias starts in the test file; lift it to `conftest.py` when a second file needs it.
 
 ## Parametrise value-flow tests over ≥2 cases with `ids`
 
