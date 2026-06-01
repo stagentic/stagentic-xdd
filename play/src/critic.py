@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from pathlib import Path
 
 from claude_session import ClaudeSession
@@ -54,9 +55,19 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
 def _statuses_from(result: str) -> dict[str, str]:
     try:
         rows = json.loads(_strip_code_fence(result))
-        return {row["characteristic"]: row["status"] for row in rows}
     except json.JSONDecodeError as err:
         raise ValueError(f"response did not contain valid JSON: {result!r}") from err
+
+    counts = Counter(row["characteristic"] for row in rows)
+    duplicated = {name for name, count in counts.items() if count > 1}
+    if duplicated: raise ValueError(
+        "duplicated characteristics:\n" + "\n".join(
+            f"- {row['characteristic']}: {row['status']}"
+            for row in rows if row['characteristic'] in duplicated
+        )
+    )
+
+    return {row["characteristic"]: row["status"] for row in rows}
 
 
 def _strip_code_fence(result: str) -> str:
