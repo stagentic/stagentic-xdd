@@ -127,6 +127,12 @@ Whether proposing one or making one autonomously, run the tests relevant to the 
 - **Change in `play/` beyond a single test file** (or anything integrated):
   the [Full baseline](#full-baseline).
 
+A quick sanity check running just the test(s) that correspond to the
+changed production code file(s) is acceptable; call it a sanity check,
+not the *"single test file changed"* rule (even though the outcome is
+the same). The sanity check doesn't replace the wider run the rules
+above require — run that afterwards.
+
 ## ADR conventions
 
 - **Portability rule:** ADRs must not link to files outside this
