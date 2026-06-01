@@ -53,8 +53,7 @@ class TestCritic:
 
             Critic(session=session_spy).evaluate(
                 evidence_source=evidence_source,
-                working_dir=dummy_path,
-                should=dummy_characteristic,
+                working_dir=dummy_path, should=dummy_characteristic,
             )
 
             assert str(evidence_source) in session_spy.run.call_args.kwargs["prompt"]
