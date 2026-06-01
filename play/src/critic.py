@@ -24,27 +24,14 @@ class Critic:
         )
 
         rows = _rows_from(result)
-        duplicated = _duplicated_in(rows)
-        if duplicated: raise ValueError(
-            _formatted_duplicates(rows, duplicated)
-        )
+        _raise_if_duplicates(rows)
 
         statuses = _statuses_from(rows)
-        any_unaccounted_for = _unaccounted_for(should, statuses)
-        if any_unaccounted_for: raise ValueError(
-            f"unaccounted characteristics: {_names_of(any_unaccounted_for)}"
-        )
-
-        expected_names = {row["characteristic"] for row in should}
-        unexpected = [name for name in statuses if name not in expected_names]
-        if unexpected: raise ValueError(
-            f"unexpected characteristics: {', '.join(unexpected)}"
-        )
+        _raise_if_unaccounted(should, statuses)
+        _raise_if_unexpected(should, statuses)
 
         any_failures = _all_failures(should, statuses)
-        if any_failures: raise AssertionError(
-            _formatted(any_failures)
-        )
+        if any_failures: raise AssertionError(_formatted(any_failures))
 
 
 def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:
@@ -67,6 +54,26 @@ def _rows_from(result: str) -> list[dict]:
 
 def _statuses_from(rows: list[dict]) -> dict[str, str]:
     return {row["characteristic"]: row["status"] for row in rows}
+
+
+def _raise_if_duplicates(rows: list[dict]) -> None:
+    duplicated = _duplicated_in(rows)
+    if duplicated: raise ValueError(_formatted_duplicates(rows, duplicated))
+
+
+def _raise_if_unaccounted(should: list[dict], statuses: dict[str, str]) -> None:
+    unaccounted = _unaccounted_for(should, statuses)
+    if unaccounted: raise ValueError(
+        f"unaccounted characteristics: {_names_of(unaccounted)}"
+    )
+
+
+def _raise_if_unexpected(should: list[dict], statuses: dict[str, str]) -> None:
+    expected_names = {row["characteristic"] for row in should}
+    unexpected = [name for name in statuses if name not in expected_names]
+    if unexpected: raise ValueError(
+        f"unexpected characteristics: {', '.join(unexpected)}"
+    )
 
 
 def _duplicated_in(rows: list[dict]) -> set[str]:
