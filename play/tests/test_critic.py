@@ -149,21 +149,7 @@ class TestCritic:
             )
 
     class TestFails:
-        def test_evaluation_should_fail_when_a_characteristic_fails(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = '[{"characteristic": "my characteristic", "status": "FAIL"}]'
-
-            with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[{"characteristic": "my characteristic", "failure": "my failure message"}],
-                )
-
-            assert "my characteristic" in str(excinfo.value)
-            assert "my failure message" in str(excinfo.value)
-
-        def test_evaluation_should_list_every_failed_row(self, dummy_path):
+        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = (
                 '[{"characteristic": "first", "status": "FAIL"},'
@@ -182,10 +168,7 @@ class TestCritic:
                     ],
                 )
 
-            message = str(excinfo.value)
-            assert "first" in message and "first failure" in message
-            assert "middle" not in message and "middle failure" not in message
-            assert "third" in message and "third failure" in message
+            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
