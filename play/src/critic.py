@@ -30,7 +30,7 @@ class Critic:
             _duplicates_problem(rows),
             _unaccounted_problem(should, statuses),
             _unexpected_problem(should, statuses),
-        ) if p]
+        ) if p is not None]
         if problems: raise ValueError("\n\n".join(problems))
 
         any_failures = _all_failures(should, statuses)
