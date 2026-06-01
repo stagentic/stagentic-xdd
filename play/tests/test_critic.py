@@ -94,6 +94,21 @@ class TestCritic:
                 prompt=ANY, working_dir=ANY,
             )
 
+        def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path, tmp_path):
+            session_spy = MagicMock(spec=ClaudeSession)
+            session_spy.run.return_value = '[{"characteristic": "first thing", "status": "PASS"}, {"characteristic": "second thing", "status": "PASS"}]'
+
+            Critic(session=session_spy).evaluate(
+                should=[
+                    {"characteristic": "first thing", "failure": "x"},
+                    {"characteristic": "second thing", "failure": "y"},
+                ],
+                evidence_source=dummy_path, working_dir=tmp_path,
+            )
+
+            prompt = session_spy.run.call_args.kwargs["prompt"]
+            assert "- first thing\n- second thing" in prompt
+
         def test_evaluation_should_tolerate_prose_before_json(self, dummy_path, dummy_characteristic):
             prose_then_json = (
                 'Based on my evaluation:\n\n'
