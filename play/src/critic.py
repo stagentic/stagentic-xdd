@@ -141,21 +141,29 @@ def _formatted_duplicates(rows: list[dict], duplicated: set[str]) -> str:
 
 def _unaccounted_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
     unaccounted = _unaccounted_for(should, statuses)
-    return f"unaccounted characteristics: {_names_of(unaccounted)}" if unaccounted else None
+    return _formatted_unaccounted(unaccounted) if unaccounted else None
 
 
-def _unaccounted_for(should: list[dict], statuses: dict[str, str]) -> list[dict]:
-    return [row for row in should if row["characteristic"] not in statuses]
+def _unaccounted_for(should: list[dict], statuses: dict[str, str]) -> list[str]:
+    return [row["characteristic"] for row in should if row["characteristic"] not in statuses]
 
 
-def _names_of(unaccounted: list[dict]) -> str:
-    return ", ".join(row["characteristic"] for row in unaccounted)
+def _formatted_unaccounted(unaccounted: list[str]) -> str:
+    return f"unaccounted characteristics: {', '.join(unaccounted)}"
 
 
 def _unexpected_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
+    unexpected = _unexpected_in(statuses, should)
+    return _formatted_unexpected(unexpected) if unexpected else None
+
+
+def _unexpected_in(statuses: dict[str, str], should: list[dict]) -> list[str]:
     expected_names = {row["characteristic"] for row in should}
-    unexpected = [name for name in statuses if name not in expected_names]
-    return f"unexpected characteristics: {', '.join(unexpected)}" if unexpected else None
+    return [name for name in statuses if name not in expected_names]
+
+
+def _formatted_unexpected(unexpected: list[str]) -> str:
+    return f"unexpected characteristics: {', '.join(unexpected)}"
 
 
 def _problems_in(possible_problems: list[str | None]) -> list[str]:
