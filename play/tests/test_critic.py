@@ -242,6 +242,35 @@ class TestCritic:
                 "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}"
             )
 
+        def test_evaluation_should_list_every_duplicated_characteristic(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "alpha", "status": "PASS"},'
+                ' {"characteristic": "alpha", "status": "FAIL"},'
+                ' {"characteristic": "beta", "status": "PASS"},'
+                ' {"characteristic": "gamma", "status": "PASS"},'
+                ' {"characteristic": "gamma", "status": "FAIL"}]'
+            )
+
+            with pytest.raises(ValueError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "alpha", "failure": "x"},
+                        {"characteristic": "beta", "failure": "y"},
+                        {"characteristic": "gamma", "failure": "z"},
+                    ],
+                )
+
+            assert str(excinfo.value) == (
+                "duplicated characteristics:\n"
+                "- alpha: PASS\n"
+                "- alpha: FAIL\n"
+                "- gamma: PASS\n"
+                "- gamma: FAIL"
+            )
+
         def test_evaluation_should_list_every_unaccounted_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = '[{"characteristic": "first", "status": "PASS"}]'
@@ -275,35 +304,6 @@ class TestCritic:
                 )
 
             assert str(excinfo.value) == "unexpected characteristics: first invented, second invented"
-
-        def test_evaluation_should_list_every_duplicated_characteristic(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "alpha", "status": "PASS"},'
-                ' {"characteristic": "alpha", "status": "FAIL"},'
-                ' {"characteristic": "beta", "status": "PASS"},'
-                ' {"characteristic": "gamma", "status": "PASS"},'
-                ' {"characteristic": "gamma", "status": "FAIL"}]'
-            )
-
-            with pytest.raises(ValueError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[
-                        {"characteristic": "alpha", "failure": "x"},
-                        {"characteristic": "beta", "failure": "y"},
-                        {"characteristic": "gamma", "failure": "z"},
-                    ],
-                )
-
-            assert str(excinfo.value) == (
-                "duplicated characteristics:\n"
-                "- alpha: PASS\n"
-                "- alpha: FAIL\n"
-                "- gamma: PASS\n"
-                "- gamma: FAIL"
-            )
 
         def test_evaluation_should_report_every_validation_problem_together(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)

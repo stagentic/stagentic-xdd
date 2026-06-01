@@ -3,24 +3,6 @@
 Known improvements for `play/tests/test_critic.py`, accumulated
 during the refactoring pass.
 
-## TestErrors order doesn't match production execution flow
-
-Production fires checks in this order: empty (guard) → JSON parse →
-malformed → duplicated → unaccounted → unexpected → failures. The
-test order is currently:
-
-1. empty
-2. JSON
-3. malformed
-4. unaccounted
-5. unexpected
-6. duplicated
-7. all-together
-
-`duplicated` sits at the end but fires *before* `unaccounted` and
-`unexpected` in production. Reordering to match production restores
-the "tests follow execution flow" convention.
-
 ## Naming consistency
 
 Most `TestErrors` tests are
