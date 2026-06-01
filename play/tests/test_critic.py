@@ -8,6 +8,10 @@ from claude_session import ClaudeSession
 from critic import Critic
 
 
+def case(id, value):
+    return pytest.param(value, id=id)
+
+
 class TestCritic:
     @pytest.fixture
     def dummy_path(self): return Path("/dummy")
@@ -109,38 +113,23 @@ class TestCritic:
             prompt = session_spy.run.call_args.kwargs["prompt"]
             assert "- first thing\n- second thing" in prompt
 
-        def test_evaluation_should_tolerate_prose_before_json(self, dummy_path, dummy_characteristic):
-            prose_then_json = (
-                'Based on my evaluation:\n\n'
-                '[{"characteristic": "any", "status": "PASS"}]'
-            )
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = prose_then_json
-
-            Critic(session=session_stub).evaluate(
-                evidence_source=dummy_path,
-                working_dir=dummy_path,
-                should=dummy_characteristic,
-            )
-
-        def test_evaluation_should_tolerate_code_fenced_json(self, dummy_path, dummy_characteristic):
-            markdown = '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = markdown
-
-            Critic(session=session_stub).evaluate(
-                evidence_source=dummy_path,
-                working_dir=dummy_path,
-                should=dummy_characteristic,
-            )
-
-        def test_evaluation_should_tolerate_prose_before_fenced_json(self, dummy_path, dummy_characteristic):
-            prose_then_fence = (
-                'Based on the transcript:\n\n'
+        @pytest.mark.parametrize("agent_response", [
+            case(
+                "prose-before-json",
+                'Based on my evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]'
+            ),
+            case(
+                "code-fenced-json",
                 '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
-            )
+            ),
+            case(
+                "prose-before-fenced-json",
+                'Based on the transcript:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
+            ),
+        ])
+        def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
             session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = prose_then_fence
+            session_stub.run.return_value = agent_response
 
             Critic(session=session_stub).evaluate(
                 evidence_source=dummy_path,
