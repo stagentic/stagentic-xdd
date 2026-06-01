@@ -28,7 +28,7 @@ A **whole-story test** pins *everything the subject does* — such as every call
 
 **Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
-**Position:** the whole-story leads its containing class. For collaborator-grouping files (`TestCallsX`), the containing class is the file's lead class. For outcome-grouping files (`TestPasses`/`TestFails`/`TestErrors`), the containing class is the outcome class that captures the subject's distinguishing behaviour — `TestFails` when the subject's job is to raise (e.g. Critic asserting), or `TestPasses`/`TestSucceeds` when the subject's job is silent completion. Per-property tests within each class follow in execution-flow order (*Test order follows the production code's execution flow*).
+**Position:** the whole-story test leads its containing class. The primary outcome class leads, the secondary outcome follows. Per-property tests (that do not change the outcome) follow in execution-flow order (*Test order follows the production code's execution flow*).
 
 Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths. The outcome class containing the whole-story leads.
 
