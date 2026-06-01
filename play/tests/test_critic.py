@@ -124,7 +124,7 @@ class TestCritic:
 
             assert str(tmp_path / "embedded_in_prompt") in session_spy.run.call_args.kwargs["prompt"]
 
-        def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path, tmp_path):
+        def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path):
             session_spy = MagicMock(spec=ClaudeSession)
             session_spy.run.return_value = '[{"characteristic": "first thing", "status": "PASS"}, {"characteristic": "second thing", "status": "PASS"}]'
 
@@ -133,7 +133,7 @@ class TestCritic:
                     {"characteristic": "first thing", "failure": "x"},
                     {"characteristic": "second thing", "failure": "y"},
                 ],
-                evidence_source=dummy_path, working_dir=tmp_path,
+                evidence_source=dummy_path, working_dir=dummy_path,
             )
 
             prompt = session_spy.run.call_args.kwargs["prompt"]
