@@ -193,16 +193,19 @@ class TestCritic:
 
             assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
-        def test_evaluation_should_raise_ValueError_when_a_characteristic_is_missing_from_the_response(self, dummy_path):
+        def test_evaluation_should_list_every_unaccounted_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = '[{"characteristic": "a characteristic", "status": "PASS"}]'
+            session_stub.run.return_value = '[{"characteristic": "first", "status": "PASS"}]'
 
-            with pytest.raises(ValueError, match="unaccounted"):
+            with pytest.raises(ValueError) as excinfo:
                 Critic(session=session_stub).evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
-                        {"characteristic": "a characteristic", "failure": "x"},
-                        {"characteristic": "another characteristic", "failure": "y"},
+                        {"characteristic": "first", "failure": "x"},
+                        {"characteristic": "second", "failure": "y"},
+                        {"characteristic": "third", "failure": "z"},
                     ],
                 )
+
+            assert str(excinfo.value) == "unaccounted characteristics: second, third"
