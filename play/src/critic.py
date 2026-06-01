@@ -86,7 +86,7 @@ def _strip_code_fence(result: str) -> str:
         stripped = stripped.split("\n", 1)[1]
         stripped = stripped.rsplit("```", 1)[0]
         return stripped.strip()
-    array_start = stripped.find("[")
+    array_start = stripped.rfind("[")
     if array_start > 0:
         stripped = stripped[array_start:]
     return stripped
