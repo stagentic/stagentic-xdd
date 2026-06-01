@@ -100,17 +100,23 @@ conventions (`transcript`, `working_dir`, scene projects).
 
 Before any commit — whether a proposal or making one autonomously — run the tests relevant to the change:
 
+- **Single `test_`-prefixed file changed alone**: run only that file
+  (e.g. `uv run --directory play pytest tests/test_critic.py`).
+  Test infrastructure changes (conftest, fixtures, shared doubles)
+  don't qualify — they can affect every test, so the wider rule applies.
 - **Expand-contract introductions** — new code not yet integrated with anything
   else (e.g. a new test double, a new utility): run its isolated test file only.
-- **Change in `spec/` only**: run spec configurations in parallel:
-  - `uv run --directory spec pytest tests` — fake agent, auditor (default)
-  - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
-- **Change in `play/` (or anything integrated)**: run all configurations in
-  parallel (issue as separate tool calls in a single message so they run concurrently):
-  - `uv run --directory play pytest` — full play suite (unit, integration, contract)
-  - `uv run --directory play pytest tests/integration` — integration tests (hit real claude; not skipped by default but called out explicitly)
-  - `uv run --directory spec pytest tests` — fake agent, auditor (default)
-  - `uv run --directory spec pytest tests --inspector=critic` — fake agent, real critic
+- **Change in `spec/` beyond a single test file** — production code, multiple
+  test files, or test infrastructure: run spec configurations in parallel:
+  - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
+  - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
+- **Change in `play/` beyond a single test file** (or anything integrated):
+  run all configurations in parallel (issue as separate tool calls in a
+  single message so they run concurrently):
+  - [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
+  - [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
+  - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
+  - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
   - Real agent excluded while the xdd skill is in development.
 
 ## ADR conventions

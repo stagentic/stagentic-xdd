@@ -29,6 +29,12 @@ uv run --directory play pytest tests -m integration
 uv run --directory play pytest tests -m contract
 ```
 
+### `play/` full suite (require `claude` CLI)
+
+```
+uv run --directory play pytest
+```
+
 ### `spec/` scenarios
 
 ```
