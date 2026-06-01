@@ -50,7 +50,7 @@ def _statuses_from(result: str) -> dict[str, str]:
         rows = json.loads(_strip_code_fence(result))
         return {row["characteristic"]: row["status"] for row in rows}
     except json.JSONDecodeError as err:
-        raise ValueError(f"response was not valid JSON: {result!r}") from err
+        raise ValueError(f"response did not contain valid JSON: {result!r}") from err
 
 
 def _strip_code_fence(result: str) -> str:

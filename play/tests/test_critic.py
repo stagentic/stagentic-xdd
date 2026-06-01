@@ -173,13 +173,14 @@ class TestCritic:
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = "not valid json."
 
-            with pytest.raises(ValueError, match="not valid JSON") as excinfo:
+            with pytest.raises(ValueError) as excinfo:
                 Critic(session=session_stub).evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=dummy_characteristic,
                 )
 
+            assert str(excinfo.value) == "response did not contain valid JSON: 'not valid json.'"
             assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
         def test_evaluation_should_list_every_unaccounted_characteristic(self, dummy_path):
