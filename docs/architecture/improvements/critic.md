@@ -1,10 +1,56 @@
 # Improvements: critic.py
 
 Known improvements for `play/src/critic.py`, accumulated during the
-refactoring pass but deferred for follow-up. Pick from this list to
-chip away at the file's shape over time.
+refactoring pass but deferred for follow-up. Sequenced by intended
+order of work: tidy each unit in place first, so the structural
+extraction question (last) is re-evaluated against an already-tidy
+file.
+
+## Pattern consistency: `_X_problem` helpers
+
+The three `_X_problem` helpers don't share a consistent shape:
+
+- `_duplicates_problem` — clean detect/format split via
+  `_duplicated_in` + `_formatted_duplicates`.
+- `_unaccounted_problem` — half-split: `_unaccounted_for` for detect,
+  inline f-string + `_names_of` for format.
+- `_unexpected_problem` — fully inline.
+
+Either give each one a `_X_in` detector + `_formatted_X` formatter,
+or inline all three. Address `_names_of` asymmetry (below) alongside,
+since it lives in the same trio.
+
+## `_names_of` asymmetry
+
+`_names_of` is only used by `_unaccounted_problem`.
+`_unexpected_problem` inlines the equivalent `', '.join(...)` call.
+Either both extract or both inline.
+
+## `_formatted_malformed` density
+
+The body is a single dense expression — nested generator + join +
+repr + f-string. Hard to read. Could be broken into clearer steps or
+pull the per-row formatting into a helper.
+
+## `_strip_code_fence` clarity
+
+Procedural-feeling string manipulation with non-obvious branches
+(`if fence_start != -1` block, then a separate `if array_start > 0`
+block). The two cases (code-fenced vs prose-before-array) aren't
+named. Could split into `_strip_fenced_block` and
+`_strip_prose_prefix` for clarity.
+
+## Type hint precision
+
+Most parsed-row helpers use `list[dict]` (untyped dict). Could be
+`list[dict[str, str]]` for tighter contracts, or a `TypedDict` /
+small dataclass for named-field access. Thread through each item
+above as units are touched, rather than as a separate sweep.
 
 ## Module-level smell: many private helpers
+
+Revisit after the items above land — a tidier file may change the
+case for extraction.
 
 The module currently has 20+ private functions outside the `Critic`
 class. The `Critic` class itself is small — just `__init__` and
@@ -39,42 +85,3 @@ behaviour. Symptoms:
   `_unaccounted_problem`, `_unexpected_problem` and their helpers):
   candidate for a dedicated module if other classes need similar
   scorecard validation.
-
-## Pattern consistency: `_X_problem` helpers
-
-The three `_X_problem` helpers don't share a consistent shape:
-
-- `_duplicates_problem` — clean detect/format split via
-  `_duplicated_in` + `_formatted_duplicates`.
-- `_unaccounted_problem` — half-split: `_unaccounted_for` for detect,
-  inline f-string + `_names_of` for format.
-- `_unexpected_problem` — fully inline.
-
-Either give each one a `_X_in` detector + `_formatted_X` formatter,
-or inline all three.
-
-## `_formatted_malformed` density
-
-The body is a single dense expression — nested generator + join +
-repr + f-string. Hard to read. Could be broken into clearer steps or
-pull the per-row formatting into a helper.
-
-## `_strip_code_fence` clarity
-
-Procedural-feeling string manipulation with non-obvious branches
-(`if fence_start != -1` block, then a separate `if array_start > 0`
-block). The two cases (code-fenced vs prose-before-array) aren't
-named. Could split into `_strip_fenced_block` and
-`_strip_prose_prefix` for clarity.
-
-## `_names_of` asymmetry
-
-`_names_of` is only used by `_unaccounted_problem`.
-`_unexpected_problem` inlines the equivalent `', '.join(...)` call.
-Either both extract or both inline.
-
-## Type hint precision
-
-Most parsed-row helpers use `list[dict]` (untyped dict). Could be
-`list[dict[str, str]]` for tighter contracts, or a `TypedDict` /
-small dataclass for named-field access.
