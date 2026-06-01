@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 
@@ -55,21 +55,44 @@ class TestCritic:
 
             assert str(evidence_source) in session_spy.run.call_args.kwargs["prompt"]
 
-        def test_evaluation_should_give_distinct_working_dir_to_session(self, dummy_path, dummy_characteristic, tmp_path):
-            working_dir = tmp_path / "different_workspace"
+        def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
             session_spy = MagicMock(spec=ClaudeSession)
             session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
 
             Critic(session=session_spy).evaluate(
-                evidence_source=dummy_path,
-                working_dir=working_dir,
-                should=dummy_characteristic,
+                working_dir=tmp_path / "embedded_in_prompt",
+                evidence_source=dummy_path, should=dummy_characteristic,
             )
 
-            prompt = session_spy.run.call_args.kwargs["prompt"]
-            assert str(working_dir) in prompt
-            assert session_spy.run.call_args.kwargs["working_dir"] == working_dir
-            assert session_spy.run.call_args.kwargs["transcript_path"] == working_dir / "critique.md"
+            assert str(tmp_path / "embedded_in_prompt") in session_spy.run.call_args.kwargs["prompt"]
+
+        def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, dummy_characteristic, tmp_path):
+            session_spy = MagicMock(spec=ClaudeSession)
+            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
+
+            Critic(session=session_spy).evaluate(
+                working_dir=tmp_path / "passed_to_session",
+                evidence_source=dummy_path, should=dummy_characteristic,
+            )
+
+            session_spy.run.assert_called_once_with(
+                working_dir=tmp_path / "passed_to_session",
+                prompt=ANY, transcript_path=ANY,
+            )
+
+        def test_evaluation_should_derive_critique_path_from_working_dir(self, dummy_path, dummy_characteristic, tmp_path):
+            session_spy = MagicMock(spec=ClaudeSession)
+            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
+
+            Critic(session=session_spy).evaluate(
+                working_dir=tmp_path / "derives_critique_path",
+                evidence_source=dummy_path, should=dummy_characteristic,
+            )
+
+            session_spy.run.assert_called_once_with(
+                transcript_path=tmp_path / "derives_critique_path" / "critique.md",
+                prompt=ANY, working_dir=ANY,
+            )
 
         def test_evaluation_should_tolerate_prose_before_json(self, dummy_path, dummy_characteristic):
             prose_then_json = (
