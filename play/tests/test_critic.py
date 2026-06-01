@@ -162,12 +162,13 @@ class TestCritic:
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
-            with pytest.raises(ValueError, match="scorecard must not be empty"):
+            with pytest.raises(ValueError) as excinfo:
                 Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
                     should=[],
+                    evidence_source=dummy_path, working_dir=dummy_path,
                 )
+
+            assert str(excinfo.value) == "scorecard must not be empty"
 
         def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, dummy_path, dummy_characteristic):
             session_stub = MagicMock(spec=ClaudeSession)
