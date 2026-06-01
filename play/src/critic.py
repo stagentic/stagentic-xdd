@@ -32,12 +32,15 @@ class Critic:
         )
 
         statuses = _statuses_from(rows)
-        problems = _problems_of([
-            _duplicates_problem(rows),
-            _unaccounted_problem(should, statuses),
-            _unexpected_problem(should, statuses),
-        ])
-        if problems: raise ValueError("\n\n".join(problems))
+        _raise_if(
+            _problems_in([
+                _duplicates_problem(rows),
+                _unaccounted_problem(should, statuses),
+                _unexpected_problem(should, statuses),
+            ]),
+            raising_error=ValueError,
+            with_message=_problems_message,
+        )
 
         _raise_if(
             _failures_in(should, statuses),
@@ -151,8 +154,12 @@ def _unexpected_problem(should: list[dict], statuses: dict[str, str]) -> str | N
     return f"unexpected characteristics: {', '.join(unexpected)}" if unexpected else None
 
 
-def _problems_of(possible_problems: list[str | None]) -> list[str]:
+def _problems_in(possible_problems: list[str | None]) -> list[str]:
     return [p for p in possible_problems if p is not None]
+
+
+def _problems_message(problems: list[str]) -> str:
+    return "\n\n".join(problems)
 
 
 def _failures_in(should: list[dict], statuses: dict[str, str]) -> list[dict]:
