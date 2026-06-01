@@ -14,6 +14,12 @@ and bring both to the same standard.
 `claude_cli.py`, `claude_session.py`, `agent.py` are the current reference standard for this repo's production code.
 `TestClaudeJsonlPath`, `TestClaudeSession`, `TestAgent` are the current reference standard for tests.
 
+The conventions in `docs/architecture/conventions/` are the standard;
+the reference-standard files above are exemplars, not infallible. A
+file under review may already exceed them in places. Anchor each
+proposed change on the convention text and judgement, not on what
+other files happen to do.
+
 Some unchecked boxes link to a per-file punch list at `docs/architecture/improvements/<file>.md` — items tracked separately so they don't bury NEXT.md.
 
 ### `play/src/`
