@@ -39,8 +39,11 @@ class Critic:
         ])
         if problems: raise ValueError("\n\n".join(problems))
 
-        any_failures = _all_failures(should, statuses)
-        if any_failures: raise AssertionError(_formatted(any_failures))
+        _raise_if(
+            _failures_in(should, statuses),
+            raising_error=AssertionError,
+            with_message=_failure_message,
+        )
 
 
 def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:
@@ -61,7 +64,7 @@ def _rows_unless(
         with_message: Callable[[list], str],
 ) -> list[dict]:
     rows = _rows_from(result)
-    _raise_if(has_problem(rows), raising_error, with_message)
+    _raise_if(has_problem(rows), raising_error=raising_error, with_message=with_message)
     return rows
 
 
@@ -86,8 +89,12 @@ def _strip_code_fence(result: str) -> str:
     return stripped
 
 
-def _raise_if(items: list, error: type[Exception], format: Callable[[list], str]) -> None:
-    if items: raise error(format(items))
+def _raise_if(
+        items: list, *,
+        raising_error: type[Exception],
+        with_message: Callable[[list], str],
+) -> None:
+    if items: raise raising_error(with_message(items))
 
 
 _REQUIRED_KEYS = ("characteristic", "status")
@@ -148,9 +155,9 @@ def _problems_of(possible_problems: list[str | None]) -> list[str]:
     return [p for p in possible_problems if p is not None]
 
 
-def _all_failures(should: list[dict], statuses: dict[str, str]) -> list[dict]:
+def _failures_in(should: list[dict], statuses: dict[str, str]) -> list[dict]:
     return [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]
 
 
-def _formatted(failures: list[dict]) -> str:
+def _failure_message(failures: list[dict]) -> str:
     return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
