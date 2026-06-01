@@ -24,6 +24,10 @@ class Critic:
         )
 
         rows = _rows_from(result)
+
+        malformed = _malformed_in(rows)
+        if malformed: raise ValueError(_formatted_malformed(malformed))
+
         statuses = _statuses_from(rows)
 
         problems = [p for p in (
@@ -57,6 +61,20 @@ def _rows_from(result: str) -> list[dict]:
 
 def _statuses_from(rows: list[dict]) -> dict[str, str]:
     return {row["characteristic"]: row["status"] for row in rows}
+
+
+_REQUIRED_KEYS = ("characteristic", "status")
+
+
+def _malformed_in(rows: list[dict]) -> list[dict]:
+    return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
+
+
+def _formatted_malformed(malformed: list[dict]) -> str:
+    return "malformed rows:\n" + "\n".join(
+        f"- missing {', '.join(repr(k) for k in _REQUIRED_KEYS if k not in row)}: {row}"
+        for row in malformed
+    )
 
 
 def _duplicates_problem(rows: list[dict]) -> str | None:

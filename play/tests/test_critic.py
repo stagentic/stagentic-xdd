@@ -217,6 +217,31 @@ class TestCritic:
             assert str(excinfo.value) == "response did not contain valid JSON: 'not valid json.'"
             assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
+        def test_evaluation_should_list_every_malformed_response_row(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"name": "alpha", "status": "PASS"},'
+                ' {"characteristic": "beta", "status": "PASS"},'
+                ' {"characteristic": "gamma", "result": "FAIL"}]'
+            )
+
+            with pytest.raises(ValueError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "alpha", "failure": "x"},
+                        {"characteristic": "beta", "failure": "y"},
+                        {"characteristic": "gamma", "failure": "z"},
+                    ],
+                )
+
+            assert str(excinfo.value) == (
+                "malformed rows:\n"
+                "- missing 'characteristic': {'name': 'alpha', 'status': 'PASS'}\n"
+                "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}"
+            )
+
         def test_evaluation_should_list_every_unaccounted_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = '[{"characteristic": "first", "status": "PASS"}]'
