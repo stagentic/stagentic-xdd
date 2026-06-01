@@ -159,10 +159,9 @@ class TestCritic:
             assert str(excinfo.value) == "- first: first failure\n- third: third failure"
 
     class TestErrors:
-        def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
+        def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
             with pytest.raises(ValueError) as excinfo:
-                Critic(session=session_stub).evaluate(
+                Critic(session=dummy).evaluate(
                     should=[],
                     evidence_source=dummy_path, working_dir=dummy_path,
                 )
