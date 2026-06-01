@@ -73,6 +73,10 @@ def _rows_unless(
 
 def _rows_from(result: str) -> list[dict]:
     try:
+        return json.loads(result)
+    except json.JSONDecodeError:
+        pass
+    try:
         return json.loads(_strip_code_fence(result))
     except json.JSONDecodeError as err:
         raise ValueError(f"response did not contain valid JSON: {result!r}") from err
