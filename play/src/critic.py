@@ -23,7 +23,13 @@ class Critic:
             transcript_path=working_dir / "critique.md",
         )
 
-        statuses = _statuses_from(result)
+        rows = _rows_from(result)
+        duplicated = _duplicated_in(rows)
+        if duplicated: raise ValueError(
+            _formatted_duplicates(rows, duplicated)
+        )
+
+        statuses = _statuses_from(rows)
         any_unaccounted_for = _unaccounted_for(should, statuses)
         if any_unaccounted_for: raise ValueError(
             f"unaccounted characteristics: {_names_of(any_unaccounted_for)}"
@@ -52,22 +58,27 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
     )
 
 
-def _statuses_from(result: str) -> dict[str, str]:
+def _rows_from(result: str) -> list[dict]:
     try:
-        rows = json.loads(_strip_code_fence(result))
+        return json.loads(_strip_code_fence(result))
     except json.JSONDecodeError as err:
         raise ValueError(f"response did not contain valid JSON: {result!r}") from err
 
-    counts = Counter(row["characteristic"] for row in rows)
-    duplicated = {name for name, count in counts.items() if count > 1}
-    if duplicated: raise ValueError(
-        "duplicated characteristics:\n" + "\n".join(
-            f"- {row['characteristic']}: {row['status']}"
-            for row in rows if row['characteristic'] in duplicated
-        )
-    )
 
+def _statuses_from(rows: list[dict]) -> dict[str, str]:
     return {row["characteristic"]: row["status"] for row in rows}
+
+
+def _duplicated_in(rows: list[dict]) -> set[str]:
+    counts = Counter(row["characteristic"] for row in rows)
+    return {name for name, count in counts.items() if count > 1}
+
+
+def _formatted_duplicates(rows: list[dict], duplicated: set[str]) -> str:
+    return "duplicated characteristics:\n" + "\n".join(
+        f"- {row['characteristic']}: {row['status']}"
+        for row in rows if row['characteristic'] in duplicated
+    )
 
 
 def _strip_code_fence(result: str) -> str:
