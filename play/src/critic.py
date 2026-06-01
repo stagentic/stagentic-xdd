@@ -92,19 +92,19 @@ def _strip_code_fence(result: str) -> str:
     return stripped
 
 
+_REQUIRED_KEYS = ("characteristic", "status")
+
+
+def _malformed(rows: list[dict]) -> list[dict]:
+    return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
+
+
 def _raise_if(
         items: list, *,
         raising_error: type[Exception],
         with_message: Callable[[list], str],
 ) -> None:
     if items: raise raising_error(with_message(items))
-
-
-_REQUIRED_KEYS = ("characteristic", "status")
-
-
-def _malformed(rows: list[dict]) -> list[dict]:
-    return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
 
 
 def _formatted_malformed(malformed: list[dict]) -> str:
