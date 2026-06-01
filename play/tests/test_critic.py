@@ -19,20 +19,21 @@ class TestCritic:
     @pytest.fixture
     def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
 
-    class TestSucceeds:
-        def test_evaluation_should_build_prompt_and_delegate_to_session(self, tmp_path):
+    class TestFails:
+        def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
             working_dir = tmp_path / "workspace"
             session_spy = MagicMock(spec=ClaudeSession)
             session_spy.run.return_value = (
-                '[{"characteristic": "a characteristic", "status": "PASS"}]'
+                '[{"characteristic": "a characteristic", "status": "FAIL"}]'
             )
 
-            Critic(session=session_spy).evaluate(
-                evidence_source=evidence_source,
-                working_dir=working_dir,
-                should=[{"characteristic": "a characteristic", "failure": "should never see this"}],
-            )
+            with pytest.raises(AssertionError) as excinfo:
+                Critic(session=session_spy).evaluate(
+                    evidence_source=evidence_source,
+                    working_dir=working_dir,
+                    should=[{"characteristic": "a characteristic", "failure": "the failure reason"}],
+                )
 
             session_spy.run.assert_called_once_with(
                 prompt=(
@@ -45,7 +46,30 @@ class TestCritic:
                 working_dir=working_dir,
                 transcript_path=working_dir / "critique.md",
             )
+            assert str(excinfo.value) == "- a characteristic: the failure reason"
 
+        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "first", "status": "FAIL"},'
+                ' {"characteristic": "middle", "status": "PASS"},'
+                ' {"characteristic": "third", "status": "FAIL"}]'
+            )
+
+            with pytest.raises(AssertionError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "first", "failure": "first failure"},
+                        {"characteristic": "middle", "failure": "middle failure"},
+                        {"characteristic": "third", "failure": "third failure"},
+                    ],
+                )
+
+            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
+
+    class TestBuildsPrompt:
         def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
             evidence_source = tmp_path / "different_transcript.md"
             session_spy = MagicMock(spec=ClaudeSession)
@@ -69,6 +93,22 @@ class TestCritic:
 
             assert str(tmp_path / "embedded_in_prompt") in session_spy.run.call_args.kwargs["prompt"]
 
+        def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path, tmp_path):
+            session_spy = MagicMock(spec=ClaudeSession)
+            session_spy.run.return_value = '[{"characteristic": "first thing", "status": "PASS"}, {"characteristic": "second thing", "status": "PASS"}]'
+
+            Critic(session=session_spy).evaluate(
+                should=[
+                    {"characteristic": "first thing", "failure": "x"},
+                    {"characteristic": "second thing", "failure": "y"},
+                ],
+                evidence_source=dummy_path, working_dir=tmp_path,
+            )
+
+            prompt = session_spy.run.call_args.kwargs["prompt"]
+            assert "- first thing\n- second thing" in prompt
+
+    class TestCallsSession:
         def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, dummy_characteristic, tmp_path):
             session_spy = MagicMock(spec=ClaudeSession)
             session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
@@ -97,21 +137,7 @@ class TestCritic:
                 prompt=ANY, working_dir=ANY,
             )
 
-        def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path, tmp_path):
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "first thing", "status": "PASS"}, {"characteristic": "second thing", "status": "PASS"}]'
-
-            Critic(session=session_spy).evaluate(
-                should=[
-                    {"characteristic": "first thing", "failure": "x"},
-                    {"characteristic": "second thing", "failure": "y"},
-                ],
-                evidence_source=dummy_path, working_dir=tmp_path,
-            )
-
-            prompt = session_spy.run.call_args.kwargs["prompt"]
-            assert "- first thing\n- second thing" in prompt
-
+    class TestParsesResponse:
         @pytest.mark.parametrize("agent_response", [
             case(
                 "prose-before-json",
@@ -135,28 +161,6 @@ class TestCritic:
                 working_dir=dummy_path,
                 should=dummy_characteristic,
             )
-
-    class TestFails:
-        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "first", "status": "FAIL"},'
-                ' {"characteristic": "middle", "status": "PASS"},'
-                ' {"characteristic": "third", "status": "FAIL"}]'
-            )
-
-            with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[
-                        {"characteristic": "first", "failure": "first failure"},
-                        {"characteristic": "middle", "failure": "middle failure"},
-                        {"characteristic": "third", "failure": "third failure"},
-                    ],
-                )
-
-            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
