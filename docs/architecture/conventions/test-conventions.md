@@ -72,7 +72,28 @@ When the production code composes a value from inputs, write one assertion that 
 
 ## Parametrise value-flow tests over ≥2 cases with `ids`
 
-When a test asserts that a value passed in flows through to a destination, parametrise it over at least two cases with `ids=["case-a", "case-b"]`. A single hard-coded literal could pass coincidentally if the production code hard-coded the same literal.
+When a test asserts that a value passed in flows through to a destination, parametrise it over at least two cases — each labelled with an id so the case name leads the row. A single hard-coded literal could pass coincidentally if the production code hard-coded the same literal.
+
+**Shape:** parametrise via a small `case(id, value)` helper so the id leads each row, even though `pytest.param`'s id is positionally last:
+
+```python
+def case(id, value):
+    return pytest.param(value, id=id)
+
+
+@pytest.mark.parametrize("agent_response", [
+    case(
+        "prose-before-json",
+        '...',
+    ),
+    case(
+        "code-fenced-json",
+        '...',
+    ),
+])
+```
+
+The helper starts in the test file; lift it to `conftest.py` when a second file needs it.
 
 **Why:** the test asserts a behaviour (the value reaches its destination), not a specific value. Two cases prove the value is general; one case proves only that one specific value works.
 
