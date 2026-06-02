@@ -1,171 +1,220 @@
 # Improvements: test_critic.py
 
 Untested edge cases for `play/tests/test_critic.py`, surfaced during
-the chisel-pipeline refactor. Each entry includes an assessment:
-expected outcome (red/green) and a recommendation to include (pin as
-a test) or exclude (with reasoning).
+the chisel-pipeline refactor.
+
+## Working through this list
+
+These entries are intended to be worked through one at a time. When
+presenting an entry for review, use the format shown in each section
+below: a narrative lead-in, the case name, the example, a
+recommendation (include/exclude), and — when the entry references
+another case — context explaining the relationship.
+
+If you are asked to add it to the test, add it and run the test first to see it fail.
+
+Once you see it fail, propose the change that best implements the code that makes it pass. Make sure it is the minimum required to make the test pass (and not break any other tests).
 
 ## Multi-fence cases
 
 ### `code-block-before-fenced-json-with-bracket-in-string`
 
-```python
+Adversarial variant of `code-block-before-fenced-json`.
+
+**Case:** `code-block-before-fenced-json-with-bracket-in-string`
+
+**Example:**
+````python
 case(
     "code-block-before-fenced-json-with-bracket-in-string",
     'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```'
 ),
-```
+````
 
-Adversarial variant of `code-block-before-fenced-json`. The basic
-case survives incidentally via `rfind("[")`; this variant defeats
-the recovery by adding `[` inside a JSON string value.
+**Recommendation:** Include — motivates a chisel-pipeline fix.
 
-**Assessment:** RED expected. **Include** — motivates a chisel-pipeline fix.
+**Context (for `code-block-before-fenced-json`):** committed earlier this session, it passes incidentally because the JSON's `[` is rightmost in the leftover text after fence-handling. This variant adds `[example]` inside a JSON string value — now *that* `[` is the rightmost, defeating the recovery.
 
 ### `code-block-after-fenced-json`
 
-```python
+A code block in the narrative after the JSON fence.
+
+**Case:** `code-block-after-fenced-json`
+
+**Example:**
+````python
 case(
     "code-block-after-fenced-json",
     '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
 ),
-```
+````
 
-**Assessment:** RED expected. The fence-anchor chisels lock onto the
-python closer at the end; basic case fails without needing brackets
-in strings. **Include.**
+**Recommendation:** Include — the fence-anchor chisels lock onto the python closer at the end; basic case fails without needing brackets in strings.
 
 ### `code-block-after-fenced-json-with-bracket-in-string`
 
-```python
+Symmetric pair to `code-block-before-fenced-json-with-bracket-in-string`.
+
+**Case:** `code-block-after-fenced-json-with-bracket-in-string`
+
+**Example:**
+````python
 case(
     "code-block-after-fenced-json-with-bracket-in-string",
     '```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
 ),
-```
+````
 
-**Assessment:** RED expected, but redundant for motivating a fix (the
-basic after-variant already fails). **Exclude pre-fix; reconsider
-post-fix as a robustness check.**
+**Recommendation:** Exclude pre-fix; reconsider post-fix as a robustness check.
+
+**Context (for `code-block-after-fenced-json`):** the basic after-variant already fails outright, so the bracket-in-string variant is redundant for motivating a fix.
 
 ### `code-blocks-around-fenced-json`
 
-```python
+Natural completion of the before/after pair.
+
+**Case:** `code-blocks-around-fenced-json`
+
+**Example:**
+````python
 case(
     "code-blocks-around-fenced-json",
     'Setup:\n\n```python\nx = 1\n```\n\nResult:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference:\n\n```python\nprint(x)\n```'
 ),
-```
+````
 
-**Assessment:** RED expected. Natural completion of the before/after
-pair. **Include.**
+**Recommendation:** Include — same failure mode as the after-variant; completes the before/after/around triple.
 
 ## Prose-after cases
 
 ### `prose-after-non-fenced-json`
 
-```python
+A bare JSON followed by prose.
+
+**Case:** `prose-after-non-fenced-json`
+
+**Example:**
+````python
 case(
     "prose-after-non-fenced-json",
     '[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
 ),
-```
+````
 
-**Assessment:** RED expected. The chisels handle prose-before-bracket
-but not prose-after-bracket. Fix likely adds a
-`_remove_prose_after_bracket` chisel. **Include.**
+**Recommendation:** Include — the chisels handle prose-before-bracket but not prose-after-bracket. Fix likely adds a `_remove_prose_after_bracket` chisel.
 
 ### `prose-after-non-fenced-json-with-bracket-in-prose`
 
-```python
+Adversarial variant of `prose-after-non-fenced-json`.
+
+**Case:** `prose-after-non-fenced-json-with-bracket-in-prose`
+
+**Example:**
+````python
 case(
     "prose-after-non-fenced-json-with-bracket-in-prose",
     '[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
 ),
-```
+````
 
-**Assessment:** RED expected. Adversarial variant where the trailing
-prose contains `[`, defeating any naive rfind-based fix. **Exclude
-pre-fix; include post-fix** as a robustness check on whatever fix
-gets applied.
+**Recommendation:** Exclude pre-fix; include post-fix as a robustness check.
+
+**Context (for `prose-after-non-fenced-json`):** the basic case motivates a `_remove_prose_after_bracket` chisel; this variant has `[` in the trailing prose, defeating a naive `rfind`-based fix.
 
 ### `prose-around-non-fenced-json`
 
-```python
+Prose both before and after a non-fenced JSON.
+
+**Case:** `prose-around-non-fenced-json`
+
+**Example:**
+````python
 case(
     "prose-around-non-fenced-json",
     'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
 ),
-```
+````
 
-**Assessment:** RED expected (for the same reason as
-`prose-after-non-fenced-json`). **Exclude** — redundant with
-`prose-after-non-fenced-json` for motivating the fix, and the
-prose-before path is already covered by `prose-before-json`.
+**Recommendation:** Exclude — redundant.
+
+**Context (for `prose-before-json` and `prose-after-non-fenced-json`):** the prose-before path is already covered by `prose-before-json` (existing test); the prose-after path will be covered by `prose-after-non-fenced-json` (separate entry above). This combination adds nothing not already exercised.
 
 ## Fence variants
 
 ### `fence-without-language-hint`
 
-```python
+A fence with no language hint (just ` ``` ` instead of ` ```json `).
+
+**Case:** `fence-without-language-hint`
+
+**Example:**
+````python
 case(
     "fence-without-language-hint",
     '```\n[{"characteristic": "any", "status": "PASS"}]\n```'
 ),
-```
+````
 
-**Assessment:** GREEN expected — the opener line is just ` ``` `,
-dropped by `text.split("\n", 1)[1]`; the rest behaves like
-`code-fenced-json`. **Include** to document that the language hint
-is optional (LLMs don't always emit it).
+**Recommendation:** Include — documents that the language hint is optional; LLMs don't always emit it.
 
 ### `tilde-fence`
 
-```python
+A markdown fence using tildes instead of backticks.
+
+**Case:** `tilde-fence`
+
+**Example:**
+````python
 case(
     "tilde-fence",
     '~~~json\n[{"characteristic": "any", "status": "PASS"}]\n~~~'
 ),
-```
+````
 
-**Assessment:** RED expected — the pipeline only recognizes
-triple-backticks. **Exclude** — tilde fences are very rare from LLMs;
-supporting them adds complexity for negligible coverage.
+**Recommendation:** Exclude — tilde fences are very rare from LLMs; supporting them adds complexity for negligible coverage.
 
 ## Special structures
 
 ### `multiple-json-arrays-in-response`
 
-```python
+An LLM emits two separate JSON arrays in one response.
+
+**Case:** `multiple-json-arrays-in-response`
+
+**Example:**
+````python
 case(
     "multiple-json-arrays-in-response",
     '```json\n[{"characteristic": "a", "status": "PASS"}]\n```\n\n```json\n[{"characteristic": "b", "status": "FAIL"}]\n```'
 ),
-```
+````
 
-**Assessment:** Behaviour undefined — should we accept the first,
-last, or raise? **Exclude** — out of scope; address by prompt-design
-(instruct the critic to emit one array) rather than parser
-robustness.
+**Recommendation:** Exclude — behaviour undefined; address by prompt-design rather than parser robustness.
 
 ### `truncated-json`
 
-```python
+A response cut off mid-JSON (e.g., token limit reached).
+
+**Case:** `truncated-json`
+
+**Example:**
+````python
 case(
     "truncated-json",
     '[{"characteristic": "any", "status": "P'
 ),
-```
+````
 
-**Assessment:** RED expected, and the existing failure path is the
-*correct* behaviour (`ValueError("response did not contain valid
-JSON: ...")`). **Include in `TestErrors`** to pin that we fail
-loudly rather than silently accept truncation — guards against
-future "be liberal" changes.
+**Recommendation:** Include (in `TestErrors`) — pins the existing fail-loudly behaviour (`ValueError("response did not contain valid JSON: ...")`) so future "be liberal" changes can't silently start accepting truncation.
 
 ### `empty-array` and `empty-array-in-fence`
 
-```python
+An empty JSON array (the critic found nothing to evaluate, or some bug emits `[]`).
+
+**Case:** `empty-array` / `empty-array-in-fence`
+
+**Example:**
+````python
 case(
     "empty-array",
     '[]'
@@ -175,8 +224,6 @@ case(
     "empty-array-in-fence",
     '```json\n[]\n```'
 ),
-```
+````
 
-**Assessment:** Currently GREEN through the unwrap, then downstream
-`_unaccounted_problem` raises with a meaningful message. **Exclude**
-— already correctly handled, downstream error is informative.
+**Recommendation:** Exclude — already correctly handled; `json.loads` returns `[]`, downstream `_unaccounted_problem` raises with a meaningful message.
