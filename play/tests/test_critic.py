@@ -9,8 +9,8 @@ from claude_session import ClaudeSession
 from critic import Critic
 
 
-def case(id, value):
-    return pytest.param(value, id=id)
+def case(id, *values):
+    return pytest.param(*values, id=id)
 
 
 class TestCritic:
@@ -214,45 +214,34 @@ class TestCritic:
                     should=dummy_characteristic,
                 )
 
-        def test_evaluation_should_tolerate_brackets_inside_response_strings(self, dummy_path):
+        @pytest.mark.parametrize("agent_response, characteristic_name", [
+            case(
+                "brackets",
+                '[{"characteristic": "lists [every] item", "status": "PASS"}]',
+                "lists [every] item",
+            ),
+            case(
+                "triple-backticks",
+                '```json\n[{"characteristic": "uses ```code``` blocks", "status": "PASS"}]\n```',
+                "uses ```code``` blocks",
+            ),
+            case(
+                "brackets-inside-fence",
+                '```json\n[{"characteristic": "lists [every] item", "status": "PASS"}]\n```',
+                "lists [every] item",
+            ),
+        ])
+        def test_evaluation_should_tolerate_special_characters_inside_response_strings(
+                self, dummy_path, agent_response, characteristic_name,
+        ):
             session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = '[{"characteristic": "lists [every] item", "status": "PASS"}]'
+            session_stub.run.return_value = agent_response
 
             with does_not_raise():
                 Critic(session=session_stub).evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
-                    should=[{"characteristic": "lists [every] item", "failure": "n/a"}],
-                )
-
-        def test_evaluation_should_tolerate_triple_backticks_in_response_strings(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '```json\n'
-                '[{"characteristic": "uses ```code``` blocks", "status": "PASS"}]\n'
-                '```'
-            )
-
-            with does_not_raise():
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[{"characteristic": "uses ```code``` blocks", "failure": "n/a"}],
-                )
-
-        def test_evaluation_should_tolerate_brackets_inside_fenced_response_strings(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '```json\n'
-                '[{"characteristic": "lists [every] item", "status": "PASS"}]\n'
-                '```'
-            )
-
-            with does_not_raise():
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[{"characteristic": "lists [every] item", "failure": "n/a"}],
+                    should=[{"characteristic": characteristic_name, "failure": "n/a"}],
                 )
 
     class TestErrors:
