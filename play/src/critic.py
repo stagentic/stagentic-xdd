@@ -73,27 +73,51 @@ def _rows_unless(
 
 def _rows_from(result: str) -> list[dict]:
     try:
-        return json.loads(result)
-    except json.JSONDecodeError:
-        pass
-    try:
-        return json.loads(_strip_code_fence(result))
+        return json.loads(
+            _unwrap_json_response(result)
+        )
     except json.JSONDecodeError as err:
         raise ValueError(f"response did not contain valid JSON: {result!r}") from err
 
 
-def _strip_code_fence(result: str) -> str:
-    stripped = result.strip()
-    fence_start = stripped.find("```")
-    if fence_start != -1:
-        stripped = stripped[fence_start:]
-        stripped = stripped.split("\n", 1)[1]
-        stripped = stripped.rsplit("```", 1)[0]
-        return stripped.strip()
-    array_start = stripped.rfind("[")
-    if array_start > 0:
-        stripped = stripped[array_start:]
-    return stripped
+def _unwrap_json_response(result: str) -> str:
+    text = result.strip()
+    for chisel in _SEQUENCE:
+        text = chisel(text)
+    return text
+
+
+def _remove_prose_before_fence(text: str) -> str:
+    if "```" not in text:
+        return text
+    return text[text.find("```"):]
+
+
+def _remove_prose_after_fence(text: str) -> str:
+    if "```" not in text:
+        return text
+    return text[:text.rfind("```") + 3]
+
+
+def _remove_fence_markers(text: str) -> str:
+    if not text.startswith("```"):
+        return text
+    return text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+
+
+def _remove_prose_before_bracket(text: str) -> str:
+    if text.startswith("["):
+        return text
+    array_start = text.rfind("[")
+    return text[array_start:] if array_start > 0 else text
+
+
+_SEQUENCE = (
+    _remove_prose_before_fence,
+    _remove_prose_after_fence,
+    _remove_fence_markers,
+    _remove_prose_before_bracket,
+)
 
 
 _REQUIRED_KEYS = ("characteristic", "status")
