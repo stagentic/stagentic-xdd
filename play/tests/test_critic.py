@@ -240,6 +240,21 @@ class TestCritic:
                     should=[{"characteristic": "uses ```code``` blocks", "failure": "n/a"}],
                 )
 
+        def test_evaluation_should_tolerate_brackets_inside_fenced_response_strings(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '```json\n'
+                '[{"characteristic": "lists [every] item", "status": "PASS"}]\n'
+                '```'
+            )
+
+            with does_not_raise():
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[{"characteristic": "lists [every] item", "failure": "n/a"}],
+                )
+
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
             with pytest.raises(ValueError) as excinfo:
