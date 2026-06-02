@@ -183,6 +183,10 @@ class TestCritic:
                 'Based on the transcript:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
             ),
             case(
+                "prose-around-fenced-json",
+                'Based on the transcript:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nThat completes the evaluation.'
+            ),
+            case(
                 "multiline-json-in-fence",
                 '```json\n[\n  {"characteristic": "any", "status": "PASS"}\n]\n```\n'
             ),
