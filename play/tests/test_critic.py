@@ -234,6 +234,11 @@ class TestCritic:
                 '```json\n[{"characteristic": "lists [every] item", "status": "PASS"}]\n```',
                 "lists [every] item",
             ),
+            case(
+                "code-block-before-fenced-json-with-bracket-in-string",
+                'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
+                "any [example]",
+            ),
         ])
         def test_evaluation_should_tolerate_special_characters_inside_response_strings(
                 self, dummy_path, agent_response, characteristic_name,
