@@ -41,6 +41,27 @@ case(
 
 **Context (for `code-block-before-fenced-json`):** committed earlier this session, it passes incidentally because the JSON's `[` is rightmost in the leftover text after fence-handling. This variant adds `[example]` inside a JSON string value — now *that* `[` is the rightmost, defeating the recovery.
 
+### `code-block-before-unhinted-fenced-json-with-bracket-in-string`
+
+Follow-up to `code-block-before-fenced-json-with-bracket-in-string` once that case is green.
+
+**Case:** `code-block-before-unhinted-fenced-json-with-bracket-in-string`
+
+**Target test:** `test_evaluation_should_tolerate_special_characters_inside_response_strings`
+
+**Example:**
+````python
+case(
+    "code-block-before-unhinted-fenced-json-with-bracket-in-string",
+    'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
+    "any [example]",
+),
+````
+
+**Recommendation:** Include — exposes the no-language-hint variant left uncovered by a fix that anchors on `` ```json ``.
+
+**Context (for `code-block-before-fenced-json-with-bracket-in-string`):** the prior variant is fixed by anchoring on the `json`-hinted fence. This variant drops the hint, so anchoring falls through and the same `[example]` ambiguity resurfaces.
+
 ### `code-block-after-fenced-json`
 
 A code block in the narrative after the JSON fence.
