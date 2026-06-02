@@ -113,9 +113,13 @@ def _raise_if(
 
 def _formatted_malformed(malformed: list[dict]) -> str:
     return "malformed rows:\n" + "\n".join(
-        f"- missing {', '.join(repr(k) for k in _REQUIRED_KEYS if k not in row)}: {row}"
-        for row in malformed
+        _formatted_malformed_row(row) for row in malformed
     )
+
+
+def _formatted_malformed_row(row: dict) -> str:
+    missing = ", ".join(repr(k) for k in _REQUIRED_KEYS if k not in row)
+    return f"- missing {missing}: {row}"
 
 
 def _statuses_from(rows: list[dict]) -> dict[str, str]:
