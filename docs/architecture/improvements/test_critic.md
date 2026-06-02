@@ -7,9 +7,10 @@ the chisel-pipeline refactor.
 
 These entries are intended to be worked through one at a time. When
 presenting an entry for review, use the format shown in each section
-below: a narrative lead-in, the case name, the example, a
-recommendation (include/exclude), and — when the entry references
-another case — context explaining the relationship.
+below: a narrative lead-in, the case name, the target test the case
+would be added to, the example, a recommendation (include/exclude),
+and — when the entry references another case — context explaining
+the relationship.
 
 If you are asked to add it to the test, add it and run the test first to see it fail.
 
@@ -23,11 +24,14 @@ Adversarial variant of `code-block-before-fenced-json`.
 
 **Case:** `code-block-before-fenced-json-with-bracket-in-string`
 
+**Target test:** `test_evaluation_should_tolerate_special_characters_inside_response_strings`
+
 **Example:**
 ````python
 case(
     "code-block-before-fenced-json-with-bracket-in-string",
-    'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```'
+    'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
+    "any [example]",
 ),
 ````
 
@@ -40,6 +44,8 @@ case(
 A code block in the narrative after the JSON fence.
 
 **Case:** `code-block-after-fenced-json`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
 
 **Example:**
 ````python
@@ -57,11 +63,14 @@ Symmetric pair to `code-block-before-fenced-json-with-bracket-in-string`.
 
 **Case:** `code-block-after-fenced-json-with-bracket-in-string`
 
+**Target test:** `test_evaluation_should_tolerate_special_characters_inside_response_strings`
+
 **Example:**
 ````python
 case(
     "code-block-after-fenced-json-with-bracket-in-string",
-    '```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
+    '```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```',
+    "any [example]",
 ),
 ````
 
@@ -74,6 +83,8 @@ case(
 Natural completion of the before/after pair.
 
 **Case:** `code-blocks-around-fenced-json`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
 
 **Example:**
 ````python
@@ -93,6 +104,8 @@ A bare JSON followed by prose.
 
 **Case:** `prose-after-non-fenced-json`
 
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
+
 **Example:**
 ````python
 case(
@@ -108,6 +121,8 @@ case(
 Adversarial variant of `prose-after-non-fenced-json`.
 
 **Case:** `prose-after-non-fenced-json-with-bracket-in-prose`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json` (the `[note]` is in the trailing prose, not in the characteristic name).
 
 **Example:**
 ````python
@@ -126,6 +141,8 @@ case(
 Prose both before and after a non-fenced JSON.
 
 **Case:** `prose-around-non-fenced-json`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
 
 **Example:**
 ````python
@@ -147,6 +164,8 @@ A fence with no language hint (just ` ``` ` instead of ` ```json `).
 
 **Case:** `fence-without-language-hint`
 
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
+
 **Example:**
 ````python
 case(
@@ -162,6 +181,8 @@ case(
 A markdown fence using tildes instead of backticks.
 
 **Case:** `tilde-fence`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
 
 **Example:**
 ````python
@@ -181,6 +202,8 @@ An LLM emits two separate JSON arrays in one response.
 
 **Case:** `multiple-json-arrays-in-response`
 
+**Target test:** new test method (the characteristics `"a"` and `"b"` don't match `dummy_characteristic`, so a custom `should` is needed).
+
 **Example:**
 ````python
 case(
@@ -197,6 +220,8 @@ A response cut off mid-JSON (e.g., token limit reached).
 
 **Case:** `truncated-json`
 
+**Target test:** new test method in `TestErrors`, mirroring `test_evaluation_should_raise_when_response_is_not_valid_json`.
+
 **Example:**
 ````python
 case(
@@ -205,13 +230,15 @@ case(
 ),
 ````
 
-**Recommendation:** Include (in `TestErrors`) — pins the existing fail-loudly behaviour (`ValueError("response did not contain valid JSON: ...")`) so future "be liberal" changes can't silently start accepting truncation.
+**Recommendation:** Include — pins the existing fail-loudly behaviour (`ValueError("response did not contain valid JSON: ...")`) so future "be liberal" changes can't silently start accepting truncation.
 
 ### `empty-array` and `empty-array-in-fence`
 
 An empty JSON array (the critic found nothing to evaluate, or some bug emits `[]`).
 
 **Case:** `empty-array` / `empty-array-in-fence`
+
+**Target test:** new test method (the empty `should` and `[]` rows don't fit either existing parametrize).
 
 **Example:**
 ````python
