@@ -6,12 +6,6 @@ order of work: tidy each unit in place first, so the structural
 extraction question (last) is re-evaluated against an already-tidy
 file.
 
-## `_formatted_malformed` density
-
-The body is a single dense expression — nested generator + join +
-repr + f-string. Hard to read. Could be broken into clearer steps or
-pull the per-row formatting into a helper.
-
 ## `_strip_code_fence` clarity
 
 Procedural-feeling string manipulation with non-obvious branches
