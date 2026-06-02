@@ -14,7 +14,9 @@ the relationship.
 
 If you are asked to add it to the test, add it and run the test first to see it fail.
 
-Once you see it fail, propose the change that best implements the code that makes it pass. Make sure it is the minimum required to make the test pass (and not break any other tests).
+Once you see it fail, propose the change that best implements the code that makes it pass. Make sure it is the minimum required to make the test pass (and not break any other tests). Prefer a new chisel (see critic.py) over modifying an existing one (unless it really is best to modify an existing one).
+
+Chisels should be in _SEQUENCE in the correct order for the work it must do. Methods should be added to critic.py in call order (so, in this case — in the order they appear in the _SEQUENCE).
 
 ## Multi-fence cases
 
