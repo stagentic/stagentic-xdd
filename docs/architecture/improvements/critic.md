@@ -6,14 +6,6 @@ order of work: tidy each unit in place first, so the structural
 extraction question (last) is re-evaluated against an already-tidy
 file.
 
-## `_strip_code_fence` clarity
-
-Procedural-feeling string manipulation with non-obvious branches
-(`if fence_start != -1` block, then a separate `if array_start > 0`
-block). The two cases (code-fenced vs prose-before-array) aren't
-named. Could split into `_strip_fenced_block` and
-`_strip_prose_prefix` for clarity.
-
 ## Type hint precision
 
 Most parsed-row helpers use `list[dict]` (untyped dict). Could be
@@ -35,9 +27,9 @@ behaviour. Symptoms:
   conceptually grouped.
 - Some helpers (notably `_raise_if`) are pure utilities that could
   serve other modules.
-- The file mixes responsibilities: response parsing, problem
-  detection, message formatting, and exception raising all live
-  together.
+- The file mixes responsibilities: response unwrapping, response
+  parsing, problem detection, message formatting, and exception
+  raising all live together.
 
 ### Possible extractions
 
@@ -49,11 +41,19 @@ behaviour. Symptoms:
   user. Review other files for the same pattern (`if X: raise Y(Z)`)
   before lifting.
 
-- **Response parsing** (`_rows_from`, `_strip_code_fence`,
-  `_rows_unless`, `_malformed`, `_formatted_malformed`,
-  `_REQUIRED_KEYS`): a self-contained "extract canonical rows from
-  an LLM-shaped JSON response" responsibility. Candidate for
-  `play/src/agent_response.py` (or similar), imported by `Critic`.
+- **Response unwrapping** (`_unwrap_json_response`, `_SEQUENCE`,
+  and the four chisels `_remove_prose_before_fence`,
+  `_remove_prose_after_fence`, `_remove_fence_markers`,
+  `_remove_prose_before_bracket`): the pipeline that strips
+  non-JSON wrapping from an LLM response. Candidate for extraction
+  to a type — e.g., a `JsonUnwrapper` class whose `unwrap(result)`
+  method threads through an ordered sequence of chisels.
+
+- **Response parsing** (`_rows_from`, `_rows_unless`, `_malformed`,
+  `_formatted_malformed`, `_REQUIRED_KEYS`): a self-contained
+  "parse canonical rows from a JSON string" responsibility, layered
+  on top of unwrapping. Candidate for `play/src/agent_response.py`
+  (or similar), imported by `Critic`.
 
 - **Problem detection trio** (`_duplicates_problem`,
   `_unaccounted_problem`, `_unexpected_problem` and their helpers):
