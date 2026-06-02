@@ -88,26 +88,24 @@ def _unwrap_json_response(result: str) -> str:
 
 
 def _remove_prose_before_fence(text: str) -> str:
-    if "```" not in text:
-        return text
+    if "```" not in text: return text
     return text[text.find("```"):]
 
 
 def _remove_prose_after_fence(text: str) -> str:
-    if "```" not in text:
-        return text
+    if "```" not in text: return text
     return text[:text.rfind("```") + 3]
 
 
 def _remove_fence_markers(text: str) -> str:
-    if not text.startswith("```"):
-        return text
-    return text.split("\n", 1)[1].rsplit("```", 1)[0].strip()
+    if not text.startswith("```"): return text
+    opener_removed = text.split("\n", 1)[1]
+    fences_removed = opener_removed.rsplit("```", 1)[0]
+    return fences_removed.strip()
 
 
 def _remove_prose_before_bracket(text: str) -> str:
-    if text.startswith("["):
-        return text
+    if text.startswith("["): return text
     array_start = text.rfind("[")
     return text[array_start:] if array_start > 0 else text
 
