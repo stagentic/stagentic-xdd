@@ -18,26 +18,6 @@ Once you see it fail, propose the change that best implements the code that make
 
 Chisels should be in _SEQUENCE in the correct order for the work it must do. Methods should be added to critic.py in call order (so, in this case — in the order they appear in the _SEQUENCE).
 
-## Multi-fence cases
-
-### `code-blocks-around-fenced-json`
-
-Natural completion of the before/after pair.
-
-**Case:** `code-blocks-around-fenced-json`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "code-blocks-around-fenced-json",
-    'Setup:\n\n```python\nx = 1\n```\n\nResult:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference:\n\n```python\nprint(x)\n```'
-),
-````
-
-**Recommendation:** Include — same failure mode as the after-variant; completes the before/after/around triple.
-
 ## Prose-after cases
 
 ### `prose-after-non-fenced-json`
