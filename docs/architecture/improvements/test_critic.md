@@ -20,27 +20,6 @@ Chisels should be in _SEQUENCE in the correct order for the work it must do. Met
 
 ## Multi-fence cases
 
-### `code-block-before-unhinted-fenced-json-with-bracket-in-string`
-
-Follow-up to `code-block-before-fenced-json-with-bracket-in-string` in `play/tests/test_critic.py`.
-
-**Case:** `code-block-before-unhinted-fenced-json-with-bracket-in-string`
-
-**Target test:** `test_evaluation_should_tolerate_special_characters_inside_response_strings`
-
-**Example:**
-````python
-case(
-    "code-block-before-unhinted-fenced-json-with-bracket-in-string",
-    'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
-    "any [example]",
-),
-````
-
-**Recommendation:** Include — exposes the no-language-hint variant left uncovered by a fix that anchors on `` ```json ``.
-
-**Context (for `code-block-before-fenced-json-with-bracket-in-string` in `play/tests/test_critic.py`):** the prior variant is fixed by anchoring on the `json`-hinted fence. This variant drops the hint, so anchoring falls through and the same `[example]` ambiguity resurfaces.
-
 ### `code-block-after-fenced-json`
 
 A code block in the narrative after the JSON fence.
