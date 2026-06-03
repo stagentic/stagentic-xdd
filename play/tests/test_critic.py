@@ -215,11 +215,11 @@ class TestCritic:
                 '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
             ),
             case(
-                "prose-after-non-fenced-json",
+                "prose-after-json",
                 '[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
             ),
             case(
-                "prose-after-non-fenced-json-with-bracket-in-prose",
+                "prose-after-json-with-bracket-in-prose",
                 '[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
             ),
         ])
