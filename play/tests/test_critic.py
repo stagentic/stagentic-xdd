@@ -218,6 +218,10 @@ class TestCritic:
                 "prose-after-non-fenced-json",
                 '[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
             ),
+            case(
+                "prose-after-non-fenced-json-with-bracket-in-prose",
+                '[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
+            ),
         ])
         def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
             session_stub = MagicMock(spec=ClaudeSession)
