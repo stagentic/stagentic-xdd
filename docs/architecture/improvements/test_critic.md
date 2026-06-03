@@ -20,27 +20,6 @@ Chisels should be in _SEQUENCE in the correct order for the work it must do. Met
 
 ## Multi-fence cases
 
-### `code-block-after-fenced-json-with-bracket-in-string`
-
-Symmetric pair to `code-block-before-fenced-json-with-bracket-in-string`.
-
-**Case:** `code-block-after-fenced-json-with-bracket-in-string`
-
-**Target test:** `test_evaluation_should_tolerate_special_characters_inside_response_strings`
-
-**Example:**
-````python
-case(
-    "code-block-after-fenced-json-with-bracket-in-string",
-    '```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```',
-    "any [example]",
-),
-````
-
-**Recommendation:** Exclude pre-fix; reconsider post-fix as a robustness check.
-
-**Context (for `code-block-after-fenced-json`):** the basic after-variant already fails outright, so the bracket-in-string variant is redundant for motivating a fix.
-
 ### `code-blocks-around-fenced-json`
 
 Natural completion of the before/after pair.
