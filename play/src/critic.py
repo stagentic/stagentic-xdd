@@ -92,6 +92,11 @@ def _remove_content_before_json_fence(text: str) -> str:
     return text[json_fence:] if json_fence > 0 else text
 
 
+def _remove_content_before_unhinted_fence(text: str) -> str:
+    unhinted_fence = text.find("```\n[")
+    return text[unhinted_fence:] if unhinted_fence > 0 else text
+
+
 def _remove_prose_before_fence(text: str) -> str:
     if "```" not in text: return text
     return text[text.find("```"):]
@@ -117,6 +122,7 @@ def _remove_prose_before_bracket(text: str) -> str:
 
 _SEQUENCE = (
     _remove_content_before_json_fence,
+    _remove_content_before_unhinted_fence,
     _remove_prose_before_fence,
     _remove_prose_after_fence,
     _remove_fence_markers,
