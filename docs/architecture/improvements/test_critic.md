@@ -20,24 +20,6 @@ Chisels should be in _SEQUENCE in the correct order for the work it must do. Met
 
 ## Prose-after cases
 
-### `prose-after-non-fenced-json`
-
-A bare JSON followed by prose.
-
-**Case:** `prose-after-non-fenced-json`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "prose-after-non-fenced-json",
-    '[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
-),
-````
-
-**Recommendation:** Include — the chisels handle prose-before-bracket but not prose-after-bracket. Fix likely adds a `_remove_prose_after_bracket` chisel.
-
 ### `prose-after-non-fenced-json-with-bracket-in-prose`
 
 Adversarial variant of `prose-after-non-fenced-json`.
@@ -56,7 +38,7 @@ case(
 
 **Recommendation:** Exclude pre-fix; include post-fix as a robustness check.
 
-**Context (for `prose-after-non-fenced-json`):** the basic case motivates a `_remove_prose_after_bracket` chisel; this variant has `[` in the trailing prose, defeating a naive `rfind`-based fix.
+**Context (for `prose-after-non-fenced-json` in `play/tests/test_critic.py`):** the basic case motivated the `_remove_prose_after_bracket` chisel; this variant has `[` in the trailing prose, defeating its naive `rfind`-based fix.
 
 ### `prose-around-non-fenced-json`
 
@@ -76,7 +58,7 @@ case(
 
 **Recommendation:** Exclude — redundant.
 
-**Context (for `prose-before-json` and `prose-after-non-fenced-json`):** the prose-before path is already covered by `prose-before-json` (existing test); the prose-after path will be covered by `prose-after-non-fenced-json` (separate entry above). This combination adds nothing not already exercised.
+**Context (for `prose-before-json` and `prose-after-non-fenced-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-non-fenced-json`. This combination adds nothing not already exercised.
 
 ## Fence variants
 
