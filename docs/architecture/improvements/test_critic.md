@@ -20,24 +20,6 @@ Chisels should be in _SEQUENCE in the correct order for the work it must do. Met
 
 ## Multi-fence cases
 
-### `code-block-after-fenced-json`
-
-A code block in the narrative after the JSON fence.
-
-**Case:** `code-block-after-fenced-json`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "code-block-after-fenced-json",
-    '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
-),
-````
-
-**Recommendation:** Include — the fence-anchor chisels lock onto the python closer at the end; basic case fails without needing brackets in strings.
-
 ### `code-block-after-fenced-json-with-bracket-in-string`
 
 Symmetric pair to `code-block-before-fenced-json-with-bracket-in-string`.
