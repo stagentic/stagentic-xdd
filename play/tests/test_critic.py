@@ -175,6 +175,10 @@ class TestCritic:
                 'Based on my evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]'
             ),
             case(
+                "fence-without-language-hint",
+                '```\n[{"characteristic": "any", "status": "PASS"}]\n```'
+            ),
+            case(
                 "code-fenced-json",
                 '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
             ),
