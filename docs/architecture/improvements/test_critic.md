@@ -20,26 +20,6 @@ Chisels should be in _SEQUENCE in the correct order for the work it must do. Met
 
 ## Prose-after cases
 
-### `prose-after-non-fenced-json-with-bracket-in-prose`
-
-Adversarial variant of `prose-after-non-fenced-json`.
-
-**Case:** `prose-after-non-fenced-json-with-bracket-in-prose`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json` (the `[note]` is in the trailing prose, not in the characteristic name).
-
-**Example:**
-````python
-case(
-    "prose-after-non-fenced-json-with-bracket-in-prose",
-    '[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
-),
-````
-
-**Recommendation:** Exclude pre-fix; include post-fix as a robustness check.
-
-**Context (for `prose-after-non-fenced-json` in `play/tests/test_critic.py`):** the basic case motivated the `_remove_prose_after_bracket` chisel; this variant has `[` in the trailing prose, defeating its naive `rfind`-based fix.
-
 ### `prose-around-non-fenced-json`
 
 Prose both before and after a non-fenced JSON.
