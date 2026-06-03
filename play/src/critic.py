@@ -126,6 +126,12 @@ def _remove_prose_before_bracket(text: str) -> str:
     return text[array_start:] if array_start > 0 else text
 
 
+def _remove_prose_after_bracket(text: str) -> str:
+    if text.endswith("]"): return text
+    array_end = text.rfind("]")
+    return text[:array_end + 1] if array_end >= 0 else text
+
+
 _SEQUENCE = (
     _remove_content_before_json_fence,
     _remove_content_before_unhinted_fence,
@@ -134,6 +140,7 @@ _SEQUENCE = (
     _remove_prose_after_fence,
     _remove_fence_markers,
     _remove_prose_before_bracket,
+    _remove_prose_after_bracket,
 )
 
 
