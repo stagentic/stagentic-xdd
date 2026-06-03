@@ -62,24 +62,6 @@ case(
 
 ## Fence variants
 
-### `fence-without-language-hint`
-
-A fence with no language hint (just ` ``` ` instead of ` ```json `).
-
-**Case:** `fence-without-language-hint`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "fence-without-language-hint",
-    '```\n[{"characteristic": "any", "status": "PASS"}]\n```'
-),
-````
-
-**Recommendation:** Include — documents that the language hint is optional; LLMs don't always emit it.
-
 ### `tilde-fence`
 
 A markdown fence using tildes instead of backticks.
