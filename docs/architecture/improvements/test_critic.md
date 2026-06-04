@@ -18,34 +18,13 @@ Once you see it fail, propose the change that best implements the code that make
 
 ## Special structures
 
-### `non-evaluation-json-after-scorecard`
+### `non-evaluation-json-before-scorecard`
 
 An LLM emits two JSON arrays of different *types*: the evaluation result
 (`characteristic`/`status` rows) and some other array-of-dicts that is not an
-evaluation result (e.g. a summary the model volunteered). The non-evaluation
-array trails the scorecard, behind leading prose. Only the evaluation result
-should be selected.
-
-**Case:** `non-evaluation-json-after-scorecard`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json` (the scorecard's `"any"` row matches `dummy_characteristic`, so no custom `should` is needed).
-
-**Example:**
-````python
-case(
-    "non-evaluation-json-after-scorecard",
-    'The evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nFor reference, files changed:\n\n[{"path": "conversion.py", "added": 12}]'
-),
-````
-
-**Recommendation:** Include — unlike two competing scorecards (no right answer), this has one correct pick: the array whose rows are evaluation checks. Goes red today — `_start_of_json` scans right-to-left and `_is_scorecard` accepts *any* list of dicts, so it grabs the trailing `[{"path": ..., "added": ...}]` and the run dies with a "malformed rows" error. The fix is to tighten `_is_scorecard` to require `characteristic` and `status` on every row, so non-evaluation JSON is skipped and the scan continues to the real scorecard.
-
-**Context (paired with `non-evaluation-json-before-scorecard`):** the leading prose is load-bearing. The early `if text.startswith("["): return 0` in `_start_of_json` bypasses content discrimination entirely, so this example puts prose first to route through the content-aware scan. The sibling case below covers the harder layout where the non-evaluation array comes first.
-
-### `non-evaluation-json-before-scorecard`
-
-The same two-types situation as above, but the non-evaluation array comes
-*first* and the response starts with it — so the scorecard trails.
+evaluation result (e.g. a files-changed summary the model volunteered). The
+non-evaluation array comes *first* and the response starts with it — so the
+scorecard trails. Only the evaluation result should be selected.
 
 **Case:** `non-evaluation-json-before-scorecard`
 
@@ -59,9 +38,7 @@ case(
 ),
 ````
 
-**Recommendation:** Include — goes red today, and tightening `_is_scorecard` alone does *not* fix it. Because the response starts with `[`, the early `if text.startswith("["): return 0` in `_start_of_json` returns offset 0 without inspecting content — the leading non-evaluation array is taken verbatim, never reaching `_is_scorecard`. The fix is to make the leading-`[` path content-aware too: only short-circuit when the array at offset 0 is itself a scorecard, otherwise fall through to the content-aware scan (which, with `_is_scorecard` tightened, finds the trailing scorecard).
-
-**Context (paired with `non-evaluation-json-after-scorecard`):** the two cases together pin both placements — non-evaluation JSON after the scorecard (fixed by `_is_scorecard`) and before it (additionally needs the early return revisited).
+**Recommendation:** Include — goes red today. `_is_scorecard` already requires `characteristic` and `status` on every row, so a non-evaluation array trailing the scorecard is skipped; but that alone does *not* fix this layout. Because the response starts with `[`, the early `if text.startswith("["): return 0` in `_start_of_json` returns offset 0 without inspecting content — the leading non-evaluation array is taken verbatim, never reaching `_is_scorecard`. The fix is to make the leading-`[` path content-aware too: only short-circuit when the array at offset 0 is itself a scorecard, otherwise fall through to the content-aware scan, which then finds the trailing scorecard.
 
 ### `truncated-json`
 
