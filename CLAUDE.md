@@ -125,7 +125,14 @@ file as its notification lands.
 
 ### Before any commit
 
-Whether proposing one or making one autonomously, run the tests relevant to the change:
+Whether proposing one or making one autonomously:
+
+- **Lint the affected project** first with [`ruff check`](COMMANDS.md#linting)
+  (`uv run --directory play ruff check .` and/or `uv run --directory spec
+  ruff check .`) — always, regardless of how small the change. Nothing else
+  runs it, which is how reviewed files drifted out of lint-clean.
+
+Then run the tests relevant to the change:
 
 - **Single `test_`-prefixed file changed alone**: run only that file
   (e.g. `uv run --directory play pytest tests/test_critic.py`).
