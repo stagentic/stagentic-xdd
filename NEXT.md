@@ -31,8 +31,7 @@ Some unchecked boxes link to a per-file punch list at `docs/architecture/improve
 - [x] `auditor.py` (and `tests/test_auditor.py`)
 - [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
   - Outstanding improvements tracked in
-    [`docs/architecture/improvements/critic.md`](docs/architecture/improvements/critic.md) and
-    [`docs/architecture/improvements/test_critic.md`](docs/architecture/improvements/test_critic.md).
+    [`docs/architecture/improvements/critic.md`](docs/architecture/improvements/critic.md).
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
 
 ### `spec/`
