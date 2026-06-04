@@ -18,28 +18,6 @@ Once you see it fail, propose the change that best implements the code that make
 
 ## Special structures
 
-### `non-evaluation-json-before-scorecard`
-
-An LLM emits two JSON arrays of different *types*: the evaluation result
-(`characteristic`/`status` rows) and some other array-of-dicts that is not an
-evaluation result (e.g. a files-changed summary the model volunteered). The
-non-evaluation array comes *first* and the response starts with it — so the
-scorecard trails. Only the evaluation result should be selected.
-
-**Case:** `non-evaluation-json-before-scorecard`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`.
-
-**Example:**
-````python
-case(
-    "non-evaluation-json-before-scorecard",
-    '[{"path": "conversion.py", "added": 12}]\n\n[{"characteristic": "any", "status": "PASS"}]'
-),
-````
-
-**Recommendation:** Include — goes red today. `_is_scorecard` already requires `characteristic` and `status` on every row, so a non-evaluation array trailing the scorecard is skipped; but that alone does *not* fix this layout. Because the response starts with `[`, the early `if text.startswith("["): return 0` in `_start_of_json` returns offset 0 without inspecting content — the leading non-evaluation array is taken verbatim, never reaching `_is_scorecard`. The fix is to make the leading-`[` path content-aware too: only short-circuit when the array at offset 0 is itself a scorecard, otherwise fall through to the content-aware scan, which then finds the trailing scorecard.
-
 ### `truncated-json`
 
 A response cut off mid-JSON (e.g., token limit reached).
