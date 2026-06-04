@@ -92,16 +92,21 @@ def _unwrap_json_response(result: str) -> str:
 
 
 def _remove_content_before_json(text: str) -> str:
-    if text.startswith("["): return text
+    start = _start_of_json(text)
+    return text if start is None else text[start:]
+
+
+def _start_of_json(text: str) -> int | None:
+    if text.startswith("["): return 0
     decoder = json.JSONDecoder()
     end = len(text)
     while (start := text.rfind("[", 0, end)) != -1:
         try:
             decoder.raw_decode(text[start:])
-            return text[start:]
+            return start
         except json.JSONDecodeError:
             end = start
-    return text
+    return None
 
 
 def _remove_content_after_json(text: str) -> str:
