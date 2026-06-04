@@ -97,7 +97,6 @@ def _remove_content_before_json(text: str) -> str:
 
 
 def _start_of_json(text: str) -> int | None:
-    if text.startswith("["): return 0
     decoder = json.JSONDecoder()
     end = len(text)
     while (start := text.rfind("[", 0, end)) != -1:

@@ -234,6 +234,10 @@ class TestCritic:
                 "non-evaluation-json-after-scorecard",
                 'The evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nFor reference, files changed:\n\n[{"path": "conversion.py", "added": 12}]'
             ),
+            case(
+                "non-evaluation-json-before-scorecard",
+                '[{"path": "conversion.py", "added": 12}]\n\n[{"characteristic": "any", "status": "PASS"}]'
+            ),
         ])
         def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
             session_stub = MagicMock(spec=ClaudeSession)
