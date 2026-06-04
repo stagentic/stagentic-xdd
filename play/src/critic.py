@@ -99,13 +99,6 @@ def _remove_content_after_json(text: str) -> str:
     return text
 
 
-def _remove_fences_around_json(text: str) -> str:
-    if not text.startswith("```"): return text
-    opener_removed = text.split("\n", 1)[1]
-    fences_removed = opener_removed.rsplit("```", 1)[0]
-    return fences_removed.strip()
-
-
 def _remove_content_before_json_fence(text: str) -> str:
     json_fence = text.find("```json")
     return text[json_fence:] if json_fence > 0 else text
@@ -156,7 +149,6 @@ def _remove_prose_after_json(text: str) -> str:
 _STAGES = (
     _remove_content_before_json,
     _remove_content_after_json,
-    _remove_fences_around_json,
 )
 
 
