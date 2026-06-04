@@ -40,26 +40,6 @@ case(
 
 **Context (for `prose-before-json` and `prose-after-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-json`. Chisels run sequentially with no shared state: after `_remove_prose_before_json` trims the leading prose, the intermediate text is byte-identical to a prose-after-only case, so chisel 8 sees the same input it would have anyway. This combination adds nothing not already exercised.
 
-### `prose-around-json-with-bracket-in-trailing-prose`
-
-Prose before *and* prose containing a `[` after a non-fenced JSON. Surfaced while verifying that the plain `prose-around-json` case was redundant — the bracketed variant is not.
-
-**Case:** `prose-around-json-with-bracket-in-trailing-prose`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "prose-around-json-with-bracket-in-trailing-prose",
-    'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
-),
-````
-
-**Recommendation:** Include — currently fails.
-
-**Context:** `bracketed-prose-before-json` covers `[` in leading prose; `prose-after-json-with-bracket-in-prose` covers `[` in trailing prose when there is no prose-before. Neither exercises the composition. With prose-before present, `_remove_prose_before_json` reaches `text.rfind("[")` and finds the `[` inside the trailing prose instead of the JSON's opening bracket; the pipeline collapses to a non-JSON fragment and `json.loads` raises.
-
 ## Bigger picture refactoring question (consider before further refactoring)
 Does the current chisel structure make sense at all? Today's eight chisels are aspect-oriented (each handles one aspect — fence, prose, bracket — regardless of position), and the smart-rfind added for this case is a sign that the bracket/JSON aspects don't have clean opposite numbers. A position-oriented redesign might collapse to three top-level operations — `_remove_content_before_json`, `_remove_content_after_json`, `_remove_fences_around_json` — each delegating to smaller helpers for the variations they encompass.
 
