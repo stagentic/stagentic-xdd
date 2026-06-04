@@ -34,11 +34,11 @@ class TestCritic:
 
             with pytest.raises(AssertionError) as excinfo:
                 Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path, working_dir=dummy_path,
                     should=[
                         {"characteristic": "met", "failure": "met reason"},
                         {"characteristic": "the check", "failure": "the reason"},
                     ],
+                    evidence_source=dummy_path, working_dir=dummy_path,
                 )
 
             assert str(excinfo.value) == "- the check: the reason"
@@ -53,13 +53,12 @@ class TestCritic:
 
             with pytest.raises(AssertionError) as excinfo:
                 Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
                     should=[
                         {"characteristic": "first", "failure": "first failure"},
                         {"characteristic": "middle", "failure": "middle failure"},
                         {"characteristic": "third", "failure": "third failure"},
                     ],
+                    evidence_source=dummy_path, working_dir=dummy_path,
                 )
 
             assert str(excinfo.value) == "- first: first failure\n- third: third failure"
