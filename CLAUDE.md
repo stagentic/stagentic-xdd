@@ -101,8 +101,16 @@ conventions (`transcript`, `working_dir`, scene projects).
 ### Full baseline
 
 Default suite. Run at the start of every new session, and any time the
-"Change in `play/` beyond a single test file" rule applies. Issue as
-separate tool calls in a single message so they run concurrently.
+"Change in `play/` beyond a single test file" rule applies. Launch all
+four with `run_in_background: true` in a single message — foreground
+Bash calls in one message queue and run one-after-another, only
+`run_in_background` makes them truly parallel. Read each suite's output
+file when its completion notification arrives.
+
+Don't reach for other tools to manage this: background tasks re-invoke
+you on completion, so there's no polling to do — no Monitor, no Task
+tools, no waiting loop. Launch, let the turn end, and read each output
+file as its notification lands.
 
 - [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
 - [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
