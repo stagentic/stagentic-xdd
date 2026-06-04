@@ -300,9 +300,13 @@ class TestCritic:
 
             assert str(excinfo.value) == "scorecard must not be empty"
 
-        def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, dummy_path, dummy_characteristic):
+        @pytest.mark.parametrize("response", [
+            case("non-json-prose", "not valid json."),
+            case("truncated-mid-json", '[{"characteristic": "any", "status": "P'),
+        ])
+        def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, dummy_path, dummy_characteristic, response):
             session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = "not valid json."
+            session_stub.run.return_value = response
 
             with pytest.raises(ValueError) as excinfo:
                 Critic(session=session_stub).evaluate(
@@ -311,7 +315,7 @@ class TestCritic:
                     should=dummy_characteristic,
                 )
 
-            assert str(excinfo.value) == "response did not contain valid JSON: 'not valid json.'"
+            assert str(excinfo.value) == f"response did not contain valid JSON: {response!r}"
             assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
         def test_evaluation_should_list_every_malformed_response_row(self, dummy_path):

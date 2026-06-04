@@ -16,26 +16,6 @@ If you are asked to add it to the test, add it and run the test first to see it 
 
 Once you see it fail, propose the change that best implements the code that makes it pass — the minimum required to pass without breaking other tests. Unwrapping lives in `_unwrap_json_response`, which runs two ordered removal stages, `_remove_content_before_json` then `_remove_content_after_json`; most cases are handled by changing one of those locators. A locator can discriminate by content, not only by position: `_remove_content_before_json` finds the JSON start via `_start_of_json`, which prefers the array whose decoded value is scorecard-shaped (`_is_scorecard`) over the first bracket it meets. If a case genuinely needs a new positional step, add a stage function and place it in the tuple in call order.
 
-## Special structures
-
-### `truncated-json`
-
-A response cut off mid-JSON (e.g., token limit reached).
-
-**Case:** `truncated-json`
-
-**Target test:** new test method in `TestErrors`, mirroring `test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json`.
-
-**Example:**
-````python
-case(
-    "truncated-json",
-    '[{"characteristic": "any", "status": "P'
-),
-````
-
-**Recommendation:** Include — pins the existing fail-loudly behaviour (`ValueError("response did not contain valid JSON: ...")`) so future "be liberal" changes can't silently start accepting truncation.
-
 ## Status interpretation
 
 ### `non-pass-status-counts-as-failure`
