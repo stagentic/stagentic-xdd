@@ -14,7 +14,7 @@ the relationship.
 
 If you are asked to add it to the test, add it and run the test first to see it fail.
 
-Once you see it fail, propose the change that best implements the code that makes it pass — the minimum required to pass without breaking other tests. Unwrapping lives in `_unwrap_json_response`, which runs two ordered removal stages, `_remove_content_before_json` then `_remove_content_after_json`; most cases are handled by changing one of those locators. If a case genuinely needs a new positional step, add a stage function and place it in the tuple in call order.
+Once you see it fail, propose the change that best implements the code that makes it pass — the minimum required to pass without breaking other tests. Unwrapping lives in `_unwrap_json_response`, which runs two ordered removal stages, `_remove_content_before_json` then `_remove_content_after_json`; most cases are handled by changing one of those locators. A locator can discriminate by content, not only by position: `_remove_content_before_json` finds the JSON start via `_start_of_json`, which prefers the array whose decoded value is scorecard-shaped (`_is_scorecard`) over the first bracket it meets. If a case genuinely needs a new positional step, add a stage function and place it in the tuple in call order.
 
 ## Prose-after cases
 
@@ -76,7 +76,7 @@ case(
 ),
 ````
 
-**Recommendation:** Exclude — behaviour undefined; address by prompt-design rather than parser robustness.
+**Recommendation:** Exclude — the pick is deterministic but fragile: `_start_of_json` scans right-to-left and keeps the last scorecard-shaped array (here `[{"characteristic": "b", "status": "FAIL"}]`). Don't rely on that; address by prompt-design rather than parser robustness.
 
 ### `truncated-json`
 
