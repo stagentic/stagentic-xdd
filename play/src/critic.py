@@ -82,24 +82,12 @@ def _rows_from(result: str) -> list[dict]:
 
 def _unwrap_json_response(result: str) -> str:
     text = result.strip()
-    for chisel in _STAGES:
-        text = chisel(text)
+    text = _remove_content_before_json(text)
+    text = _remove_content_after_json(text)
     return text
 
 
 def _remove_content_before_json(text: str) -> str:
-    for chisel in _BEFORE_JSON_STAGES:
-        text = chisel(text)
-    return text
-
-
-def _remove_content_after_json(text: str) -> str:
-    for chisel in _AFTER_JSON_STAGES:
-        text = chisel(text)
-    return text
-
-
-def _remove_prose_before_json(text: str) -> str:
     if text.startswith("["): return text
     decoder = json.JSONDecoder()
     end = len(text)
@@ -112,28 +100,12 @@ def _remove_prose_before_json(text: str) -> str:
     return text
 
 
-def _remove_prose_after_json(text: str) -> str:
+def _remove_content_after_json(text: str) -> str:
     try:
         _, end = json.JSONDecoder().raw_decode(text)
     except json.JSONDecodeError:
         return text
     return text[:end]
-
-
-_STAGES = (
-    _remove_content_before_json,
-    _remove_content_after_json,
-)
-
-
-_BEFORE_JSON_STAGES = (
-    _remove_prose_before_json,
-)
-
-
-_AFTER_JSON_STAGES = (
-    _remove_prose_after_json,
-)
 
 
 _REQUIRED_KEYS = ("characteristic", "status")
