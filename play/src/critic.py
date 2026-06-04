@@ -208,7 +208,7 @@ def _problems_message(problems: list[str]) -> str:
 
 
 def _failures_in(should: list[dict], statuses: dict[str, str]) -> list[dict]:
-    return [row for row in should if statuses.get(row["characteristic"]) == "FAIL"]
+    return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
 
 
 def _failure_message(failures: list[dict]) -> str:

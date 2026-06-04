@@ -21,11 +21,15 @@ class TestCritic:
     def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
 
     class TestFails:
-        def test_evaluation_should_treat_any_non_PASS_status_as_a_failure(self, dummy_path):
+        @pytest.mark.parametrize("non_pass_status", [
+            case("fail", "FAIL"),
+            case("inconclusive", "INCONCLUSIVE"),
+        ])
+        def test_evaluation_should_treat_any_non_PASS_status_as_a_failure(self, dummy_path, non_pass_status):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = (
                 '[{"characteristic": "met", "status": "PASS"},'
-                ' {"characteristic": "the check", "status": "FAIL"}]'
+                ' {"characteristic": "the check", "status": "' + non_pass_status + '"}]'
             )
 
             with pytest.raises(AssertionError) as excinfo:
