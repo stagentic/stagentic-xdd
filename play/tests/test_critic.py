@@ -21,6 +21,45 @@ class TestCritic:
     def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
 
     class TestFails:
+        def test_evaluation_should_treat_any_non_PASS_status_as_a_failure(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "met", "status": "PASS"},'
+                ' {"characteristic": "the check", "status": "FAIL"}]'
+            )
+
+            with pytest.raises(AssertionError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path, working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "met", "failure": "met reason"},
+                        {"characteristic": "the check", "failure": "the reason"},
+                    ],
+                )
+
+            assert str(excinfo.value) == "- the check: the reason"
+
+        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
+            session_stub = MagicMock(spec=ClaudeSession)
+            session_stub.run.return_value = (
+                '[{"characteristic": "first", "status": "FAIL"},'
+                ' {"characteristic": "middle", "status": "PASS"},'
+                ' {"characteristic": "third", "status": "FAIL"}]'
+            )
+
+            with pytest.raises(AssertionError) as excinfo:
+                Critic(session=session_stub).evaluate(
+                    evidence_source=dummy_path,
+                    working_dir=dummy_path,
+                    should=[
+                        {"characteristic": "first", "failure": "first failure"},
+                        {"characteristic": "middle", "failure": "middle failure"},
+                        {"characteristic": "third", "failure": "third failure"},
+                    ],
+                )
+
+            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
+
         def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
             working_dir = tmp_path / "workspace"
@@ -60,27 +99,6 @@ class TestCritic:
                 "- alpha: alpha reason\n"
                 "- gamma: gamma reason"
             )
-
-        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "first", "status": "FAIL"},'
-                ' {"characteristic": "middle", "status": "PASS"},'
-                ' {"characteristic": "third", "status": "FAIL"}]'
-            )
-
-            with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[
-                        {"characteristic": "first", "failure": "first failure"},
-                        {"characteristic": "middle", "failure": "middle failure"},
-                        {"characteristic": "third", "failure": "third failure"},
-                    ],
-                )
-
-            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
 
     class TestPasses:
         def test_evaluation_should_not_raise_when_all_characteristics_pass(self, dummy_path):
