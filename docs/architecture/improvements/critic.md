@@ -44,7 +44,7 @@ behaviour. Symptoms:
 - **Response unwrapping** (`_unwrap_json_response`, `_SEQUENCE`,
   and the four chisels `_remove_prose_before_fence`,
   `_remove_prose_after_fence`, `_remove_fence_markers`,
-  `_remove_prose_before_bracket`): the pipeline that strips
+  `_remove_prose_before_json`): the pipeline that strips
   non-JSON wrapping from an LLM response. Candidate for extraction
   to a type — e.g., a `JsonUnwrapper` class whose `unwrap(result)`
   method threads through an ordered sequence of chisels.
