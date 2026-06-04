@@ -149,7 +149,10 @@ class TestCritic:
 
         def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path):
             session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "first thing", "status": "PASS"}, {"characteristic": "second thing", "status": "PASS"}]'
+            session_spy.run.return_value = (
+                '[{"characteristic": "first thing", "status": "PASS"},'
+                ' {"characteristic": "second thing", "status": "PASS"}]'
+            )
 
             Critic(session=session_spy).evaluate(
                 should=[
