@@ -38,44 +38,6 @@ case(
 
 **Context (for `prose-before-json` and `prose-after-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-json`. The removal stages run in sequence with no shared state: after `_remove_content_before_json` trims the leading prose, the intermediate text is byte-identical to a prose-after-only case, so `_remove_content_after_json` sees the same input it would have anyway. This combination adds nothing not already exercised.
 
-### `decodable-bracket-in-trailing-prose`
-
-Trailing prose whose bracket is itself valid JSON — a numeric citation
-`[1]` after the array, rather than the non-decodable `[note]` the suite
-already covers.
-
-**Case:** `decodable-bracket-in-trailing-prose`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "decodable-bracket-in-trailing-prose",
-    '[{"characteristic": "any", "status": "PASS"}]\n\nSee [1] for details.'
-),
-````
-
-**Recommendation:** Include to document the gap — but note it lands *red*,
-unlike the other tolerate-cases that pin already-passing behaviour. The red
-is the point: it makes a real defect visible rather than asserting behaviour
-we don't have.
-
-**Context:** `_remove_content_before_json` searches brackets right-to-left
-and keeps the first whose suffix `raw_decode`s as JSON. A *leading* `[1]` is
-avoided because the real array sits further right and is found first (this is
-what `bracketed-prose-before-json` exercises). A *trailing* decodable bracket
-is reached first, so `raw_decode("[1] for details.")` succeeds and the critic
-parses `[1]` instead of the scorecard. The tested trailing case,
-`prose-after-json-with-bracket-in-prose`, uses `[note]`, which is not valid
-JSON and so falls through correctly. Two ways to close it, neither free:
-(a) fix the locator to prefer the array whose decoded value is a list of
-objects carrying the expected keys, rather than the first right-to-left hit;
-or (b) accept the limitation and rely on prompt-design (the critic prompt
-asks for only a JSON array), as with `multiple-json-arrays-in-response`. A
-numeric citation after the scorecard is rare in practice, so the real-world
-risk is low.
-
 ## Fence variants
 
 ### `tilde-fence`
