@@ -99,11 +99,6 @@ def _remove_content_after_json(text: str) -> str:
     return text
 
 
-def _remove_prose_before_fence(text: str) -> str:
-    if "```" not in text: return text
-    return text[text.find("```"):]
-
-
 def _remove_prose_before_json(text: str) -> str:
     if text.startswith("["): return text
     decoder = json.JSONDecoder()
@@ -143,7 +138,6 @@ _STAGES = (
 
 
 _BEFORE_JSON_STAGES = (
-    _remove_prose_before_fence,
     _remove_prose_before_json,
 )
 
