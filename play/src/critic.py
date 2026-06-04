@@ -112,11 +112,6 @@ def _remove_prose_before_json(text: str) -> str:
     return text
 
 
-def _remove_prose_after_fence(text: str) -> str:
-    if "```" not in text: return text
-    return text[:text.rfind("```") + 3]
-
-
 def _remove_prose_after_json(text: str) -> str:
     try:
         _, end = json.JSONDecoder().raw_decode(text)
@@ -137,7 +132,6 @@ _BEFORE_JSON_STAGES = (
 
 
 _AFTER_JSON_STAGES = (
-    _remove_prose_after_fence,
     _remove_prose_after_json,
 )
 
