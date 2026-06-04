@@ -102,11 +102,17 @@ def _start_of_json(text: str) -> int | None:
     end = len(text)
     while (start := text.rfind("[", 0, end)) != -1:
         try:
-            decoder.raw_decode(text[start:])
-            return start
+            content, _ = decoder.raw_decode(text[start:])
         except json.JSONDecodeError:
             end = start
+            continue
+        if _is_scorecard(content): return start
+        end = start
     return None
+
+
+def _is_scorecard(content) -> bool:
+    return isinstance(content, list) and all(isinstance(row, dict) for row in content)
 
 
 def _remove_content_after_json(text: str) -> str:

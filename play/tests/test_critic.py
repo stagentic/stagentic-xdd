@@ -226,6 +226,10 @@ class TestCritic:
                 "prose-around-json-with-bracket-in-trailing-prose",
                 'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
             ),
+            case(
+                "prose-around-json-with-decodable-bracket-in-trailing-prose",
+                'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nSee [1] for details.'
+            ),
         ])
         def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
             session_stub = MagicMock(spec=ClaudeSession)
