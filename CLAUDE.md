@@ -107,6 +107,11 @@ Bash calls in one message queue and run one-after-another, only
 `run_in_background` makes them truly parallel. Read each suite's output
 file when its completion notification arrives.
 
+Run each command verbatim as written in COMMANDS.md. Don't wrap it in
+shell redirects (`> file 2>&1`) or exit-code capture (`; echo "EXIT=$?"`)
+— `run_in_background` already streams each command's output to a file the
+notification points you to, so that scaffolding is redundant noise.
+
 Don't reach for other tools to manage this: background tasks re-invoke
 you on completion, so there's no polling to do — no Monitor, no Task
 tools, no waiting loop. Launch, let the turn end, and read each output
