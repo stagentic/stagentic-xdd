@@ -16,67 +16,52 @@ If you are asked to add it to the test, add it and run the test first to see it 
 
 Once you see it fail, propose the change that best implements the code that makes it pass — the minimum required to pass without breaking other tests. Unwrapping lives in `_unwrap_json_response`, which runs two ordered removal stages, `_remove_content_before_json` then `_remove_content_after_json`; most cases are handled by changing one of those locators. A locator can discriminate by content, not only by position: `_remove_content_before_json` finds the JSON start via `_start_of_json`, which prefers the array whose decoded value is scorecard-shaped (`_is_scorecard`) over the first bracket it meets. If a case genuinely needs a new positional step, add a stage function and place it in the tuple in call order.
 
-## Prose-after cases
-
-### `prose-around-json`
-
-Prose both before and after a non-fenced JSON.
-
-**Case:** `prose-around-json`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "prose-around-json",
-    'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
-),
-````
-
-**Recommendation:** Exclude — redundant.
-
-**Context (for `prose-before-json` and `prose-after-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-json`. The removal stages run in sequence with no shared state: after `_remove_content_before_json` trims the leading prose, the intermediate text is byte-identical to a prose-after-only case, so `_remove_content_after_json` sees the same input it would have anyway. This combination adds nothing not already exercised.
-
-## Fence variants
-
-### `tilde-fence`
-
-A markdown fence using tildes instead of backticks.
-
-**Case:** `tilde-fence`
-
-**Target test:** `test_evaluation_should_tolerate_wrapped_json`
-
-**Example:**
-````python
-case(
-    "tilde-fence",
-    '~~~json\n[{"characteristic": "any", "status": "PASS"}]\n~~~'
-),
-````
-
-**Recommendation:** Exclude — tilde fences are very rare from LLMs; supporting them adds complexity for negligible coverage.
-
 ## Special structures
 
-### `multiple-json-arrays-in-response`
+### `non-evaluation-json-after-scorecard`
 
-An LLM emits two separate JSON arrays in one response.
+An LLM emits two JSON arrays of different *types*: the evaluation result
+(`characteristic`/`status` rows) and some other array-of-dicts that is not an
+evaluation result (e.g. a summary the model volunteered). The non-evaluation
+array trails the scorecard, behind leading prose. Only the evaluation result
+should be selected.
 
-**Case:** `multiple-json-arrays-in-response`
+**Case:** `non-evaluation-json-after-scorecard`
 
-**Target test:** new test method (the characteristics `"a"` and `"b"` don't match `dummy_characteristic`, so a custom `should` is needed).
+**Target test:** `test_evaluation_should_tolerate_wrapped_json` (the scorecard's `"any"` row matches `dummy_characteristic`, so no custom `should` is needed).
 
 **Example:**
 ````python
 case(
-    "multiple-json-arrays-in-response",
-    '```json\n[{"characteristic": "a", "status": "PASS"}]\n```\n\n```json\n[{"characteristic": "b", "status": "FAIL"}]\n```'
+    "non-evaluation-json-after-scorecard",
+    'The evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nFor reference, files changed:\n\n[{"path": "conversion.py", "added": 12}]'
 ),
 ````
 
-**Recommendation:** Exclude — the pick is deterministic but fragile: `_start_of_json` scans right-to-left and keeps the last scorecard-shaped array (here `[{"characteristic": "b", "status": "FAIL"}]`). Don't rely on that; address by prompt-design rather than parser robustness.
+**Recommendation:** Include — unlike two competing scorecards (no right answer), this has one correct pick: the array whose rows are evaluation checks. Goes red today — `_start_of_json` scans right-to-left and `_is_scorecard` accepts *any* list of dicts, so it grabs the trailing `[{"path": ..., "added": ...}]` and the run dies with a "malformed rows" error. The fix is to tighten `_is_scorecard` to require `characteristic` and `status` on every row, so non-evaluation JSON is skipped and the scan continues to the real scorecard.
+
+**Context (paired with `non-evaluation-json-before-scorecard`):** the leading prose is load-bearing. The early `if text.startswith("["): return 0` in `_start_of_json` bypasses content discrimination entirely, so this example puts prose first to route through the content-aware scan. The sibling case below covers the harder layout where the non-evaluation array comes first.
+
+### `non-evaluation-json-before-scorecard`
+
+The same two-types situation as above, but the non-evaluation array comes
+*first* and the response starts with it — so the scorecard trails.
+
+**Case:** `non-evaluation-json-before-scorecard`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`.
+
+**Example:**
+````python
+case(
+    "non-evaluation-json-before-scorecard",
+    '[{"path": "conversion.py", "added": 12}]\n\n[{"characteristic": "any", "status": "PASS"}]'
+),
+````
+
+**Recommendation:** Include — goes red today, and tightening `_is_scorecard` alone does *not* fix it. Because the response starts with `[`, the early `if text.startswith("["): return 0` in `_start_of_json` returns offset 0 without inspecting content — the leading non-evaluation array is taken verbatim, never reaching `_is_scorecard`. The fix is to make the leading-`[` path content-aware too: only short-circuit when the array at offset 0 is itself a scorecard, otherwise fall through to the content-aware scan (which, with `_is_scorecard` tightened, finds the trailing scorecard).
+
+**Context (paired with `non-evaluation-json-after-scorecard`):** the two cases together pin both placements — non-evaluation JSON after the scorecard (fixed by `_is_scorecard`) and before it (additionally needs the early return revisited).
 
 ### `truncated-json`
 
@@ -96,25 +81,42 @@ case(
 
 **Recommendation:** Include — pins the existing fail-loudly behaviour (`ValueError("response did not contain valid JSON: ...")`) so future "be liberal" changes can't silently start accepting truncation.
 
-### `empty-array` and `empty-array-in-fence`
+## Status interpretation
 
-An empty JSON array (the critic found nothing to evaluate, or some bug emits `[]`).
+### `non-pass-status-counts-as-failure`
 
-**Case:** `empty-array` / `empty-array-in-fence`
+The rule is *anything other than `PASS` is a failure* — not *anything other
+than `FAIL` is a pass*. A status the model didn't expect (a typo, or a hedge
+like `MAYBE`) must count as a failure, never silently pass.
 
-**Target test:** new test method (the empty `should` and `[]` rows don't fit either existing parametrize).
+**Case:** `non-pass-status-counts-as-failure`
+
+**Target test:** new test method in `TestFails` (needs a custom `should` and a custom assertion message, so it doesn't fit the parser-tolerance parametrize).
 
 **Example:**
 ````python
-case(
-    "empty-array",
-    '[]'
-),
+def test_evaluation_should_treat_any_non_PASS_status_as_a_failure(self, dummy_path):
+    session_stub = MagicMock(spec=ClaudeSession)
+    session_stub.run.return_value = (
+        '[{"characteristic": "clean pass", "status": "PASS"},'
+        ' {"characteristic": "clean fail", "status": "FAIL"},'
+        ' {"characteristic": "hedged", "status": "MAYBE"}]'
+    )
 
-case(
-    "empty-array-in-fence",
-    '```json\n[]\n```'
-),
+    with pytest.raises(AssertionError) as excinfo:
+        Critic(session=session_stub).evaluate(
+            evidence_source=dummy_path, working_dir=dummy_path,
+            should=[
+                {"characteristic": "clean pass", "failure": "pass reason"},
+                {"characteristic": "clean fail", "failure": "fail reason"},
+                {"characteristic": "hedged", "failure": "hedged reason"},
+            ],
+        )
+
+    assert str(excinfo.value) == (
+        "- clean fail: fail reason\n"
+        "- hedged: hedged reason"
+    )
 ````
 
-**Recommendation:** Exclude — already correctly handled; `json.loads` returns `[]`, downstream `_unaccounted_problem` raises with a meaningful message.
+**Recommendation:** Include — goes red today: `_failures_in` flags only `status == "FAIL"`, so `MAYBE` is silently treated as a pass and `"hedged"` is absent from the message. The fix flips the test to `statuses.get(...) != "PASS"`, so any unexpected status fails closed.
