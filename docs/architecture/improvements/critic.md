@@ -1,22 +1,8 @@
 # Improvements: critic.py
 
-Known improvements for `play/src/critic.py`, accumulated during the
-refactoring pass but deferred for follow-up. Sequenced by intended
-order of work: tidy each unit in place first, so the structural
-extraction question (last) is re-evaluated against an already-tidy
-file.
-
-## Type hint precision
-
-Most parsed-row helpers use `list[dict]` (untyped dict). Could be
-`list[dict[str, str]]` for tighter contracts, or a `TypedDict` /
-small dataclass for named-field access. Thread through each item
-above as units are touched, rather than as a separate sweep.
+Known improvement for `play/src/critic.py`.
 
 ## Module-level smell: many private helpers
-
-Revisit after the items above land — a tidier file may change the
-case for extraction.
 
 The module currently has 20+ private functions outside the `Critic`
 class. The `Critic` class itself is small — just `__init__` and
