@@ -14,9 +14,7 @@ the relationship.
 
 If you are asked to add it to the test, add it and run the test first to see it fail.
 
-Once you see it fail, propose the change that best implements the code that makes it pass. Make sure it is the minimum required to make the test pass (and not break any other tests). Prefer a new chisel (see critic.py) over modifying an existing one (unless it really is best to modify an existing one).
-
-Chisels should be in _SEQUENCE in the correct order for the work it must do. Methods should be added to critic.py in call order (so, in this case — in the order they appear in the _SEQUENCE).
+Once you see it fail, propose the change that best implements the code that makes it pass — the minimum required to pass without breaking other tests. Unwrapping lives in `_unwrap_json_response`, which runs two ordered removal stages, `_remove_content_before_json` then `_remove_content_after_json`; most cases are handled by changing one of those locators. If a case genuinely needs a new positional step, add a stage function and place it in the tuple in call order.
 
 ## Prose-after cases
 
@@ -38,10 +36,45 @@ case(
 
 **Recommendation:** Exclude — redundant.
 
-**Context (for `prose-before-json` and `prose-after-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-json`. Chisels run sequentially with no shared state: after `_remove_prose_before_json` trims the leading prose, the intermediate text is byte-identical to a prose-after-only case, so chisel 8 sees the same input it would have anyway. This combination adds nothing not already exercised.
+**Context (for `prose-before-json` and `prose-after-json` in `play/tests/test_critic.py`):** the prose-before path is covered by `prose-before-json`; the prose-after path is covered by `prose-after-json`. The removal stages run in sequence with no shared state: after `_remove_content_before_json` trims the leading prose, the intermediate text is byte-identical to a prose-after-only case, so `_remove_content_after_json` sees the same input it would have anyway. This combination adds nothing not already exercised.
 
-## Bigger picture refactoring question (consider before further refactoring)
-Does the current chisel structure make sense at all? Today's eight chisels are aspect-oriented (each handles one aspect — fence, prose, bracket — regardless of position), and the smart-rfind added for this case is a sign that the bracket/JSON aspects don't have clean opposite numbers. A position-oriented redesign might collapse to three top-level operations — `_remove_content_before_json`, `_remove_content_after_json`, `_remove_fences_around_json` — each delegating to smaller helpers for the variations they encompass.
+### `decodable-bracket-in-trailing-prose`
+
+Trailing prose whose bracket is itself valid JSON — a numeric citation
+`[1]` after the array, rather than the non-decodable `[note]` the suite
+already covers.
+
+**Case:** `decodable-bracket-in-trailing-prose`
+
+**Target test:** `test_evaluation_should_tolerate_wrapped_json`
+
+**Example:**
+````python
+case(
+    "decodable-bracket-in-trailing-prose",
+    '[{"characteristic": "any", "status": "PASS"}]\n\nSee [1] for details.'
+),
+````
+
+**Recommendation:** Include to document the gap — but note it lands *red*,
+unlike the other tolerate-cases that pin already-passing behaviour. The red
+is the point: it makes a real defect visible rather than asserting behaviour
+we don't have.
+
+**Context:** `_remove_content_before_json` searches brackets right-to-left
+and keeps the first whose suffix `raw_decode`s as JSON. A *leading* `[1]` is
+avoided because the real array sits further right and is found first (this is
+what `bracketed-prose-before-json` exercises). A *trailing* decodable bracket
+is reached first, so `raw_decode("[1] for details.")` succeeds and the critic
+parses `[1]` instead of the scorecard. The tested trailing case,
+`prose-after-json-with-bracket-in-prose`, uses `[note]`, which is not valid
+JSON and so falls through correctly. Two ways to close it, neither free:
+(a) fix the locator to prefer the array whose decoded value is a list of
+objects carrying the expected keys, rather than the first right-to-left hit;
+or (b) accept the limitation and rely on prompt-design (the critic prompt
+asks for only a JSON array), as with `multiple-json-arrays-in-response`. A
+numeric citation after the scorecard is rare in practice, so the real-world
+risk is low.
 
 ## Fence variants
 
@@ -89,7 +122,7 @@ A response cut off mid-JSON (e.g., token limit reached).
 
 **Case:** `truncated-json`
 
-**Target test:** new test method in `TestErrors`, mirroring `test_evaluation_should_raise_when_response_is_not_valid_json`.
+**Target test:** new test method in `TestErrors`, mirroring `test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json`.
 
 **Example:**
 ````python
