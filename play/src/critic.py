@@ -82,9 +82,28 @@ def _rows_from(result: str) -> list[dict]:
 
 def _unwrap_json_response(result: str) -> str:
     text = result.strip()
-    for chisel in _SEQUENCE:
+    for chisel in _STAGES:
         text = chisel(text)
     return text
+
+
+def _remove_content_before_json(text: str) -> str:
+    for chisel in _BEFORE_JSON_STAGES:
+        text = chisel(text)
+    return text
+
+
+def _remove_content_after_json(text: str) -> str:
+    for chisel in _AFTER_JSON_STAGES:
+        text = chisel(text)
+    return text
+
+
+def _remove_fences_around_json(text: str) -> str:
+    if not text.startswith("```"): return text
+    opener_removed = text.split("\n", 1)[1]
+    fences_removed = opener_removed.rsplit("```", 1)[0]
+    return fences_removed.strip()
 
 
 def _remove_content_before_json_fence(text: str) -> str:
@@ -97,27 +116,9 @@ def _remove_content_before_unhinted_fence(text: str) -> str:
     return text[unhinted_fence:] if unhinted_fence > 0 else text
 
 
-def _remove_content_after_json_fence(text: str) -> str:
-    if not text.startswith("```json"): return text
-    close = text.find("\n```", len("```json"))
-    return text[:close + 4] if close > 0 else text
-
-
 def _remove_prose_before_fence(text: str) -> str:
     if "```" not in text: return text
     return text[text.find("```"):]
-
-
-def _remove_prose_after_fence(text: str) -> str:
-    if "```" not in text: return text
-    return text[:text.rfind("```") + 3]
-
-
-def _remove_fence_markers(text: str) -> str:
-    if not text.startswith("```"): return text
-    opener_removed = text.split("\n", 1)[1]
-    fences_removed = opener_removed.rsplit("```", 1)[0]
-    return fences_removed.strip()
 
 
 def _remove_prose_before_json(text: str) -> str:
@@ -133,6 +134,17 @@ def _remove_prose_before_json(text: str) -> str:
     return text
 
 
+def _remove_content_after_json_fence(text: str) -> str:
+    if not text.startswith("```json"): return text
+    close = text.find("\n```", len("```json"))
+    return text[:close + 4] if close > 0 else text
+
+
+def _remove_prose_after_fence(text: str) -> str:
+    if "```" not in text: return text
+    return text[:text.rfind("```") + 3]
+
+
 def _remove_prose_after_json(text: str) -> str:
     try:
         _, end = json.JSONDecoder().raw_decode(text)
@@ -141,14 +153,24 @@ def _remove_prose_after_json(text: str) -> str:
     return text[:end]
 
 
-_SEQUENCE = (
+_STAGES = (
+    _remove_content_before_json,
+    _remove_content_after_json,
+    _remove_fences_around_json,
+)
+
+
+_BEFORE_JSON_STAGES = (
     _remove_content_before_json_fence,
     _remove_content_before_unhinted_fence,
-    _remove_content_after_json_fence,
     _remove_prose_before_fence,
-    _remove_prose_after_fence,
-    _remove_fence_markers,
     _remove_prose_before_json,
+)
+
+
+_AFTER_JSON_STAGES = (
+    _remove_content_after_json_fence,
+    _remove_prose_after_fence,
     _remove_prose_after_json,
 )
 
