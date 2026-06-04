@@ -120,10 +120,17 @@ def _remove_fence_markers(text: str) -> str:
     return fences_removed.strip()
 
 
-def _remove_prose_before_bracket(text: str) -> str:
+def _remove_prose_before_json(text: str) -> str:
     if text.startswith("["): return text
-    array_start = text.rfind("[")
-    return text[array_start:] if array_start > 0 else text
+    decoder = json.JSONDecoder()
+    end = len(text)
+    while (start := text.rfind("[", 0, end)) != -1:
+        try:
+            decoder.raw_decode(text[start:])
+            return text[start:]
+        except json.JSONDecodeError:
+            end = start
+    return text
 
 
 def _remove_prose_after_json(text: str) -> str:
@@ -141,7 +148,7 @@ _SEQUENCE = (
     _remove_prose_before_fence,
     _remove_prose_after_fence,
     _remove_fence_markers,
-    _remove_prose_before_bracket,
+    _remove_prose_before_json,
     _remove_prose_after_json,
 )
 
