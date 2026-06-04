@@ -112,7 +112,10 @@ def _start_of_json(text: str) -> int | None:
 
 
 def _is_scorecard(content) -> bool:
-    return isinstance(content, list) and all(isinstance(row, dict) for row in content)
+    return isinstance(content, list) and all(
+        isinstance(row, dict) and "characteristic" in row and "status" in row
+        for row in content
+    )
 
 
 def _remove_content_after_json(text: str) -> str:
