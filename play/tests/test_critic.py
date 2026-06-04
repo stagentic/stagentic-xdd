@@ -132,7 +132,8 @@ class TestCritic:
                 working_dir=dummy_path, should=dummy_characteristic,
             )
 
-            assert str(evidence_source) in session_spy.run.call_args.kwargs["prompt"]
+            prompt = session_spy.run.call_args.kwargs["prompt"]
+            assert str(evidence_source) in prompt
 
         def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
             session_spy = MagicMock(spec=ClaudeSession)
@@ -143,7 +144,8 @@ class TestCritic:
                 evidence_source=dummy_path, should=dummy_characteristic,
             )
 
-            assert str(tmp_path / "embedded_in_prompt") in session_spy.run.call_args.kwargs["prompt"]
+            prompt = session_spy.run.call_args.kwargs["prompt"]
+            assert str(tmp_path / "embedded_in_prompt") in prompt
 
         def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path):
             session_spy = MagicMock(spec=ClaudeSession)
