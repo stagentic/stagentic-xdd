@@ -156,8 +156,8 @@ class TestCritic:
 
             Critic(session=session_spy).evaluate(
                 should=[
-                    {"characteristic": "first thing", "failure": "x"},
-                    {"characteristic": "second thing", "failure": "y"},
+                    {"characteristic": "first thing", "failure": "n/a"},
+                    {"characteristic": "second thing", "failure": "n/a"},
                 ],
                 evidence_source=dummy_path, working_dir=dummy_path,
             )
@@ -358,10 +358,10 @@ class TestCritic:
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
-                        {"characteristic": "alpha", "failure": "x"},
-                        {"characteristic": "beta", "failure": "y"},
-                        {"characteristic": "gamma", "failure": "z"},
-                        {"characteristic": "delta", "failure": "w"},
+                        {"characteristic": "alpha", "failure": "n/a"},
+                        {"characteristic": "beta", "failure": "n/a"},
+                        {"characteristic": "gamma", "failure": "n/a"},
+                        {"characteristic": "delta", "failure": "n/a"},
                     ],
                 )
 
@@ -387,9 +387,9 @@ class TestCritic:
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
-                        {"characteristic": "alpha", "failure": "x"},
-                        {"characteristic": "beta", "failure": "y"},
-                        {"characteristic": "gamma", "failure": "z"},
+                        {"characteristic": "alpha", "failure": "n/a"},
+                        {"characteristic": "beta", "failure": "n/a"},
+                        {"characteristic": "gamma", "failure": "n/a"},
                     ],
                 )
 
@@ -410,9 +410,9 @@ class TestCritic:
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
-                        {"characteristic": "first", "failure": "x"},
-                        {"characteristic": "second", "failure": "y"},
-                        {"characteristic": "third", "failure": "z"},
+                        {"characteristic": "first", "failure": "n/a"},
+                        {"characteristic": "second", "failure": "n/a"},
+                        {"characteristic": "third", "failure": "n/a"},
                     ],
                 )
 
@@ -430,7 +430,7 @@ class TestCritic:
                 Critic(session=session_stub).evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
-                    should=[{"characteristic": "expected", "failure": "x"}],
+                    should=[{"characteristic": "expected", "failure": "n/a"}],
                 )
 
             assert str(excinfo.value) == "unexpected characteristics: first invented, second invented"
@@ -448,8 +448,8 @@ class TestCritic:
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
-                        {"characteristic": "alpha", "failure": "x"},
-                        {"characteristic": "missing", "failure": "y"},
+                        {"characteristic": "alpha", "failure": "n/a"},
+                        {"characteristic": "missing", "failure": "n/a"},
                     ],
                 )
 
