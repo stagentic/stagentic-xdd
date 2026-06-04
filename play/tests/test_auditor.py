@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import MagicMock, ANY
+from unittest.mock import ANY, MagicMock
 
 import pytest
 

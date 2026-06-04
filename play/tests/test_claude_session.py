@@ -1,6 +1,5 @@
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, ANY, patch
+from unittest.mock import ANY, MagicMock, patch
 
 from claude_cli import ClaudeCli
 from claude_jsonl_path import ClaudeJsonlPath

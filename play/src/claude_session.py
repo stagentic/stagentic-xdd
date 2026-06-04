@@ -35,6 +35,7 @@ class ClaudeSession:
         )
         return result
 
+
 def _jsonl_path_for(
         home: Path,
         working_dir: Path,

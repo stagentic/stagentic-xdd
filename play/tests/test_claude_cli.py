@@ -1,5 +1,6 @@
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from test_doubles.stubbed_subprocess import StubbedSubprocess
 
 from claude_cli import ClaudeCli

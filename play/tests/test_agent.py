@@ -1,6 +1,7 @@
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, ANY
+from unittest.mock import ANY, MagicMock
+
+import pytest
 
 from agent import Agent
 from claude_session import ClaudeSession
@@ -133,4 +134,3 @@ class TestAgent:
                 transcript_path=Path("/other/dir") / "transcript.md",
                 prompt=ANY, working_dir=ANY,
             )
-
