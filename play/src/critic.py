@@ -99,11 +99,6 @@ def _remove_content_after_json(text: str) -> str:
     return text
 
 
-def _remove_content_before_json_fence(text: str) -> str:
-    json_fence = text.find("```json")
-    return text[json_fence:] if json_fence > 0 else text
-
-
 def _remove_content_before_unhinted_fence(text: str) -> str:
     unhinted_fence = text.find("```\n[")
     return text[unhinted_fence:] if unhinted_fence > 0 else text
@@ -153,7 +148,6 @@ _STAGES = (
 
 
 _BEFORE_JSON_STAGES = (
-    _remove_content_before_json_fence,
     _remove_content_before_unhinted_fence,
     _remove_prose_before_fence,
     _remove_prose_before_json,
