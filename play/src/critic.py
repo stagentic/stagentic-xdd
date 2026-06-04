@@ -14,7 +14,7 @@ class Critic:
             self, *,
             evidence_source: Path,
             working_dir: Path,
-            should: list[dict]
+            should: list[dict[str, str]]
     ):
         if not should: raise ValueError("scorecard must not be empty")
 
@@ -172,12 +172,12 @@ def _formatted_duplicates(rows: list[dict], duplicated: set[str]) -> str:
     )
 
 
-def _unaccounted_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
+def _unaccounted_problem(should: list[dict[str, str]], statuses: dict[str, str]) -> str | None:
     unaccounted = _unaccounted_for(should, statuses)
     return _formatted_unaccounted(unaccounted) if unaccounted else None
 
 
-def _unaccounted_for(should: list[dict], statuses: dict[str, str]) -> list[str]:
+def _unaccounted_for(should: list[dict[str, str]], statuses: dict[str, str]) -> list[str]:
     return [row["characteristic"] for row in should if row["characteristic"] not in statuses]
 
 
@@ -185,12 +185,12 @@ def _formatted_unaccounted(unaccounted: list[str]) -> str:
     return f"unaccounted characteristics: {', '.join(unaccounted)}"
 
 
-def _unexpected_problem(should: list[dict], statuses: dict[str, str]) -> str | None:
+def _unexpected_problem(should: list[dict[str, str]], statuses: dict[str, str]) -> str | None:
     unexpected = _unexpected_in(statuses, should)
     return _formatted_unexpected(unexpected) if unexpected else None
 
 
-def _unexpected_in(statuses: dict[str, str], should: list[dict]) -> list[str]:
+def _unexpected_in(statuses: dict[str, str], should: list[dict[str, str]]) -> list[str]:
     expected_names = {row["characteristic"] for row in should}
     return [name for name in statuses if name not in expected_names]
 
@@ -207,9 +207,9 @@ def _problems_message(problems: list[str]) -> str:
     return "\n\n".join(problems)
 
 
-def _failures_in(should: list[dict], statuses: dict[str, str]) -> list[dict]:
+def _failures_in(should: list[dict[str, str]], statuses: dict[str, str]) -> list[dict[str, str]]:
     return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
 
 
-def _failure_message(failures: list[dict]) -> str:
+def _failure_message(failures: list[dict[str, str]]) -> str:
     return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
