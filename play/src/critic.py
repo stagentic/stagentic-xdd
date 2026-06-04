@@ -82,8 +82,8 @@ def _rows_from(result: str) -> list[dict]:
 
 def _unwrap_json_response(result: str) -> str:
     text = result.strip()
-    text = _remove_content_before_json(text)
-    text = _remove_content_after_json(text)
+    for chisel in _REMOVAL_STAGES:
+        text = chisel(text)
     return text
 
 
@@ -106,6 +106,12 @@ def _remove_content_after_json(text: str) -> str:
     except json.JSONDecodeError:
         return text
     return text[:end]
+
+
+_REMOVAL_STAGES = (
+    _remove_content_before_json,
+    _remove_content_after_json,
+)
 
 
 _REQUIRED_KEYS = ("characteristic", "status")
