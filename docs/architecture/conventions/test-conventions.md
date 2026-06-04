@@ -14,7 +14,7 @@ Tests inside a `TestX` class are ordered to mirror the execution flow of the pro
 
 **Why:** a reader walking the file in order encounters tests in the same direction the production code runs — guard checks first, then the work, then the results. The file reads as a sequence of "here's what happens next" rather than an unordered grab bag.
 
-Whole-story tests lead their containing scope, before per-property tests — see *Whole-story tests*.
+The primary-behaviour test leads its containing scope, before the rest.
 
 ## Whole-story tests
 
@@ -28,9 +28,9 @@ A **whole-story test** pins *everything the subject does* — such as every call
 
 **Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
-**Position:** the whole-story test leads its containing class. The primary outcome class leads, the secondary outcome follows. Per-property tests (that do not change the outcome) follow in execution-flow order (*Test order follows the production code's execution flow*).
+**Position:** the test illustrating the scope's *primary behaviour* leads its containing class — the behaviour a reader most needs to see first to grasp what the subject is for. The primary outcome class leads, the secondary outcome follows. Remaining per-property tests (that do not change the outcome) follow in execution-flow order (*Test order follows the production code's execution flow*).
 
-Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths. The outcome class containing the whole-story leads.
+Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths. The outcome class holding the primary behaviour leads.
 
 **Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed for mutation coverage (see *Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
