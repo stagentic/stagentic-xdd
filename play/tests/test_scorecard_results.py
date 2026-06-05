@@ -62,3 +62,18 @@ class TestScorecardResults:
                 maybe_results=missing_characteristic,
                 should=dummy_scorecard
             )
+
+    def test_from_names_the_invalid_result_and_the_key_it_lacks(self):
+        missing_status = [{"characteristic": "runs the test"}]
+        dummy_scorecard = []
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=missing_status,
+                should=dummy_scorecard
+            )
+
+        assert str(excinfo.value) == (
+            "invalid rows:\n"
+            "- missing 'status': {'characteristic': 'runs the test'}"
+        )
