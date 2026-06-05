@@ -4,6 +4,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from claude_session import ClaudeSession
+from raise_if import raise_if
 from scorecard import formatted_failures_for
 
 
@@ -33,7 +34,7 @@ class Critic:
         )
 
         statuses = _statuses_from(rows)
-        _raise_if(
+        raise_if(
             _problems_in([
                 _duplicates_problem(rows),
                 _unaccounted_problem(should, statuses),
@@ -43,7 +44,7 @@ class Critic:
             with_message=_problems_message,
         )
 
-        _raise_if(
+        raise_if(
             _failures_in(should, statuses),
             raising_error=AssertionError,
             with_message=formatted_failures_for,
@@ -68,7 +69,7 @@ def _rows_unless(
         with_message: Callable[[list], str],
 ) -> list[dict]:
     rows = _rows_from(result)
-    _raise_if(has_problem(rows), raising_error=raising_error, with_message=with_message)
+    raise_if(has_problem(rows), raising_error=raising_error, with_message=with_message)
     return rows
 
 
@@ -131,14 +132,6 @@ _REQUIRED_KEYS = ("characteristic", "status")
 
 def _malformed(rows: list[dict]) -> list[dict]:
     return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
-
-
-def _raise_if(
-        items: list, *,
-        raising_error: type[Exception],
-        with_message: Callable[[list], str],
-) -> None:
-    if items: raise raising_error(with_message(items))
 
 
 def _formatted_malformed(malformed: list[dict]) -> str:
