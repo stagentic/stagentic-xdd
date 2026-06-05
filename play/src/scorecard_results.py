@@ -9,6 +9,6 @@ class ScorecardResults:
 
     @classmethod
     def from_(cls, maybe_results, should):
-        if "status" not in maybe_results[0]:
+        if any("status" not in result for result in maybe_results):
             raise ValueError
         return cls(should=should, results=maybe_results)

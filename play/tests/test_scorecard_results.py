@@ -31,8 +31,20 @@ class TestScorecardResults:
 
         assert scorecard.results == maybe_results
 
-    def test_from_raises_when_a_result_is_missing_status(self):
-        missing_status = [{"characteristic": "runs the test"}]
+    @pytest.mark.parametrize("missing_status", [
+        case(
+            "one-row",
+            [{"characteristic": "runs the test"}]
+        ),
+        case(
+            "one-row-in-rows",
+            [
+                {"characteristic": "captures input", "status": "PASS"},
+                {"characteristic": "runs the test"},
+            ]
+        ),
+    ])
+    def test_from_raises_when_a_result_is_missing_status(self, missing_status):
         dummy_scorecard = []
 
         with pytest.raises(ValueError):
