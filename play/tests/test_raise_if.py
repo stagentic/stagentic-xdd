@@ -5,8 +5,8 @@ import pytest
 from raise_if import raise_if
 
 
-def case(id, *values):
-    return pytest.param(*values, id=id)
+def case(id, **named_values):
+    return pytest.param(*named_values.values(), id=id)
 
 
 class TestRaiseIf:
@@ -22,17 +22,17 @@ class TestRaiseIf:
     @pytest.mark.parametrize("raising_error, erroneous_items, with_message, expected_message", [
         case(
             "items-in-message",
-            ValueError,
-            ["a", "b"],
-            lambda items: f"got {items}",
-            "got ['a', 'b']"
+            raising_error=ValueError,
+            erroneous_items=["a", "b"],
+            with_message=lambda items: f"got {items}",
+            expected_message="got ['a', 'b']",
         ),
         case(
             "assertion-error",
-            AssertionError,
-            ["x"],
-            lambda items: "boom",
-            "boom"
+            raising_error=AssertionError,
+            erroneous_items=["x"],
+            with_message=lambda items: "boom",
+            expected_message="boom",
         ),
     ])
     def test_raises_the_given_error_with_the_formatted_message(
