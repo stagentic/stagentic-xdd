@@ -98,3 +98,15 @@ class TestScorecardResults:
             )
 
         assert str(excinfo.value) == expected_message
+
+    def test_from_raises_when_there_are_no_results(self):
+        no_results = []
+        dummy_scorecard = []
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=no_results,
+                should=dummy_scorecard
+            )
+
+        assert str(excinfo.value) == "results must not be empty"

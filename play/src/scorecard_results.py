@@ -11,6 +11,8 @@ class ScorecardResults:
 
     @classmethod
     def from_(cls, maybe_results, should):
+        if not maybe_results:
+            raise ValueError("results must not be empty")
         invalid = [result for result in maybe_results if _is_missing_key_from(result)]
         if invalid:
             raise ValueError(_formatted_invalid_results(invalid))
