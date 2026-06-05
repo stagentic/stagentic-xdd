@@ -45,6 +45,12 @@ class TestScorecardResults:
 
     @pytest.mark.parametrize("maybe_results, expected_message", [
         case(
+            "missing-characteristic",
+            [{"status": "PASS"}],
+            "invalid rows:\n"
+            "- missing 'characteristic': {'status': 'PASS'}",
+        ),
+        case(
             "missing-status",
             [{"characteristic": "runs the test"}],
             "invalid rows:\n"
@@ -57,7 +63,7 @@ class TestScorecardResults:
             "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}",
         ),
         case(
-            "two-invalid-rows",
+            "missing-either-across-rows",
             [
                 {"name": "alpha", "status": "PASS"},
                 {"characteristic": "beta", "status": "PASS"},
