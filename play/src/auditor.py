@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from scorecard import formatted_failures_for
+
 
 class Auditor:
     # noinspection PyMethodMayBeStatic
@@ -10,12 +12,12 @@ class Auditor:
         evidence_content = evidence_source.read_text()
         failures = _failures_from(evidence_content, working_dir, should)
 
-        if failures: raise AssertionError(_formatted_failures(failures))
+        if failures: raise AssertionError(formatted_failures_for(_entries_from(failures)))
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
 
 
-def _formatted_failures(failures: list[dict]) -> str:
-    return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
+def _entries_from(failures: list[dict]) -> list[dict[str, str]]:
+    return [{"characteristic": row["characteristic"], "failure": row["failure"]} for row in failures]
