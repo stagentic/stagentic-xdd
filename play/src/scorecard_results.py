@@ -19,7 +19,7 @@ class ScorecardResults:
         )
 
         raise_if(
-            _problems_in([
+            _problems_of([
                 _duplicated(results),
                 _unaccounted_for(should, results),
                 _unexpected(should, results),
@@ -38,7 +38,7 @@ def _results_unless(maybe_results, *, has_problem, raising_error):
 
 
 def _invalid(maybe_results):
-    problems = _problems_in([
+    problems = _problems_of([
         _empty(maybe_results),
         _invalid_rows_in(maybe_results),
     ])
@@ -111,7 +111,7 @@ def _unexpected(should, results):
     return f"unexpected characteristics: {', '.join(unexpected)}" if unexpected else None
 
 
-def _problems_in(possible_problems):
+def _problems_of(possible_problems):
     return [
         problem for problem in possible_problems if problem is not None
     ]
