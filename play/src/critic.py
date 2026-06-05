@@ -6,7 +6,7 @@ from pathlib import Path
 from claude_session import ClaudeSession
 from raise_if import raise_if
 from scorecard import formatted_failures_for
-from scorecard_result import ScorecardResult
+from scorecard_results import ScorecardResults
 
 
 class Critic:
@@ -27,18 +27,18 @@ class Critic:
             transcript_path=working_dir / "critique.md",
         )
         json_text = _json_text_from(agent_response)
-        decoded = _decoded_from(json_text)
+        candidate_results = _decoded_from(json_text)
 
-        rows = _rows_unless(
-            decoded,
-            has_problem=_invalid_scorecard_result,
+        results = _results_unless(
+            candidate_results,
+            has_problem=_invalid_scorecard,
             raising_error=ValueError,
             with_message=_formatted_invalid_scorecard_rows,
         )
 
-        scorecard = ScorecardResult(
+        scorecard = ScorecardResults(
             provided_should=should,
-            provided_rows=rows,
+            provided_rows=results,
         )
         raise_if(
             _problems_in([
@@ -51,7 +51,7 @@ class Critic:
         )
 
         raise_if(
-            _failures_in(should, rows),
+            _failures_in(should, results),
             raising_error=AssertionError,
             with_message=formatted_failures_for,
         )
@@ -68,14 +68,14 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
     )
 
 
-def _rows_unless(
-        decoded: list[dict], *,
+def _results_unless(
+        candidate_results: list[dict], *,
         has_problem: Callable[[list[dict]], list],
         raising_error: type[Exception],
         with_message: Callable[[list], str],
 ) -> list[dict]:
-    raise_if(has_problem(decoded), raising_error=raising_error, with_message=with_message)
-    return decoded
+    raise_if(has_problem(candidate_results), raising_error=raising_error, with_message=with_message)
+    return candidate_results
 
 
 def _decoded_from(json_text: str) -> list[dict]:
@@ -133,8 +133,8 @@ def _remove_content_after_json(text: str) -> str:
 _REQUIRED_KEYS = ("characteristic", "status")
 
 
-def _invalid_scorecard_result(rows: list[dict]) -> list[dict]:
-    return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
+def _invalid_scorecard(results: list[dict]) -> list[dict]:
+    return [row for row in results if not all(k in row for k in _REQUIRED_KEYS)]
 
 
 def _formatted_invalid_scorecard_rows(invalid_scorecard_rows: list[dict]) -> str:
