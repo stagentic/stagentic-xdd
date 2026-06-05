@@ -19,11 +19,13 @@ class ScorecardResults:
             raise ValueError(_formatted_invalid_results(invalid))
 
         characteristics = [result["characteristic"] for result in maybe_results]
-        if len(set(characteristics)) < len(characteristics):
+        duplicated = {name for name in characteristics if characteristics.count(name) > 1}
+        if duplicated:
             raise ValueError(
                 "duplicated characteristics:\n" + "\n".join(
                     f"- {result['characteristic']}: {result['status']}"
                     for result in maybe_results
+                    if result["characteristic"] in duplicated
                 )
             )
 

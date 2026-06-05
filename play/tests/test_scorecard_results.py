@@ -81,7 +81,7 @@ class TestScorecardResults:
 
     @pytest.mark.parametrize("results, expected_message", [
         case(
-            "alpha-twice",
+            "all-duplicated",
             [
                 {"characteristic": "alpha", "status": "PASS"},
                 {"characteristic": "alpha", "status": "FAIL"},
@@ -91,14 +91,15 @@ class TestScorecardResults:
             "- alpha: FAIL",
         ),
         case(
-            "beta-twice",
+            "some-duplicated",
             [
-                {"characteristic": "beta", "status": "FAIL"},
                 {"characteristic": "beta", "status": "PASS"},
+                {"characteristic": "alpha", "status": "PASS"},
+                {"characteristic": "beta", "status": "FAIL"},
             ],
             "duplicated characteristics:\n"
-            "- beta: FAIL\n"
-            "- beta: PASS",
+            "- beta: PASS\n"
+            "- beta: FAIL",
         ),
     ])
     def test_from_lists_a_duplicated_characteristic(self, results, expected_message):
