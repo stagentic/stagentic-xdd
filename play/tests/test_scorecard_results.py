@@ -31,37 +31,17 @@ class TestScorecardResults:
 
         assert scorecard.results == maybe_results
 
-    @pytest.mark.parametrize("missing_status", [
-        case(
-            "one-row",
-            [{"characteristic": "runs the test"}]
-        ),
-        case(
-            "one-row-in-rows",
-            [
-                {"characteristic": "captures input", "status": "PASS"},
-                {"characteristic": "runs the test"},
-            ]
-        ),
-    ])
-    def test_from_raises_when_a_result_is_missing_status(self, missing_status):
+    def test_from_raises_when_there_are_no_results(self):
+        no_results = []
         dummy_scorecard = []
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError) as excinfo:
             ScorecardResults.from_(
-                maybe_results=missing_status,
+                maybe_results=no_results,
                 should=dummy_scorecard
             )
 
-    def test_from_raises_when_a_result_is_missing_characteristic(self):
-        missing_characteristic = [{"status": "PASS"}]
-        dummy_scorecard = []
-
-        with pytest.raises(ValueError):
-            ScorecardResults.from_(
-                maybe_results=missing_characteristic,
-                should=dummy_scorecard
-            )
+        assert str(excinfo.value) == "results must not be empty"
 
     @pytest.mark.parametrize("maybe_results, expected_message", [
         case(
@@ -98,15 +78,3 @@ class TestScorecardResults:
             )
 
         assert str(excinfo.value) == expected_message
-
-    def test_from_raises_when_there_are_no_results(self):
-        no_results = []
-        dummy_scorecard = []
-
-        with pytest.raises(ValueError) as excinfo:
-            ScorecardResults.from_(
-                maybe_results=no_results,
-                should=dummy_scorecard
-            )
-
-        assert str(excinfo.value) == "results must not be empty"
