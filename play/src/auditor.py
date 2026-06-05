@@ -10,12 +10,12 @@ class Auditor:
         evidence_content = evidence_source.read_text()
         failures = _failures_from(evidence_content, working_dir, should)
 
-        if failures: raise AssertionError(_formatted(failures))
+        if failures: raise AssertionError(_formatted_failures(failures))
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
 
 
-def _formatted(failures: list[dict]) -> str:
+def _formatted_failures(failures: list[dict]) -> str:
     return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)

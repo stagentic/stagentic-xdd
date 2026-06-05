@@ -45,7 +45,7 @@ class Critic:
         _raise_if(
             _failures_in(should, statuses),
             raising_error=AssertionError,
-            with_message=_failure_message,
+            with_message=_formatted_failures,
         )
 
 
@@ -211,5 +211,5 @@ def _failures_in(should: list[dict[str, str]], statuses: dict[str, str]) -> list
     return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
 
 
-def _failure_message(failures: list[dict[str, str]]) -> str:
+def _formatted_failures(failures: list[dict[str, str]]) -> str:
     return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
