@@ -179,6 +179,33 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
+    def test_from_reports_every_coherence_problem_together(self):
+        results = [
+            {"characteristic": "alpha", "status": "PASS"},
+            {"characteristic": "alpha", "status": "FAIL"},
+            {"characteristic": "invented", "status": "PASS"},
+        ]
+        should = [
+            {"characteristic": "alpha"},
+            {"characteristic": "missing"},
+        ]
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=results,
+                should=should,
+            )
+
+        assert str(excinfo.value) == (
+            "duplicated characteristics:\n"
+            "- alpha: PASS\n"
+            "- alpha: FAIL\n"
+            "\n"
+            "unaccounted characteristics: missing\n"
+            "\n"
+            "unexpected characteristics: invented"
+        )
+
 
 def characteristics_for_all(results):
     return [
