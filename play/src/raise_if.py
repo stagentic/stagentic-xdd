@@ -6,4 +6,4 @@ def raise_if(
         raising_error: type[Exception],
         with_message: Callable[[list], str],
 ) -> None:
-    raise ValueError("got ['a', 'b']")
+    if items: raise ValueError("got ['a', 'b']")

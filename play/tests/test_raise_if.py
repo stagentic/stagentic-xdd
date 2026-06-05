@@ -1,3 +1,5 @@
+from contextlib import nullcontext as does_not_raise
+
 import pytest
 
 from raise_if import raise_if
@@ -13,3 +15,7 @@ class TestRaiseIf:
             )
 
         assert str(excinfo.value) == "got ['a', 'b']"
+
+    def test_does_not_raise_when_there_are_no_items(self):
+        with does_not_raise():
+            raise_if([], raising_error=ValueError, with_message=lambda items: "unused")
