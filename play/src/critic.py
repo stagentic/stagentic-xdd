@@ -4,6 +4,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from claude_session import ClaudeSession
+from scorecard import formatted_failures_for
 
 
 class Critic:
@@ -45,7 +46,7 @@ class Critic:
         _raise_if(
             _failures_in(should, statuses),
             raising_error=AssertionError,
-            with_message=_formatted_failures,
+            with_message=formatted_failures_for,
         )
 
 
@@ -209,7 +210,3 @@ def _problems_message(problems: list[str]) -> str:
 
 def _failures_in(should: list[dict[str, str]], statuses: dict[str, str]) -> list[dict[str, str]]:
     return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
-
-
-def _formatted_failures(failures: list[dict[str, str]]) -> str:
-    return "\n".join(f"- {row['characteristic']}: {row['failure']}" for row in failures)
