@@ -41,70 +41,81 @@ The surrounding module-level helpers carry six further responsibilities
   turn the unwrapped string into rows, raising for invalid JSON or rows
   missing required keys.
 
-- **Scorecard validation** (`_statuses_from`, `_duplicates_problem`,
-  `_unaccounted_problem`, `_unexpected_problem` and their `_*_in` /
-  `_*_for` / `_formatted_*` helpers, `_problems_in`, `_problems_message`):
-  check the rows are coherent against `should` — no duplicates, nothing
-  unaccounted, nothing unexpected.
+- **Scorecard validation** (`_duplicates_problem`, `_unaccounted_problem`,
+  `_unexpected_problem` and their `_*_in` / `_*_for` / `_formatted_*` helpers,
+  `_problems_in`, `_problems_message`): check the rows are coherent against
+  `should` — no duplicates, nothing unaccounted, nothing unexpected. Each
+  check reads the raw `rows` directly.
 
 #### Extraction complete
 
 - **Check-failure evaluation** (`_failures_in`): determine which
-  characteristics did not PASS. Formatting the failure list has moved out
-  to `scorecard.formatted_failures_for`.
+  characteristics did not PASS, building its own characteristic→status lookup
+  from `rows` for the one check that needs the status value. Formatting the
+  failure list has moved out to `scorecard.formatted_failures_for`.
 
 - **Raise utility** (was `_raise_if`): raise the given error with a
   formatted message when there are items. Pure infrastructure — now
   `play/src/raise_if.py`, shared by both evaluators (Critic's parsing,
   validation, and check-failure raises; Auditor's check-failure raise).
 
+#### The carrier
+
+`ScorecardResult` (`play/src/scorecard_result.py`) is a dumb dataclass holding
+`provided_should` and `provided_rows`. `evaluate` constructs it from values
+computed outside, and the validation checks read its `provided_rows`. It is the
+seam the remaining responsibilities move onto.
+
 ## Extraction strategy
 
-Reduce the module to its sole responsibility — orchestration — by moving
-each of the others out, one at a time, working back through `evaluate`'s
-call order:
+Reduce the module to its sole responsibility — orchestration — by moving each
+of the others onto `ScorecardResult`, the carrier that has emerged (see above).
+The remaining moves, in order:
 
-1. Scorecard validation.
-2. Response parsing (response unwrapping folds in as its mechanism).
-3. Prompt construction (independent of the rest; last only because it is
-   first in call order).
+1. **Response parsing into the carrier** (response unwrapping folds in as its
+   mechanism). `ScorecardResult` takes the raw `result` and produces `rows` —
+   JSON parsing and the malformed gate run inside it, so a constructed
+   `ScorecardResult` exposes well-formed rows. This shrinks the constructor
+   toward `from_outcome(should, result)`.
+2. **Scorecard validation onto the carrier.** The three coherence checks read
+   only `should` and `rows` — both already held — so they move onto the type,
+   raising `ValueError` for an incoherent scorecard.
+3. **Prompt construction** (independent of the rest; last only because it is
+   first in `evaluate`'s call order).
 
-Three principles guide it:
+Principles:
 
-- **Work back from the consumers.** Validation and check-failure
-  evaluation consume what the earlier steps produce; check-failure is
-  already settled, leaving validation as the next consumer. Extracting it
-  before parsing lets any type it needs condense from a need the code has
-  *shown* — both consumers already take `(should, statuses)` — rather than
-  from a guess about what parsing should emit. Starting at parsing would
-  force that decision before any consumer had demonstrated it.
+- **Parsing leads, because the data has collapsed to `rows`.** Validation and
+  check-failure both consume `rows` directly; there is no derived index between
+  parsing and its consumers, and so no emitted-type to guess. The type's
+  irreducible input is therefore `result` (parsed to `rows`) and `should`.
+  Pulling parsing in first makes `.rows` well-formed by construction — exactly
+  what the validation that follows assumes.
 
-- **Justify extraction by clarity, not reuse.** Each responsibility moves
-  out so `evaluate` reads as named steps at a single level of abstraction
-  — worth doing even when there is only one caller. Cohesion sets the
-  granularity: stop at a nameable responsibility, never split finer.
+- **Justify extraction by clarity, not reuse.** Each responsibility moves out
+  so `evaluate` reads as named steps at a single level of abstraction — worth
+  doing even when there is only one caller. Cohesion sets the granularity: stop
+  at a nameable responsibility, never split finer.
 
-- **Let types emerge empirically.** Don't design a model up front.
-  Extract for clarity; introduce a type only once the code has exposed
-  the data clump that justifies it. The likely one here is a
-  `ScorecardResult` over the rows and `should` that validation and
-  check-failure both lean on — but it earns its place when that clump is
-  visible, not before.
+- **Let further types emerge empirically.** `ScorecardResult` earned its place
+  once the `should`-and-`rows` clump was visible. Apply the same restraint to
+  the next candidate — `ScorecardEntry` (below) — introducing it only when its
+  clump creates friction.
 
-Orchestration is what remains once the three are out — the module's sole
+Orchestration is what remains once the moves land — the module's sole
 responsibility.
 
 ## Extraction approach
 
 When a clump of arguments recurs across several helpers and the decision is
 made to fold it into a type, grow that type with expand-contract so every
-step stays green. `ScorecardResult` — consolidating `should`, `statuses`,
-and `rows` — is the example here, but the recipe is general to this pattern.
+step stays green. `ScorecardResult` — holding `should` and the `rows` parsed
+from `result` — is the example here, but the recipe is general to this pattern.
 
 1. **Expand into a dumb carrier.** Introduce the type as a dataclass whose
    fields hold exactly the values currently passed separately — still
    computed *outside* and handed in. Name them to mark that origin (e.g.
-   `provided_statuses`, `provided_rows`). Pass the type where the clump
+   `provided_should`, `provided_rows`). Pass the type where the clump
    went. Nothing new is computed yet; this step is pure consolidation and
    changes no behaviour.
 
