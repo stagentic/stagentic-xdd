@@ -21,17 +21,19 @@ class Critic:
     ):
         if not should: raise ValueError("scorecard must not be empty")
 
-        result = self._session.run(
+        agent_response = self._session.run(
             prompt=_prompt_for(evidence_source, working_dir, should),
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
+        json_text = _json_text_from(agent_response)
+        decoded = _decoded_from(json_text)
 
         rows = _rows_unless(
-            _json_from(result),
-            has_problem=_malformed,
+            decoded,
+            has_problem=_invalid_scorecard_result,
             raising_error=ValueError,
-            with_message=_formatted_malformed,
+            with_message=_formatted_invalid_scorecard_rows,
         )
 
         scorecard = ScorecardResult(
@@ -67,24 +69,23 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
 
 
 def _rows_unless(
-        json_text: str, *,
+        decoded: list[dict], *,
         has_problem: Callable[[list[dict]], list],
         raising_error: type[Exception],
         with_message: Callable[[list], str],
 ) -> list[dict]:
-    rows = _rows_from(json_text)
-    raise_if(has_problem(rows), raising_error=raising_error, with_message=with_message)
-    return rows
+    raise_if(has_problem(decoded), raising_error=raising_error, with_message=with_message)
+    return decoded
 
 
-def _rows_from(json_text: str) -> list[dict]:
+def _decoded_from(json_text: str) -> list[dict]:
     try:
         return json.loads(json_text)
     except json.JSONDecodeError as err:
         raise ValueError(f"response did not contain valid JSON: {json_text!r}") from err
 
 
-def _json_from(result: str) -> str:
+def _json_text_from(result: str) -> str:
     text = result.strip()
     stages = (
         _remove_content_before_json,
@@ -132,17 +133,17 @@ def _remove_content_after_json(text: str) -> str:
 _REQUIRED_KEYS = ("characteristic", "status")
 
 
-def _malformed(rows: list[dict]) -> list[dict]:
+def _invalid_scorecard_result(rows: list[dict]) -> list[dict]:
     return [row for row in rows if not all(k in row for k in _REQUIRED_KEYS)]
 
 
-def _formatted_malformed(malformed: list[dict]) -> str:
-    return "malformed rows:\n" + "\n".join(
-        _formatted_malformed_row(row) for row in malformed
+def _formatted_invalid_scorecard_rows(invalid_scorecard_rows: list[dict]) -> str:
+    return "invalid rows:\n" + "\n".join(
+        _formatted_invalid_scorecard_row(row) for row in invalid_scorecard_rows
     )
 
 
-def _formatted_malformed_row(row: dict) -> str:
+def _formatted_invalid_scorecard_row(row: dict) -> str:
     missing = ", ".join(repr(k) for k in _REQUIRED_KEYS if k not in row)
     return f"- missing {missing}: {row}"
 

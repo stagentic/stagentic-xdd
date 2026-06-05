@@ -350,7 +350,7 @@ class TestCritic:
             assert str(excinfo.value) == f"response did not contain valid JSON: {response!r}"
             assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
-        def test_evaluation_should_list_every_malformed_response_row(self, dummy_path):
+        def test_evaluation_should_list_invalid_response_rows(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
             session_stub.run.return_value = (
                 '[{"name": "alpha", "status": "PASS"},'
@@ -372,7 +372,7 @@ class TestCritic:
                 )
 
             assert str(excinfo.value) == (
-                "malformed rows:\n"
+                "invalid rows:\n"
                 "- missing 'characteristic': {'name': 'alpha', 'status': 'PASS'}\n"
                 "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}\n"
                 "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}"
