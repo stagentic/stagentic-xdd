@@ -63,17 +63,27 @@ class TestScorecardResults:
                 should=dummy_scorecard
             )
 
-    def test_from_names_the_invalid_result_and_the_key_it_lacks(self):
-        missing_status = [{"characteristic": "runs the test"}]
+    @pytest.mark.parametrize("maybe_results, expected_message", [
+        case(
+            "missing-status",
+            [{"characteristic": "runs the test"}],
+            "invalid rows:\n"
+            "- missing 'status': {'characteristic': 'runs the test'}",
+        ),
+        case(
+            "missing-both",
+            [{"name": "delta", "result": "FAIL"}],
+            "invalid rows:\n"
+            "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}",
+        ),
+    ])
+    def test_from_names_the_invalid_result_and_the_key_it_lacks(self, maybe_results, expected_message):
         dummy_scorecard = []
 
         with pytest.raises(ValueError) as excinfo:
             ScorecardResults.from_(
-                maybe_results=missing_status,
+                maybe_results=maybe_results,
                 should=dummy_scorecard
             )
 
-        assert str(excinfo.value) == (
-            "invalid rows:\n"
-            "- missing 'status': {'characteristic': 'runs the test'}"
-        )
+        assert str(excinfo.value) == expected_message

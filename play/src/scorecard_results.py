@@ -11,11 +11,13 @@ class ScorecardResults:
 
     @classmethod
     def from_(cls, maybe_results, should):
-        if any(_is_missing_key_from(result) for result in maybe_results):
-            raise ValueError(
-                "invalid rows:\n"
-                "- missing 'status': {'characteristic': 'runs the test'}"
+        invalid = [result for result in maybe_results if _is_missing_key_from(result)]
+        if invalid:
+            result = invalid[0]
+            missing = ", ".join(
+                repr(key) for key in _REQUIRED_KEYS if key not in result
             )
+            raise ValueError(f"invalid rows:\n- missing {missing}: {result}")
         return cls(should=should, results=maybe_results)
 
 
