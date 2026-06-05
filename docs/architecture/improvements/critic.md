@@ -11,8 +11,9 @@ behaviour. Symptoms:
 
 - Reading top-to-bottom takes a long scroll past helpers that aren't
   conceptually grouped.
-- Some helpers (notably `_raise_if`) are pure utilities that could
-  serve other modules.
+- Some helpers are pure utilities that could serve other modules — the
+  former `_raise_if` proved the point, now extracted to its own module
+  (`raise_if.py`).
 - The file mixes responsibilities — see
   [Responsibilities mixed into the module](#responsibilities-mixed-into-the-module)
   below.
@@ -20,7 +21,8 @@ behaviour. Symptoms:
 ### Responsibilities mixed into the module
 
 `Critic.evaluate` is the only behaviour that is arguably Critic's own.
-The surrounding module-level helpers carry six further responsibilities:
+The surrounding module-level helpers carry six further responsibilities
+(one, the raise utility, now extracted):
 
 - **Orchestration** (`Critic.evaluate`): sequence the steps — run the
   session, parse the response, validate, assert — and hold the
@@ -49,9 +51,12 @@ The surrounding module-level helpers carry six further responsibilities:
   characteristics did not PASS. Formatting the failure list has moved out
   to `scorecard.formatted_failures_for`.
 
-- **Raise utility** (`_raise_if`): raise the given error with a
-  formatted message when there are items. Pure infrastructure, used by
-  parsing, validation, and check-failure evaluation.
+#### Extraction complete
+
+- **Raise utility** (was `_raise_if`): raise the given error with a
+  formatted message when there are items. Pure infrastructure — now
+  `play/src/raise_if.py`, shared by both evaluators (Critic's parsing,
+  validation, and check-failure raises; Auditor's check-failure raise).
 
 ## Extraction strategy
 
