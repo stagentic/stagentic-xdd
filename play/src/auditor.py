@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from raise_if import raise_if
 from scorecard import formatted_failures_for
 
 
@@ -10,13 +11,19 @@ class Auditor:
         if not should: raise ValueError("scorecard must not be empty")
 
         evidence_content = evidence_source.read_text()
-        failures = _failures_from(evidence_content, working_dir, should)
-
-        if failures: raise AssertionError(formatted_failures_for(_entries_from(failures)))
+        raise_if(
+            _failures_from(evidence_content, working_dir, should),
+            raising_error=AssertionError,
+            with_message=_formatted_failures,
+        )
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
+
+
+def _formatted_failures(failures: list[dict]) -> str:
+    return formatted_failures_for(_entries_from(failures))
 
 
 def _entries_from(failures: list[dict]) -> list[dict[str, str]]:
