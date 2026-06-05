@@ -21,9 +21,10 @@ class ScorecardResults:
         characteristics = [result["characteristic"] for result in maybe_results]
         if len(set(characteristics)) < len(characteristics):
             raise ValueError(
-                "duplicated characteristics:\n"
-                "- alpha: PASS\n"
-                "- alpha: FAIL"
+                "duplicated characteristics:\n" + "\n".join(
+                    f"- {result['characteristic']}: {result['status']}"
+                    for result in maybe_results
+                )
             )
 
         return cls(should=should, results=maybe_results)

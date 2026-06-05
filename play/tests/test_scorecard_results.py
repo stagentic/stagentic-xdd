@@ -79,11 +79,29 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
-    def test_from_lists_a_duplicated_characteristic(self):
-        results = [
-            {"characteristic": "alpha", "status": "PASS"},
-            {"characteristic": "alpha", "status": "FAIL"},
-        ]
+    @pytest.mark.parametrize("results, expected_message", [
+        case(
+            "alpha-twice",
+            [
+                {"characteristic": "alpha", "status": "PASS"},
+                {"characteristic": "alpha", "status": "FAIL"},
+            ],
+            "duplicated characteristics:\n"
+            "- alpha: PASS\n"
+            "- alpha: FAIL",
+        ),
+        case(
+            "beta-twice",
+            [
+                {"characteristic": "beta", "status": "FAIL"},
+                {"characteristic": "beta", "status": "PASS"},
+            ],
+            "duplicated characteristics:\n"
+            "- beta: FAIL\n"
+            "- beta: PASS",
+        ),
+    ])
+    def test_from_lists_a_duplicated_characteristic(self, results, expected_message):
         dummy_scorecard = []
 
         with pytest.raises(ValueError) as excinfo:
@@ -92,8 +110,4 @@ class TestScorecardResults:
                 should=dummy_scorecard
             )
 
-        assert str(excinfo.value) == (
-            "duplicated characteristics:\n"
-            "- alpha: PASS\n"
-            "- alpha: FAIL"
-        )
+        assert str(excinfo.value) == expected_message
