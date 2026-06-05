@@ -45,7 +45,7 @@ The surrounding module-level helpers carry six further responsibilities:
   check the rows are coherent against `should` — no duplicates, nothing
   unaccounted, nothing unexpected.
 
-- **Check-failure evaluation** (`_failures_in`, `_failure_message`):
+- **Check-failure evaluation** (`_failures_in`, `_formatted_failures`):
   determine which characteristics did not PASS and format the failure
   list.
 
@@ -53,18 +53,34 @@ The surrounding module-level helpers carry six further responsibilities:
   formatted message when there are items. Pure infrastructure, used by
   parsing, validation, and check-failure evaluation.
 
-`_failure_message` is byte-identical to `auditor.py`'s `_formatted` —
+`_formatted_failures` here is byte-identical to the copy in `auditor.py` —
 the one responsibility already duplicated outside this file.
 
 ## Preliminary consolidation
 
 One duplication already exists, so converge it before extracting anything.
-`_failure_message` here and `auditor.py`'s `_formatted` are byte-identical;
-rename both to `_formatted_failures` (joining critic's `_formatted_*`
-formatter family) so they match in name as well as body. Converging the two
-to identical first makes the later pull-up to a shared definition mechanical
-rather than a judgement call. The rename is its own committed step; folding
-the two into one shared home follows separately.
+`critic.py`'s and `auditor.py`'s failure formatters were byte-identical and
+have been renamed — both — to `_formatted_failures`, so they match in name as
+well as body. Converging to identical first makes the pull-up to a shared
+definition mechanical rather than a judgement call.
+
+The remaining steps fold the two into one shared home, each its own commit:
+
+1. **TDD a `scorecard.py` module** exposing `formatted_failures_for` (a
+   public cross-module export, no leading underscore). The shared thing is
+   a *scorecard* concept, not a scorecard *result*: it renders scorecard
+   entries (`{characteristic, failure}`), and `Auditor` — which has no result
+   object, only `verify` callbacks — shares it. Both inspectors compose with
+   the free function rather than inherit it; they already satisfy the
+   `Inspector` Protocol structurally. The signature reconciles to the precise
+   `list[dict[str, str]]`.
+2. **Migrate** `critic.py` and `auditor.py` to import it and delete their
+   local copies.
+3. **Relax the duplicated formatting assertions** in `test_critic` and
+   `test_auditor` once `test_scorecard` owns the exact format. Those tests
+   also assert which rows are selected and that evaluation raises, so they
+   shed the `- characteristic: failure` exact-match rather than being deleted
+   wholesale.
 
 ## Extraction strategy
 
