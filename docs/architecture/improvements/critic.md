@@ -22,7 +22,7 @@ behaviour. Symptoms:
 
 `Critic.evaluate` is the only behaviour that is arguably Critic's own.
 The surrounding module-level helpers carry six further responsibilities
-(one, the raise utility, now extracted):
+(two — the raise utility and check-failure evaluation — now extracted):
 
 - **Orchestration** (`Critic.evaluate`): sequence the steps — run the
   session, parse the response, validate, assert — and hold the
@@ -47,11 +47,11 @@ The surrounding module-level helpers carry six further responsibilities
   check the rows are coherent against `should` — no duplicates, nothing
   unaccounted, nothing unexpected.
 
+#### Extraction complete
+
 - **Check-failure evaluation** (`_failures_in`): determine which
   characteristics did not PASS. Formatting the failure list has moved out
   to `scorecard.formatted_failures_for`.
-
-#### Extraction complete
 
 - **Raise utility** (was `_raise_if`): raise the given error with a
   formatted message when there are items. Pure infrastructure — now
@@ -64,20 +64,20 @@ Reduce the module to its sole responsibility — orchestration — by moving
 each of the others out, one at a time, working back through `evaluate`'s
 call order:
 
-1. Check-failure evaluation.
-2. Scorecard validation.
-3. Response parsing (response unwrapping folds in as its mechanism).
-4. Prompt construction (independent of the rest; last only because it is
+1. Scorecard validation.
+2. Response parsing (response unwrapping folds in as its mechanism).
+3. Prompt construction (independent of the rest; last only because it is
    first in call order).
 
 Three principles guide it:
 
 - **Work back from the consumers.** Validation and check-failure
-  evaluation consume what the earlier steps produce. Extracting them
-  first lets any type they need condense from a need the code has *shown*
-  — both already take `(should, statuses)` — rather than from a guess
-  about what parsing should emit. Starting at parsing would force that
-  decision before any consumer had demonstrated it.
+  evaluation consume what the earlier steps produce; check-failure is
+  already settled, leaving validation as the next consumer. Extracting it
+  before parsing lets any type it needs condense from a need the code has
+  *shown* — both consumers already take `(should, statuses)` — rather than
+  from a guess about what parsing should emit. Starting at parsing would
+  force that decision before any consumer had demonstrated it.
 
 - **Justify extraction by clarity, not reuse.** Each responsibility moves
   out so `evaluate` reads as named steps at a single level of abstraction
@@ -91,7 +91,7 @@ Three principles guide it:
   check-failure both lean on — but it earns its place when that clump is
   visible, not before.
 
-Orchestration is what remains once the four are out — the module's sole
+Orchestration is what remains once the three are out — the module's sole
 responsibility.
 
 ## Extraction approach
