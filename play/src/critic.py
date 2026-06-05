@@ -43,7 +43,7 @@ class Critic:
         raise_if(
             _problems_in([
                 _duplicates_problem(scorecard.provided_rows),
-                _unaccounted_problem(scorecard.provided_should, scorecard.provided_statuses),
+                _unaccounted_problem(scorecard.provided_should, scorecard.provided_rows),
                 _unexpected_problem(scorecard.provided_should, scorecard.provided_statuses),
             ]),
             raising_error=ValueError,
@@ -172,13 +172,14 @@ def _formatted_duplicates(rows: list[dict], duplicated: set[str]) -> str:
     )
 
 
-def _unaccounted_problem(should: list[dict[str, str]], statuses: dict[str, str]) -> str | None:
-    unaccounted = _unaccounted_for(should, statuses)
+def _unaccounted_problem(should: list[dict[str, str]], rows: list[dict]) -> str | None:
+    unaccounted = _unaccounted_for(should, rows)
     return _formatted_unaccounted(unaccounted) if unaccounted else None
 
 
-def _unaccounted_for(should: list[dict[str, str]], statuses: dict[str, str]) -> list[str]:
-    return [row["characteristic"] for row in should if row["characteristic"] not in statuses]
+def _unaccounted_for(should: list[dict[str, str]], rows: list[dict]) -> list[str]:
+    reported = {row["characteristic"] for row in rows}
+    return [row["characteristic"] for row in should if row["characteristic"] not in reported]
 
 
 def _formatted_unaccounted(unaccounted: list[str]) -> str:
