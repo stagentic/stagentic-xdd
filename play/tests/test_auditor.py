@@ -4,6 +4,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from auditor import Auditor
+from scorecard import formatted_failures_for
 
 
 class TestAuditor:
@@ -84,7 +85,9 @@ class TestAuditor:
                     evidence_source=evidence_source, working_dir=dummy_path,
                 )
 
-            assert str(excinfo.value) == "- my characteristic: my failure message"
+            assert str(excinfo.value) == formatted_failures_for([
+                {"characteristic": "my characteristic", "failure": "my failure message"}
+            ])
 
         def test_evaluation_should_list_every_failed_row(self, evidence_source, dummy_path):
             with pytest.raises(AssertionError) as excinfo:
@@ -103,10 +106,10 @@ class TestAuditor:
                     evidence_source=evidence_source, working_dir=dummy_path,
                 )
 
-            assert str(excinfo.value) == (
-                "- first characteristic: first failure\n"
-                "- third characteristic: third failure"
-            )
+            assert str(excinfo.value) == formatted_failures_for([
+                {"characteristic": "first characteristic", "failure": "first failure"},
+                {"characteristic": "third characteristic", "failure": "third failure"},
+            ])
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):

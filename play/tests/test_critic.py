@@ -7,6 +7,7 @@ import pytest
 
 from claude_session import ClaudeSession
 from critic import Critic
+from scorecard import formatted_failures_for
 
 
 def case(id, *values):
@@ -41,7 +42,9 @@ class TestCritic:
                     evidence_source=dummy_path, working_dir=dummy_path,
                 )
 
-            assert str(excinfo.value) == "- the check: the reason"
+            assert str(excinfo.value) == formatted_failures_for([
+                {"characteristic": "the check", "failure": "the reason"}
+            ])
 
         def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
@@ -61,7 +64,10 @@ class TestCritic:
                     evidence_source=dummy_path, working_dir=dummy_path,
                 )
 
-            assert str(excinfo.value) == "- first: first failure\n- third: third failure"
+            assert str(excinfo.value) == formatted_failures_for([
+                {"characteristic": "first", "failure": "first failure"},
+                {"characteristic": "third", "failure": "third failure"},
+            ])
 
         def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
@@ -98,10 +104,10 @@ class TestCritic:
                 working_dir=working_dir,
                 transcript_path=working_dir / "critique.md",
             )
-            assert str(excinfo.value) == (
-                "- alpha: alpha reason\n"
-                "- gamma: gamma reason"
-            )
+            assert str(excinfo.value) == formatted_failures_for([
+                {"characteristic": "alpha", "failure": "alpha reason"},
+                {"characteristic": "gamma", "failure": "gamma reason"},
+            ])
 
     class TestPasses:
         def test_evaluation_should_not_raise_when_all_characteristics_pass(self, dummy_path):
