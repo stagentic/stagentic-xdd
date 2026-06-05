@@ -30,3 +30,13 @@ class TestScorecardResults:
         )
 
         assert scorecard.results == maybe_results
+
+    def test_from_raises_when_a_result_is_missing_status(self):
+        missing_status = [{"characteristic": "runs the test"}]
+        dummy_scorecard = []
+
+        with pytest.raises(ValueError):
+            ScorecardResults.from_(
+                maybe_results=missing_status,
+                should=dummy_scorecard
+            )
