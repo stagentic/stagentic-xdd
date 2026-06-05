@@ -29,10 +29,13 @@ Some unchecked boxes link to a per-file punch list at `docs/architecture/improve
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
-- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
-  - Outstanding improvements tracked in
-    [`docs/architecture/improvements/critic.md`](docs/architecture/improvements/critic.md).
+- [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
+
+A cross-cutting improvement surfaced by the critic extraction — a
+`ScorecardEntry` type spanning `Critic`, `Auditor`, and `formatted_failures_for`
+— is deferred and tracked in
+[`docs/architecture/improvements/scorecard-entry.md`](docs/architecture/improvements/scorecard-entry.md).
 
 ### `spec/`
 
