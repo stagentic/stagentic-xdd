@@ -22,11 +22,11 @@ class TestScorecardResults:
         ),
     ])
     def test_from_exposes_the_results(self, maybe_results):
-        dummy_scorecard = []
+        should = characteristics_for_all(maybe_results)
 
         scorecard = ScorecardResults.from_(
             maybe_results=maybe_results,
-            should=dummy_scorecard
+            should=should,
         )
 
         assert scorecard.results == maybe_results
@@ -109,12 +109,12 @@ class TestScorecardResults:
         ),
     ])
     def test_from_lists_a_duplicated_characteristic(self, results, expected_message):
-        dummy_scorecard = []
+        should = characteristics_for_all(results)
 
         with pytest.raises(ValueError) as excinfo:
             ScorecardResults.from_(
                 maybe_results=results,
-                should=dummy_scorecard
+                should=should,
             )
 
         assert str(excinfo.value) == expected_message
@@ -148,3 +148,12 @@ class TestScorecardResults:
             )
 
         assert str(excinfo.value) == expected_message
+
+
+def characteristics_for_all(results):
+    return [
+        {"characteristic": name}
+        for name in dict.fromkeys(
+            result["characteristic"] for result in results
+        )
+    ]
