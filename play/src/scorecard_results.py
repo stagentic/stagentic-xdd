@@ -22,6 +22,7 @@ class ScorecardResults:
         raise_if(
             _problems_in([
                 _duplicated(results),
+                _unaccounted_for(should, results),
             ]),
             raising_error=ValueError,
             with_message=_problems_message,
@@ -90,6 +91,15 @@ def _formatted_duplicates(results, duplicated):
         for result in results
         if result["characteristic"] in duplicated
     )
+
+
+def _unaccounted_for(should, results):
+    reported = {result["characteristic"] for result in results}
+    unaccounted = [
+        row["characteristic"] for row in should
+        if row["characteristic"] not in reported
+    ]
+    return f"unaccounted characteristics: {unaccounted[0]}" if unaccounted else None
 
 
 def _problems_in(possible_problems):

@@ -118,3 +118,18 @@ class TestScorecardResults:
             )
 
         assert str(excinfo.value) == expected_message
+
+    def test_from_raises_when_a_characteristic_is_unaccounted(self):
+        results = [{"characteristic": "first", "status": "PASS"}]
+        should = [
+            {"characteristic": "first"},
+            {"characteristic": "second"},
+        ]
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=results,
+                should=should,
+            )
+
+        assert str(excinfo.value) == "unaccounted characteristics: second"
