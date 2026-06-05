@@ -78,3 +78,22 @@ class TestScorecardResults:
             )
 
         assert str(excinfo.value) == expected_message
+
+    def test_from_lists_a_duplicated_characteristic(self):
+        results = [
+            {"characteristic": "alpha", "status": "PASS"},
+            {"characteristic": "alpha", "status": "FAIL"},
+        ]
+        dummy_scorecard = []
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=results,
+                should=dummy_scorecard
+            )
+
+        assert str(excinfo.value) == (
+            "duplicated characteristics:\n"
+            "- alpha: PASS\n"
+            "- alpha: FAIL"
+        )

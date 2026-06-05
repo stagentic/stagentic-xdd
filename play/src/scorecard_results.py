@@ -13,9 +13,19 @@ class ScorecardResults:
     def from_(cls, maybe_results, should):
         if not maybe_results:
             raise ValueError("results must not be empty")
+
         invalid = [result for result in maybe_results if _is_missing_key_from(result)]
         if invalid:
             raise ValueError(_formatted_invalid_results(invalid))
+
+        characteristics = [result["characteristic"] for result in maybe_results]
+        if len(set(characteristics)) < len(characteristics):
+            raise ValueError(
+                "duplicated characteristics:\n"
+                "- alpha: PASS\n"
+                "- alpha: FAIL"
+            )
+
         return cls(should=should, results=maybe_results)
 
 
