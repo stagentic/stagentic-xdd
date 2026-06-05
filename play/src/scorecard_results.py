@@ -8,8 +8,7 @@ _REQUIRED_KEYS = ("characteristic", "status")
 @dataclass
 class ScorecardResults:
     should: list[dict]
-    provided_rows: list[dict] = None
-    results: list[dict] = None
+    results: list[dict]
 
     @classmethod
     def from_(cls, maybe_results, should):
