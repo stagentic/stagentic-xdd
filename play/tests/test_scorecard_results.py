@@ -52,3 +52,13 @@ class TestScorecardResults:
                 maybe_results=missing_status,
                 should=dummy_scorecard
             )
+
+    def test_from_raises_when_a_result_is_missing_characteristic(self):
+        missing_characteristic = [{"status": "PASS"}]
+        dummy_scorecard = []
+
+        with pytest.raises(ValueError):
+            ScorecardResults.from_(
+                maybe_results=missing_characteristic,
+                should=dummy_scorecard
+            )

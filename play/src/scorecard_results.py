@@ -11,4 +11,6 @@ class ScorecardResults:
     def from_(cls, maybe_results, should):
         if any("status" not in result for result in maybe_results):
             raise ValueError
+        if any("characteristic" not in result for result in maybe_results):
+            raise ValueError
         return cls(should=should, results=maybe_results)
