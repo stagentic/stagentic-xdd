@@ -6,6 +6,7 @@ from pathlib import Path
 from claude_session import ClaudeSession
 from raise_if import raise_if
 from scorecard import formatted_failures_for
+from scorecard_result import ScorecardResult
 
 
 class Critic:
@@ -34,11 +35,16 @@ class Critic:
         )
 
         statuses = _statuses_from(rows)
+        scorecard = ScorecardResult(
+            provided_should=should,
+            provided_statuses=statuses,
+            provided_rows=rows,
+        )
         raise_if(
             _problems_in([
-                _duplicates_problem(rows),
-                _unaccounted_problem(should, statuses),
-                _unexpected_problem(should, statuses),
+                _duplicates_problem(scorecard.provided_rows),
+                _unaccounted_problem(scorecard.provided_should, scorecard.provided_statuses),
+                _unexpected_problem(scorecard.provided_should, scorecard.provided_statuses),
             ]),
             raising_error=ValueError,
             with_message=_problems_message,
