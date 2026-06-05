@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+_REQUIRED_KEYS = ("characteristic", "status")
+
 
 @dataclass
 class ScorecardResults:
@@ -9,8 +11,10 @@ class ScorecardResults:
 
     @classmethod
     def from_(cls, maybe_results, should):
-        if any("status" not in result for result in maybe_results):
-            raise ValueError
-        if any("characteristic" not in result for result in maybe_results):
+        if any(_is_missing_key_from(result) for result in maybe_results):
             raise ValueError
         return cls(should=should, results=maybe_results)
+
+
+def _is_missing_key_from(result):
+    return any(key not in result for key in _REQUIRED_KEYS)
