@@ -109,7 +109,7 @@ def _unexpected(should, results):
         result["characteristic"] for result in results
         if result["characteristic"] not in expected
     ]
-    return f"unexpected characteristics: {unexpected[0]}" if unexpected else None
+    return f"unexpected characteristics: {', '.join(unexpected)}" if unexpected else None
 
 
 def _problems_in(possible_problems):

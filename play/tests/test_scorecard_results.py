@@ -149,11 +149,26 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
-    def test_from_raises_when_a_characteristic_is_unexpected(self):
-        results = [
-            {"characteristic": "first", "status": "PASS"},
-            {"characteristic": "extra", "status": "PASS"},
-        ]
+    @pytest.mark.parametrize("results, expected_message", [
+        case(
+            "one-unexpected",
+            [
+                {"characteristic": "first", "status": "PASS"},
+                {"characteristic": "extra", "status": "PASS"},
+            ],
+            "unexpected characteristics: extra",
+        ),
+        case(
+            "two-unexpected",
+            [
+                {"characteristic": "first", "status": "PASS"},
+                {"characteristic": "extra", "status": "PASS"},
+                {"characteristic": "other", "status": "PASS"},
+            ],
+            "unexpected characteristics: extra, other",
+        ),
+    ])
+    def test_from_lists_unexpected_characteristics(self, results, expected_message):
         should = [{"characteristic": "first"}]
 
         with pytest.raises(ValueError) as excinfo:
@@ -162,7 +177,7 @@ class TestScorecardResults:
                 should=should,
             )
 
-        assert str(excinfo.value) == "unexpected characteristics: extra"
+        assert str(excinfo.value) == expected_message
 
 
 def characteristics_for_all(results):
