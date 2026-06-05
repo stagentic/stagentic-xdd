@@ -26,8 +26,9 @@ class Critic:
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
-        json_text = _json_text_from(agent_response)
-        maybe_results = _decoded_from(json_text)
+        maybe_results = _decoded_from(
+            _json_text_in(agent_response)
+        )
 
         results = _results_unless(
             maybe_results,
@@ -89,7 +90,7 @@ def _decoded_from(json_text: str) -> list[dict]:
         raise ValueError(f"response did not contain valid JSON: {json_text!r}") from err
 
 
-def _json_text_from(result: str) -> str:
+def _json_text_in(result: str) -> str:
     text = result.strip()
     stages = (
         _remove_content_before_json,
