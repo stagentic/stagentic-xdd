@@ -13,35 +13,45 @@ behaviour. Symptoms:
   conceptually grouped.
 - Some helpers (notably `_raise_if`) are pure utilities that could
   serve other modules.
-- The file mixes responsibilities: response unwrapping, response
-  parsing, problem detection, message formatting, and exception
-  raising all live together.
+- The file mixes responsibilities — see
+  [Responsibilities mixed into the module](#responsibilities-mixed-into-the-module)
+  below.
 
-### Possible extractions
+### Responsibilities mixed into the module
 
-- **`_raise_if`**: generic "raise on items via formatter" helper.
-  Used three times in `critic.py`. Other files in `play/src/` (e.g.
-  `auditor.py`, the agent/session helpers) may benefit from the same
-  pattern. Candidate for a shared helper module — e.g.
-  `play/src/raise_helpers.py` — once it has at least one external
-  user. Review other files for the same pattern (`if X: raise Y(Z)`)
-  before lifting.
+`Critic.evaluate` is the only behaviour that is arguably Critic's own.
+The surrounding module-level helpers carry six further responsibilities:
 
-- **Response unwrapping** (`_unwrap_json_response`, `_SEQUENCE`,
-  and the four chisels `_remove_prose_before_fence`,
-  `_remove_prose_after_fence`, `_remove_fence_markers`,
-  `_remove_prose_before_json`): the pipeline that strips
-  non-JSON wrapping from an LLM response. Candidate for extraction
-  to a type — e.g., a `JsonUnwrapper` class whose `unwrap(result)`
-  method threads through an ordered sequence of chisels.
+- **Orchestration** (`Critic.evaluate`): sequence the steps — run the
+  session, parse the response, validate, assert — and hold the
+  empty-scorecard precondition.
+
+- **Prompt construction** (`_prompt_for`): build the LLM instruction
+  from `evidence_source`, `working_dir`, and `should`.
+
+- **Response unwrapping** (`_unwrap_json_response`,
+  `_remove_content_before_json`, `_start_of_json`, `_is_scorecard`,
+  `_remove_content_after_json`): strip prose and fences around the JSON
+  to locate the scorecard array.
 
 - **Response parsing** (`_rows_from`, `_rows_unless`, `_malformed`,
-  `_formatted_malformed`, `_REQUIRED_KEYS`): a self-contained
-  "parse canonical rows from a JSON string" responsibility, layered
-  on top of unwrapping. Candidate for `play/src/agent_response.py`
-  (or similar), imported by `Critic`.
+  `_formatted_malformed`, `_formatted_malformed_row`, `_REQUIRED_KEYS`):
+  turn the unwrapped string into rows, raising for invalid JSON or rows
+  missing required keys.
 
-- **Problem detection trio** (`_duplicates_problem`,
-  `_unaccounted_problem`, `_unexpected_problem` and their helpers):
-  candidate for a dedicated module if other classes need similar
-  scorecard validation.
+- **Scorecard validation** (`_statuses_from`, `_duplicates_problem`,
+  `_unaccounted_problem`, `_unexpected_problem` and their `_*_in` /
+  `_*_for` / `_formatted_*` helpers, `_problems_in`, `_problems_message`):
+  check the rows are coherent against `should` — no duplicates, nothing
+  unaccounted, nothing unexpected.
+
+- **Check-failure evaluation** (`_failures_in`, `_failure_message`):
+  determine which characteristics did not PASS and format the failure
+  list.
+
+- **Raise utility** (`_raise_if`): raise the given error with a
+  formatted message when there are items. Pure infrastructure, used by
+  parsing, validation, and check-failure evaluation.
+
+`_failure_message` is byte-identical to `auditor.py`'s `_formatted` —
+the one responsibility already duplicated outside this file.
