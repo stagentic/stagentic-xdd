@@ -28,7 +28,7 @@ class Critic:
         )
 
         rows = _rows_unless(
-            result,
+            _json_from(result),
             has_problem=_malformed,
             raising_error=ValueError,
             with_message=_formatted_malformed,
@@ -67,26 +67,24 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
 
 
 def _rows_unless(
-        result: str, *,
+        json_text: str, *,
         has_problem: Callable[[list[dict]], list],
         raising_error: type[Exception],
         with_message: Callable[[list], str],
 ) -> list[dict]:
-    rows = _rows_from(result)
+    rows = _rows_from(json_text)
     raise_if(has_problem(rows), raising_error=raising_error, with_message=with_message)
     return rows
 
 
-def _rows_from(result: str) -> list[dict]:
+def _rows_from(json_text: str) -> list[dict]:
     try:
-        return json.loads(
-            _unwrap_json_response(result)
-        )
+        return json.loads(json_text)
     except json.JSONDecodeError as err:
-        raise ValueError(f"response did not contain valid JSON: {result!r}") from err
+        raise ValueError(f"response did not contain valid JSON: {json_text!r}") from err
 
 
-def _unwrap_json_response(result: str) -> str:
+def _json_from(result: str) -> str:
     text = result.strip()
     stages = (
         _remove_content_before_json,
