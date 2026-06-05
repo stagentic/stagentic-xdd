@@ -76,6 +76,17 @@ class TestScorecardResults:
             "invalid rows:\n"
             "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}",
         ),
+        case(
+            "two-invalid-rows",
+            [
+                {"name": "alpha", "status": "PASS"},
+                {"characteristic": "beta", "status": "PASS"},
+                {"characteristic": "gamma", "result": "FAIL"},
+            ],
+            "invalid rows:\n"
+            "- missing 'characteristic': {'name': 'alpha', 'status': 'PASS'}\n"
+            "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}",
+        ),
     ])
     def test_from_names_the_invalid_result_and_the_key_it_lacks(self, maybe_results, expected_message):
         dummy_scorecard = []
