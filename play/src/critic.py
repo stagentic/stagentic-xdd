@@ -34,10 +34,8 @@ class Critic:
             with_message=_formatted_malformed,
         )
 
-        statuses = _statuses_from(rows)
         scorecard = ScorecardResult(
             provided_should=should,
-            provided_statuses=statuses,
             provided_rows=rows,
         )
         raise_if(
@@ -51,7 +49,7 @@ class Critic:
         )
 
         raise_if(
-            _failures_in(should, statuses),
+            _failures_in(should, rows),
             raising_error=AssertionError,
             with_message=formatted_failures_for,
         )
@@ -151,10 +149,6 @@ def _formatted_malformed_row(row: dict) -> str:
     return f"- missing {missing}: {row}"
 
 
-def _statuses_from(rows: list[dict]) -> dict[str, str]:
-    return {row["characteristic"]: row["status"] for row in rows}
-
-
 def _duplicates_problem(rows: list[dict]) -> str | None:
     duplicated = _duplicated_in(rows)
     return _formatted_duplicates(rows, duplicated) if duplicated else None
@@ -209,5 +203,6 @@ def _problems_message(problems: list[str]) -> str:
     return "\n\n".join(problems)
 
 
-def _failures_in(should: list[dict[str, str]], statuses: dict[str, str]) -> list[dict[str, str]]:
+def _failures_in(should: list[dict[str, str]], rows: list[dict]) -> list[dict[str, str]]:
+    statuses = {row["characteristic"]: row["status"] for row in rows}
     return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
