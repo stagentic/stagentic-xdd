@@ -119,12 +119,27 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
-    def test_from_raises_when_a_characteristic_is_unaccounted(self):
+    @pytest.mark.parametrize("should, expected_message", [
+        case(
+            "one-unaccounted",
+            [
+                {"characteristic": "first"},
+                {"characteristic": "second"},
+            ],
+            "unaccounted characteristics: second",
+        ),
+        case(
+            "two-unaccounted",
+            [
+                {"characteristic": "first"},
+                {"characteristic": "second"},
+                {"characteristic": "third"},
+            ],
+            "unaccounted characteristics: second, third",
+        ),
+    ])
+    def test_from_lists_unaccounted_for_characteristics(self, should, expected_message):
         results = [{"characteristic": "first", "status": "PASS"}]
-        should = [
-            {"characteristic": "first"},
-            {"characteristic": "second"},
-        ]
 
         with pytest.raises(ValueError) as excinfo:
             ScorecardResults.from_(
@@ -132,4 +147,4 @@ class TestScorecardResults:
                 should=should,
             )
 
-        assert str(excinfo.value) == "unaccounted characteristics: second"
+        assert str(excinfo.value) == expected_message

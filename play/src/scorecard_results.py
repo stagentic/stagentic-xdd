@@ -99,7 +99,7 @@ def _unaccounted_for(should, results):
         row["characteristic"] for row in should
         if row["characteristic"] not in reported
     ]
-    return f"unaccounted characteristics: {unaccounted[0]}" if unaccounted else None
+    return f"unaccounted characteristics: {', '.join(unaccounted)}" if unaccounted else None
 
 
 def _problems_in(possible_problems):
