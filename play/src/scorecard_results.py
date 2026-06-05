@@ -23,6 +23,7 @@ class ScorecardResults:
             _problems_in([
                 _duplicated(results),
                 _unaccounted_for(should, results),
+                _unexpected(should, results),
             ]),
             raising_error=ValueError,
             with_message=_problems_message,
@@ -100,6 +101,15 @@ def _unaccounted_for(should, results):
         if row["characteristic"] not in reported
     ]
     return f"unaccounted characteristics: {', '.join(unaccounted)}" if unaccounted else None
+
+
+def _unexpected(should, results):
+    expected = {row["characteristic"] for row in should}
+    unexpected = [
+        result["characteristic"] for result in results
+        if result["characteristic"] not in expected
+    ]
+    return f"unexpected characteristics: {unexpected[0]}" if unexpected else None
 
 
 def _problems_in(possible_problems):

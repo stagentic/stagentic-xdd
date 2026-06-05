@@ -149,6 +149,21 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
+    def test_from_raises_when_a_characteristic_is_unexpected(self):
+        results = [
+            {"characteristic": "first", "status": "PASS"},
+            {"characteristic": "extra", "status": "PASS"},
+        ]
+        should = [{"characteristic": "first"}]
+
+        with pytest.raises(ValueError) as excinfo:
+            ScorecardResults.from_(
+                maybe_results=results,
+                should=should,
+            )
+
+        assert str(excinfo.value) == "unexpected characteristics: extra"
+
 
 def characteristics_for_all(results):
     return [
