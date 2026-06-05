@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from raise_if import raise_if
+
 _REQUIRED_KEYS = ("characteristic", "status")
 
 
@@ -17,16 +19,13 @@ class ScorecardResults:
             raising_error=ValueError,
         )
 
-        characteristics = [result["characteristic"] for result in results]
-        duplicated = {name for name in characteristics if characteristics.count(name) > 1}
-        if duplicated:
-            raise ValueError(
-                "duplicated characteristics:\n" + "\n".join(
-                    f"- {result['characteristic']}: {result['status']}"
-                    for result in results
-                    if result["characteristic"] in duplicated
-                )
-            )
+        raise_if(
+            _problems_in([
+                _duplicated(results),
+            ]),
+            raising_error=ValueError,
+            with_message=_problems_message,
+        )
 
         return cls(should=should, results=results)
 
@@ -75,6 +74,22 @@ def _formatted_invalid_result(result):
         repr(key) for key in _REQUIRED_KEYS if key not in result
     )
     return f"- missing {missing}: {result}"
+
+
+def _duplicated(results):
+    characteristics = [result["characteristic"] for result in results]
+    duplicated = {
+        name for name in characteristics if characteristics.count(name) > 1
+    }
+    return _formatted_duplicates(results, duplicated) if duplicated else None
+
+
+def _formatted_duplicates(results, duplicated):
+    return "duplicated characteristics:\n" + "\n".join(
+        f"- {result['characteristic']}: {result['status']}"
+        for result in results
+        if result["characteristic"] in duplicated
+    )
 
 
 def _problems_in(possible_problems):
