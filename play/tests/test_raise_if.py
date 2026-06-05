@@ -19,3 +19,13 @@ class TestRaiseIf:
     def test_does_not_raise_when_there_are_no_items(self):
         with does_not_raise():
             raise_if([], raising_error=ValueError, with_message=lambda items: "unused")
+
+    def test_formats_the_message_from_the_given_items(self):
+        with pytest.raises(ValueError) as excinfo:
+            raise_if(
+                ["x"],
+                raising_error=ValueError,
+                with_message=lambda items: f"count {len(items)}",
+            )
+
+        assert str(excinfo.value) == "count 1"
