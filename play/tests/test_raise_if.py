@@ -19,25 +19,29 @@ class TestRaiseIf:
                 with_message=lambda items: "dummy message"
             )
 
-    @pytest.mark.parametrize("erroneous_items, with_message, expected_message", [
+    @pytest.mark.parametrize("raising_error, erroneous_items, with_message, expected_message", [
         case(
             "items-in-message",
+            ValueError,
             ["a", "b"],
-            lambda items: f"got {items}", "got ['a', 'b']"
+            lambda items: f"got {items}",
+            "got ['a', 'b']"
         ),
         case(
-            "count-of-items",
+            "assertion-error",
+            AssertionError,
             ["x"],
-            lambda items: f"count {len(items)}", "count 1"
+            lambda items: "boom",
+            "boom"
         ),
     ])
     def test_raises_the_given_error_with_the_formatted_message(
-            self, erroneous_items, with_message, expected_message,
+            self, raising_error, erroneous_items, with_message, expected_message,
     ):
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(raising_error) as excinfo:
             raise_if(
                 erroneous_items,
-                raising_error=ValueError,
+                raising_error=raising_error,
                 with_message=with_message
             )
 
