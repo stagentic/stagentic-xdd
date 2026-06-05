@@ -38,14 +38,14 @@ class Critic:
         )
 
         scorecard = ScorecardResults(
-            provided_should=should,
+            should=should,
             provided_rows=results,
         )
         raise_if(
             _problems_in([
                 _duplicates_problem(scorecard.provided_rows),
-                _unaccounted_problem(scorecard.provided_should, scorecard.provided_rows),
-                _unexpected_problem(scorecard.provided_should, scorecard.provided_rows),
+                _unaccounted_problem(scorecard.should, scorecard.provided_rows),
+                _unexpected_problem(scorecard.should, scorecard.provided_rows),
             ]),
             raising_error=ValueError,
             with_message=_problems_message,
