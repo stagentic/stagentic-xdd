@@ -55,3 +55,87 @@ The surrounding module-level helpers carry six further responsibilities:
 
 `_failure_message` is byte-identical to `auditor.py`'s `_formatted` —
 the one responsibility already duplicated outside this file.
+
+## Preliminary consolidation
+
+One duplication already exists, so converge it before extracting anything.
+`_failure_message` here and `auditor.py`'s `_formatted` are byte-identical;
+rename both to `_formatted_failures` (joining critic's `_formatted_*`
+formatter family) so they match in name as well as body. Converging the two
+to identical first makes the later pull-up to a shared definition mechanical
+rather than a judgement call. The rename is its own committed step; folding
+the two into one shared home follows separately.
+
+## Extraction strategy
+
+Reduce the module to its sole responsibility — orchestration — by moving
+each of the others out, one at a time, working back through `evaluate`'s
+call order:
+
+1. Check-failure evaluation.
+2. Scorecard validation.
+3. Response parsing (response unwrapping folds in as its mechanism).
+4. Prompt construction (independent of the rest; last only because it is
+   first in call order).
+
+Three principles guide it:
+
+- **Work back from the consumers.** Validation and check-failure
+  evaluation consume what the earlier steps produce. Extracting them
+  first lets any type they need condense from a need the code has *shown*
+  — both already take `(should, statuses)` — rather than from a guess
+  about what parsing should emit. Starting at parsing would force that
+  decision before any consumer had demonstrated it.
+
+- **Justify extraction by clarity, not reuse.** Each responsibility moves
+  out so `evaluate` reads as named steps at a single level of abstraction
+  — worth doing even when there is only one caller. Cohesion sets the
+  granularity: stop at a nameable responsibility, never split finer.
+
+- **Let types emerge empirically.** Don't design a model up front.
+  Extract for clarity; introduce a type only once the code has exposed
+  the data clump that justifies it. The likely one here is a
+  `ScorecardResult` over the rows and `should` that validation and
+  check-failure both lean on — but it earns its place when that clump is
+  visible, not before.
+
+Orchestration is what remains once the four are out — the module's sole
+responsibility.
+
+## Extraction approach
+
+When a clump of arguments recurs across several helpers and the decision is
+made to fold it into a type, grow that type with expand-contract so every
+step stays green. `ScorecardResult` — consolidating `should`, `statuses`,
+and `rows` — is the example here, but the recipe is general to this pattern.
+
+1. **Expand into a dumb carrier.** Introduce the type as a dataclass whose
+   fields hold exactly the values currently passed separately — still
+   computed *outside* and handed in. Name them to mark that origin (e.g.
+   `provided_statuses`, `provided_rows`). Pass the type where the clump
+   went. Nothing new is computed yet; this step is pure consolidation and
+   changes no behaviour.
+
+2. **Migrate the computation inward, one value at a time.** For each value
+   the type could *derive*, TDD a member that computes it inside the type,
+   expressed in terms of the type's *other members* — not the `provided_*`
+   fields. Repoint the call sites at the computed member, then delete the
+   now-unused `provided_*` field. One value per cycle, green throughout.
+
+3. **Contract to the irreducible inputs.** Once every derivable value
+   computes internally, the constructor shrinks to only what can't be
+   derived — for `ScorecardResult`, the raw `result` and `should`. The
+   scaffold is gone.
+
+Why it holds together:
+
+- The type earns its responsibilities incrementally — it begins as safe
+  consolidation, then absorbs one computation at a time, so no step is a
+  big-bang swap.
+- Computing each member from *sibling members* rather than the scaffold
+  fields keeps the migrations order-independent: a value can move inward
+  before or after the one it depends on, because it reads the still-
+  delegating member, not the raw provided value.
+- A value whose computation can raise, or that shifts *when* work happens
+  (e.g. parsing that now runs on member access), needs its contract pinned
+  by the existing tests at the step that moves it.
