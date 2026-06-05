@@ -44,7 +44,7 @@ class Critic:
             _problems_in([
                 _duplicates_problem(scorecard.provided_rows),
                 _unaccounted_problem(scorecard.provided_should, scorecard.provided_rows),
-                _unexpected_problem(scorecard.provided_should, scorecard.provided_statuses),
+                _unexpected_problem(scorecard.provided_should, scorecard.provided_rows),
             ]),
             raising_error=ValueError,
             with_message=_problems_message,
@@ -186,14 +186,15 @@ def _formatted_unaccounted(unaccounted: list[str]) -> str:
     return f"unaccounted characteristics: {', '.join(unaccounted)}"
 
 
-def _unexpected_problem(should: list[dict[str, str]], statuses: dict[str, str]) -> str | None:
-    unexpected = _unexpected_in(statuses, should)
+def _unexpected_problem(should: list[dict[str, str]], rows: list[dict]) -> str | None:
+    unexpected = _unexpected_in(rows, should)
     return _formatted_unexpected(unexpected) if unexpected else None
 
 
-def _unexpected_in(statuses: dict[str, str], should: list[dict[str, str]]) -> list[str]:
+def _unexpected_in(rows: list[dict], should: list[dict[str, str]]) -> list[str]:
     expected_names = {row["characteristic"] for row in should}
-    return [name for name in statuses if name not in expected_names]
+    reported = dict.fromkeys(row["characteristic"] for row in rows)
+    return [name for name in reported if name not in expected_names]
 
 
 def _formatted_unexpected(unexpected: list[str]) -> str:
