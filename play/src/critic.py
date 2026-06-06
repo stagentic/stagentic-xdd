@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 
 from claude_session import ClaudeSession
+from failure_message import formatted_failures_for
 from raise_if import raise_if
-from scorecard import formatted_failures_for
 from scorecard_results import ScorecardResults
 
 

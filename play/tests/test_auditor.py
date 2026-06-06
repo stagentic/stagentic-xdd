@@ -4,7 +4,7 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from auditor import Auditor
-from scorecard import formatted_failures_for
+from failure_message import formatted_failures_for
 
 
 class TestAuditor:

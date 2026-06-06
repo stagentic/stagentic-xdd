@@ -7,7 +7,7 @@ import pytest
 
 from claude_session import ClaudeSession
 from critic import Critic
-from scorecard import formatted_failures_for
+from failure_message import formatted_failures_for
 
 
 def case(id, *values):

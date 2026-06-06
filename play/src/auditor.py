@@ -1,7 +1,7 @@
 from pathlib import Path
 
+from failure_message import formatted_failures_for
 from raise_if import raise_if
-from scorecard import formatted_failures_for
 
 
 class Auditor:

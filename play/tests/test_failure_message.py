@@ -1,4 +1,4 @@
-from scorecard import formatted_failures_for
+from failure_message import formatted_failures_for
 
 
 class TestFormattedFailures:
