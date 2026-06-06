@@ -5,6 +5,7 @@ requires-python = ">=3.12"
 
 [dependency-groups]
 dev = [
+    "mutmut>=3.6",
     "pytest>=9.0.3",
     "ruff>=0.9",
 ]
@@ -41,3 +42,8 @@ markers = [
     "contract: tests that call the real claude CLI (slow, require claude to be installed)",
     "integration: tests that exercise the full critic with a real claude CLI (slow)",
 ]
+
+[tool.mutmut]
+source_paths = ["src/critic.py"]
+also_copy = ["src/"]
+pytest_add_cli_args_test_selection = ["-m", "not contract and not integration"]

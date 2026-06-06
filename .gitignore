@@ -16,3 +16,6 @@
 **/.pytest_cache
 **/__pycache__
 **/.python-version
+
+# Mutation testing (mutmut)
+**/mutants
