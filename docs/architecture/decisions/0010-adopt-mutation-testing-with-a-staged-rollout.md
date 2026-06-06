@@ -40,8 +40,10 @@ https://ideas.riverglide.com/mutants-in-the-machine-the-ai-illusion-of-test-driv
 
 ## Decision
 
-Adopt mutation testing with `mutmut`, configured per file and rolled out in
-three stages tied to the refactoring pass.
+Adopt mutation testing with `mutmut`, rolled out one file at a time. The
+practice is in force now; the staging is the *scope* — `source_paths` starts at
+a single file and grows as each is brought to standard and its coverage
+accepted, never switched on for the whole codebase at once.
 
 Tooling — mutmut 3.x:
 
@@ -54,27 +56,40 @@ Tooling — mutmut 3.x:
   `pytest_add_cli_args_test_selection = ["-m", "not contract and not integration"]`
   — mutants must not trigger real-CLI calls.
 
-Two universes, reached by two commands:
+Commands:
 
-- **Focus one file** — `mutmut run "<file>*"` — fast feedback on the file
-  under work: while bringing it to standard during the pass, and on green
-  before each commit to catch implementation overreach (see stage 3).
-- **Full set** — `mutmut run` — every committed file; the done-gate.
-- (`mutmut results` and `mutmut show <id>` inspect survivors.)
+- **Focus one file** — `mutmut run "<file>*"` — fast feedback on a single file.
+- **Full set** — `mutmut run` — every file in `source_paths`.
+- `mutmut results` and `mutmut show <id>` inspect survivors.
 
-Staged rollout:
+### In force now
 
-1. **During the refactoring pass (now):** a read-only signal. Run per file,
-   surface survivors, decide case by case. Not a gate — nothing fails.
-2. **Once the pass is complete:** the full-set run becomes part of "done" — no
-   piece of work is complete until `mutmut run` is clean (every mutant killed
-   or formally accepted) across the committed `source_paths`.
-3. **Thereafter, inside the TDD cycle:** on green, before each commit, a
-   focused run on the file under change surfaces implementation that exceeds
-   what the test demands. The response is to dial the code back to its essence
-   — removing the overreach so it does only what the test requires — then
-   commit and move to the next test. The pressure is on the implementation,
-   not the test suite.
+Scoped to the files in `source_paths`:
+
+- **During TDD — on green, before committing.** Run a focused
+  `mutmut run "<file>*"` on the file just developed. A surviving mutant means
+  the implementation did more than the failing test demanded; dial the code back
+  to only what the test requires, then commit. This is triggered by doing TDD —
+  including new components introduced *during* the refactoring pass — not by any
+  phase boundary.
+- **Reviewing an existing file during the pass** — run the same focused
+  `mutmut run "<file>*"` as a read-only signal; survivors are coverage gaps to
+  weigh and act on.
+- **Before work is 'done'** — the full-set `mutmut run` must be clean, or every
+  survivor a documented accepted-mutation. `source_paths` lists only files whose
+  coverage we have already accepted, so this gate defends those baselines
+  against regression; it never blocks on unvetted code. It applies from the
+  first file on the list (now), not after the pass completes.
+
+### Deferred
+
+- **CI automation** of the full-set gate — for now it is a manual step before
+  declaring work done.
+- **The accepted-mutation mechanism** — a way to record, against specific code,
+  that a surviving mutant is intentionally accepted (an equivalence mutant, or a
+  redundancy deliberately kept). Until it exists, accepted survivors are tracked
+  by hand, and a *hard automated* gate waits on it so an accepted survivor does
+  not fail the build forever. No file in `source_paths` has such a survivor yet.
 
 ## Consequences
 
@@ -82,16 +97,15 @@ Staged rollout:
 - A committed `source_paths` entry turns a later survivor into a regression
   signal — coverage that was defended has been lost.
 - **Equivalence mutants** — survivors for which no failing test is derivable —
-  are unavoidable. They need a mechanism to record an accepted-mutation
-  decision against the specific code, so they are not re-litigated each run.
-  That mechanism is unresolved; until it exists, accepted mutants are tracked
-  by hand.
+  are unavoidable; handling them is the deferred accepted-mutation mechanism.
 - mutmut 3.x materialises a `mutants/` working copy; it is gitignored.
 - The full-set run grows slower as `source_paths` accumulates — acceptable for
   a done-gate, which is why the focused run exists for iteration.
-- Stages 2 and 3 change what "done" means. `CLAUDE.md` ("Before any commit"
-  and the test-suite guidance) and `docs/working-practices.md` will need
-  updating when those stages go live — not now.
+- Mutation testing is part of doing work now, not a future gate.
+  `docs/working-practices.md` should carry both practices (focused while
+  TDD'ing/iterating; full-set clean-or-accepted before 'done'), and
+  `CLAUDE.md`'s "Before any commit" guidance should include the full-set gate.
+  Both are follow-on edits to this ADR.
 - Pinning to the fast lane means results say nothing about
   contract/integration-covered behaviour — a deliberate scope limit.
 
@@ -103,6 +117,7 @@ Staged rollout:
 - **Run mutation across everything at once.** Noisy, slow, and untargeted
   while files are still being brought to standard. The per-file,
   accumulate-as-you-go approach matches the pass.
-- **Gate immediately, before the pass.** Making survivors fail the build now,
-  while we are still learning the tool and have no equivalence-mutant handling,
-  would block work on false positives.
+- **Hard-gate from day one** — fail the build automatically on any survivor.
+  Rejected for now: without the accepted-mutation mechanism an intentionally
+  accepted survivor would fail the build forever. The full-set gate runs as a
+  manual clean-or-accepted check until that mechanism (and CI automation) lands.
