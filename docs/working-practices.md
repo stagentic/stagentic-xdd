@@ -26,3 +26,21 @@ before and after, with no test added or modified to assert new
 intent.
 
 The rule applies equally to source and tests.
+
+## Mutation-test as you work
+
+Per ADR
+[0010](architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md),
+mutation testing is part of doing the work — scoped to the files in
+`source_paths`, not the whole codebase.
+
+**During TDD, on green, before committing**, run a focused
+`mutmut run "<file>*"` on the file just developed. A surviving mutant means the
+implementation did more than the failing test demanded — dial the code back to
+only what the test requires, then commit. The pressure is on the
+implementation, not the test suite.
+
+**Before work is 'done'**, run the full-set `mutmut run`. It must come back
+clean, or every survivor a documented accepted-mutation. Because `source_paths`
+holds only files whose coverage is already accepted, this defends those
+baselines against regression.
