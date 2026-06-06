@@ -30,6 +30,9 @@ class ScorecardResults:
 
         return cls(should=should, results=results)
 
+    def failures(self):
+        return self.should
+
 
 def _results_unless(maybe_results, *, has_problem, raising_error):
     problem = has_problem(maybe_results)

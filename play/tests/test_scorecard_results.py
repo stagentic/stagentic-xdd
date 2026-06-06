@@ -179,6 +179,14 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
+    def test_failures_lists_a_characteristic_that_did_not_pass(self):
+        scorecard = ScorecardResults.from_(
+            maybe_results=[{"characteristic": "alpha", "status": "FAIL"}],
+            should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+        )
+
+        assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
+
     def test_from_reports_every_coherence_problem_together(self):
         results = [
             {"characteristic": "alpha", "status": "PASS"},
