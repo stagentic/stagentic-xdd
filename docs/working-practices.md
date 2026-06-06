@@ -34,13 +34,12 @@ Per ADR
 mutation testing is part of doing the work — scoped to the files in
 `source_paths`, not the whole codebase.
 
-**During TDD, on green, before committing**, run a focused
-`mutmut run "<file>*"` on the file just developed. A surviving mutant means the
-implementation did more than the failing test demanded — dial the code back to
-only what the test requires, then commit. The pressure is on the
-implementation, not the test suite.
+**First — focused, on the file you're developing.** On green, run
+`mutmut run "<file>*"`. It's fast, and a surviving mutant means the
+implementation is running ahead of its tests — speculative code no test pins.
+Dial it back to what the test demands before going on.
 
-**Before work is 'done'**, run the full-set `mutmut run`. It must come back
-clean, or every survivor a documented accepted-mutation. Because `source_paths`
-holds only files whose coverage is already accepted, this defends those
-baselines against regression.
+**Then — the full set, as a regression gate.** Once the focused run is clean,
+run `mutmut run` over `source_paths` before committing: it must come back clean,
+or every survivor a documented accepted-mutation. Focused-first catches
+overreach quickly, without paying for the full sweep first.
