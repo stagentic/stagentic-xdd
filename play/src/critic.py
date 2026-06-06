@@ -20,7 +20,9 @@ class Critic:
         if not should: raise ValueError("scorecard must not be empty")
 
         agent_response = self._session.run(
-            prompt=_prompt_for(evidence_source, working_dir, should),
+            prompt=_prompt_for(
+                evidence_source, working_dir, should
+            ),
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
