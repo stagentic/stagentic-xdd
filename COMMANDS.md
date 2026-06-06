@@ -76,3 +76,36 @@ uv run --directory spec pytest tests --inspector=critic
 ```
 uv run --directory spec pytest tests --agent=real --inspector=critic
 ```
+
+## Mutation testing
+
+Mutates the files in `source_paths` (`play/pyproject.toml`) against the fast
+unit lane. See ADR [0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md).
+
+### Focus one file (during TDD or review)
+
+```
+uv run --directory play mutmut run "<file>*"
+```
+
+`<file>` is the module name, e.g. `critic`.
+
+### Full set (before work is 'done')
+
+```
+uv run --directory play mutmut run
+```
+
+### Inspect survivors
+
+```
+uv run --directory play mutmut results
+uv run --directory play mutmut show <mutant>
+```
+
+After a test-only change, remove `mutants/` before re-running — mutmut caches by
+mutated source and otherwise replays stale results:
+
+```
+rm -rf play/mutants
+```
