@@ -224,6 +224,20 @@ class TestScorecardResults:
             {"characteristic": "third", "failure": "third failure"},
         ]
 
+    def test_failures_is_empty_when_every_characteristic_passed(self):
+        scorecard = ScorecardResults.from_(
+            maybe_results=[
+                {"characteristic": "alpha", "status": "PASS"},
+                {"characteristic": "beta", "status": "PASS"},
+            ],
+            should=[
+                {"characteristic": "alpha", "failure": "alpha reason"},
+                {"characteristic": "beta", "failure": "beta reason"},
+            ],
+        )
+
+        assert scorecard.failures() == []
+
     def test_from_reports_every_coherence_problem_together(self):
         results = [
             {"characteristic": "alpha", "status": "PASS"},
