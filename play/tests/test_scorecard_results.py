@@ -179,9 +179,13 @@ class TestScorecardResults:
 
         assert str(excinfo.value) == expected_message
 
-    def test_failures_lists_a_characteristic_that_did_not_pass(self):
+    @pytest.mark.parametrize("non_pass_status", [
+        case("fail", "FAIL"),
+        case("inconclusive", "INCONCLUSIVE"),
+    ])
+    def test_failures_lists_a_characteristic_that_did_not_pass(self, non_pass_status):
         scorecard = ScorecardResults.from_(
-            maybe_results=[{"characteristic": "alpha", "status": "FAIL"}],
+            maybe_results=[{"characteristic": "alpha", "status": non_pass_status}],
             should=[{"characteristic": "alpha", "failure": "alpha reason"}],
         )
 
