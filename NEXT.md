@@ -22,6 +22,25 @@ other files happen to do.
 
 Some unchecked boxes link to a per-file punch list at `docs/architecture/improvements/<file>.md` — items tracked separately so they don't bury NEXT.md.
 
+### Mutation testing (mutmut)
+
+Mutation testing runs as part of this refactoring pass — one
+already-refactored file at a time, against the fast unit lane
+(`-m "not contract and not integration"`).
+
+- **Read-only for now.** Surface surviving mutants; decide case by case
+  what to do with each. It is not yet a gate.
+- **Becomes part of "done" later.** Once the refactoring pass is
+  complete, killing — or formally accepting — every mutant becomes
+  integral to "done" for any subsequent work.
+- **Equivalence mutants.** Some survivors cannot be killed: no test
+  failure is derivable from the mutation. These need a way to record an
+  accepted-mutation decision against the specific code, so they aren't
+  re-litigated each run. Mechanism TBD.
+
+Not yet wired. Tool version (mutmut 2.x vs 3.x) is still being decided;
+the per-file invocation lands in `COMMANDS.md` once it's settled.
+
 ### `play/src/`
 
 - [x] `agent.py` (and `tests/test_agent.py`)
@@ -29,7 +48,9 @@ Some unchecked boxes link to a per-file punch list at `docs/architecture/improve
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
-- [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
+- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
+  - Outstanding improvements tracked in
+    [`docs/architecture/improvements/test_critic.md`](docs/architecture/improvements/test_critic.md).
 - [ ] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
   - Outstanding improvements tracked in
     [`docs/architecture/improvements/scorecard_results.md`](docs/architecture/improvements/scorecard_results.md).
