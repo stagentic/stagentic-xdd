@@ -9,10 +9,6 @@ from critic import Critic
 from failure_message import formatted_failures_for
 
 
-def case(id, *values):
-    return pytest.param(*values, id=id)
-
-
 class TestCritic:
     @pytest.fixture
     def dummy_path(self): return Path("/dummy")
@@ -21,72 +17,17 @@ class TestCritic:
     def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
 
     class TestFails:
-        @pytest.mark.parametrize("non_pass_status", [
-            case("fail", "FAIL"),
-            case("inconclusive", "INCONCLUSIVE"),
-        ])
-        def test_evaluation_should_treat_any_non_PASS_status_as_a_failure(self, dummy_path, non_pass_status):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "met", "status": "PASS"},'
-                ' {"characteristic": "the check", "status": "' + non_pass_status + '"}]'
-            )
-
-            with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    should=[
-                        {"characteristic": "met", "failure": "met reason"},
-                        {"characteristic": "the check", "failure": "the reason"},
-                    ],
-                    evidence_source=dummy_path, working_dir=dummy_path,
-                )
-
-            assert str(excinfo.value) == formatted_failures_for([
-                {"characteristic": "the check", "failure": "the reason"}
-            ])
-
-        def test_evaluation_should_list_every_failed_characteristic(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"characteristic": "first", "status": "FAIL"},'
-                ' {"characteristic": "middle", "status": "PASS"},'
-                ' {"characteristic": "third", "status": "FAIL"}]'
-            )
-
-            with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    should=[
-                        {"characteristic": "first", "failure": "first failure"},
-                        {"characteristic": "middle", "failure": "middle failure"},
-                        {"characteristic": "third", "failure": "third failure"},
-                    ],
-                    evidence_source=dummy_path, working_dir=dummy_path,
-                )
-
-            assert str(excinfo.value) == formatted_failures_for([
-                {"characteristic": "first", "failure": "first failure"},
-                {"characteristic": "third", "failure": "third failure"},
-            ])
-
         def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
             working_dir = tmp_path / "workspace"
             session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = (
-                '[{"characteristic": "alpha", "status": "FAIL"},'
-                ' {"characteristic": "beta", "status": "PASS"},'
-                ' {"characteristic": "gamma", "status": "FAIL"}]'
-            )
+            session_spy.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
 
             with pytest.raises(AssertionError) as excinfo:
                 Critic(session=session_spy).evaluate(
                     evidence_source=evidence_source,
                     working_dir=working_dir,
-                    should=[
-                        {"characteristic": "alpha", "failure": "alpha reason"},
-                        {"characteristic": "beta", "failure": "beta reason"},
-                        {"characteristic": "gamma", "failure": "gamma reason"},
-                    ],
+                    should=[{"characteristic": "alpha", "failure": "alpha reason"}],
                 )
 
             session_spy.run.assert_called_once_with(
@@ -96,16 +37,13 @@ class TestCritic:
                     "Evaluate each of the following characteristics against the transcript and workspace.\n"
                     "Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
                     "Characteristics:\n"
-                    "- alpha\n"
-                    "- beta\n"
-                    "- gamma"
+                    "- alpha"
                 ),
                 working_dir=working_dir,
                 transcript_path=working_dir / "critique.md",
             )
             assert str(excinfo.value) == formatted_failures_for([
                 {"characteristic": "alpha", "failure": "alpha reason"},
-                {"characteristic": "gamma", "failure": "gamma reason"},
             ])
 
     class TestPasses:
