@@ -32,7 +32,7 @@ class Critic:
         )
 
         raise_if(
-            _failures_in(should, scorecard.results),
+            scorecard.failures(),
             raising_error=AssertionError,
             with_message=formatted_failures_for,
         )
@@ -47,8 +47,3 @@ def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) ->
         f"Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
         f"Characteristics:\n{characteristics}"
     )
-
-
-def _failures_in(should: list[dict[str, str]], rows: list[dict]) -> list[dict[str, str]]:
-    statuses = {row["characteristic"]: row["status"] for row in rows}
-    return [row for row in should if statuses.get(row["characteristic"]) != "PASS"]
