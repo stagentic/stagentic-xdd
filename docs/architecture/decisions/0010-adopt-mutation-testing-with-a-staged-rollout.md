@@ -8,7 +8,7 @@ agent-directive: |
 
 # 0010 — Adopt mutation testing with a staged rollout
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 

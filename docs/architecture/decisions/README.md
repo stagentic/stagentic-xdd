@@ -31,4 +31,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0007](0007-structure-inner-loop-scenarios-as-a-task-chain-with-a-scorecard.md) | Structure inner-loop scenarios as a task chain audited by a scorecard | Accepted |
 | [0008](0008-run-the-agent-with-cwd-at-the-workspace-root.md) | Run the agent with cwd at the workspace root | Proposed |
 | [0009](0009-select-inspector-and-agent-per-run-via-pytest-cli-options.md) | Select inspector and agent per run via pytest CLI options | Accepted |
-| [0010](0010-adopt-mutation-testing-with-a-staged-rollout.md) | Adopt mutation testing with a staged rollout | Proposed |
+| [0010](0010-adopt-mutation-testing-with-a-staged-rollout.md) | Adopt mutation testing with a staged rollout | Accepted |
