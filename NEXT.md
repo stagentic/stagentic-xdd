@@ -4,7 +4,45 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Refactoring pass
+## 1. Mutation-testing sweep, backwards from `critic.py`
+
+Wire mutmut (per ADR
+[0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md)),
+then work backwards from `critic.py` through the already-refactored files. For
+each file: run mutation testing, review the survivors against the tests'
+coverage, and take action where appropriate — dial back overreaching
+implementation, add a pinning test, or record an accepted equivalence mutant.
+Read-only for now: "where appropriate" is our judgement, not an enforced gate
+(ADR 0010 stage 1). `source_paths` grows by one file as each reaches
+acceptable coverage.
+
+Order, most-recently-refactored first:
+
+1. `critic.py` — survivors feed its punch list
+   ([`test_critic.md`](docs/architecture/improvements/test_critic.md)).
+2. `auditor.py`
+3. `claude_session.py`
+4. `claude_cli.py`
+5. `fake_agent.py`
+6. `agent.py`
+
+### Wiring (before `critic.py`)
+
+- [ ] Add `mutmut>=3.6` to play's `dev` dependency group; add `mutants/` to
+  `.gitignore`.
+- [ ] Add `[tool.mutmut]` to `play/pyproject.toml` —
+  `source_paths = ["src/critic.py"]` and
+  `pytest_add_cli_args_test_selection = ["-m", "not contract and not integration"]`.
+  Per ADR 0010 the `source_paths` entry stays uncommitted until critic's
+  mutation coverage is acceptable; the dep and gitignore can land first.
+- [ ] First read-only run: `uv run --directory play mutmut run`, then
+  `mutmut results` / `mutmut show <id>`. Confirm the focus-glob prefix
+  (`"critic*"` vs a `src.`-prefixed name) on this run.
+
+Once the commands are proven, document them in `COMMANDS.md` (deferred until
+then).
+
+## 2. Refactoring pass
 
 Review all production code in `play/src/` and `spec/` and leave it in good
 shape before the xdd skill work begins. Work through each file in turn —
@@ -22,24 +60,11 @@ other files happen to do.
 
 Some unchecked boxes link to a per-file punch list at `docs/architecture/improvements/<file>.md` — items tracked separately so they don't bury NEXT.md.
 
-### Mutation testing (mutmut)
+### Mutation testing
 
-Mutation testing runs as part of this refactoring pass — one
-already-refactored file at a time, against the fast unit lane
-(`-m "not contract and not integration"`).
-
-- **Read-only for now.** Surface surviving mutants; decide case by case
-  what to do with each. It is not yet a gate.
-- **Becomes part of "done" later.** Once the refactoring pass is
-  complete, killing — or formally accepting — every mutant becomes
-  integral to "done" for any subsequent work.
-- **Equivalence mutants.** Some survivors cannot be killed: no test
-  failure is derivable from the mutation. These need a way to record an
-  accepted-mutation decision against the specific code, so they aren't
-  re-litigated each run. Mechanism TBD.
-
-Not yet wired. Tool version (mutmut 2.x vs 3.x) is still being decided;
-the per-file invocation lands in `COMMANDS.md` once it's settled.
+Each file is run under mutmut as it's brought to standard — read-only, per ADR
+[0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md).
+The already-refactored files are swept first; see §1.
 
 ### `play/src/`
 
@@ -66,7 +91,7 @@ A cross-cutting improvement surfaced by the critic extraction — a
 - [ ] `archiver.py` (and `tests/test_archiver.py`)
 - [ ] `conftest.py`
 
-## 2. Write the xdd skill
+## 3. Write the xdd skill
 
 The `play/` harness is committed: `Agent`, `Transcriber`, and JSONL path
 computation are in `play/src/`. What remains on the harness side is wiring
