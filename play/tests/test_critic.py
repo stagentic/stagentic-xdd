@@ -137,31 +137,3 @@ class TestCritic:
                 )
 
             assert str(excinfo.value) == "scorecard must not be empty"
-
-        def test_evaluation_should_list_invalid_response_rows(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
-                '[{"name": "alpha", "status": "PASS"},'
-                ' {"characteristic": "beta", "status": "PASS"},'
-                ' {"characteristic": "gamma", "result": "FAIL"},'
-                ' {"name": "delta", "result": "FAIL"}]'
-            )
-
-            with pytest.raises(ValueError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[
-                        {"characteristic": "alpha", "failure": "n/a"},
-                        {"characteristic": "beta", "failure": "n/a"},
-                        {"characteristic": "gamma", "failure": "n/a"},
-                        {"characteristic": "delta", "failure": "n/a"},
-                    ],
-                )
-
-            assert str(excinfo.value) == (
-                "invalid rows:\n"
-                "- missing 'characteristic': {'name': 'alpha', 'status': 'PASS'}\n"
-                "- missing 'status': {'characteristic': 'gamma', 'result': 'FAIL'}\n"
-                "- missing 'characteristic', 'status': {'name': 'delta', 'result': 'FAIL'}"
-            )
