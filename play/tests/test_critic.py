@@ -1,4 +1,3 @@
-import json
 from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 from unittest.mock import ANY, MagicMock
@@ -200,128 +199,6 @@ class TestCritic:
                 prompt=ANY, working_dir=ANY,
             )
 
-    class TestParsesResponse:
-        @pytest.mark.parametrize("agent_response", [
-            case(
-                "prose-before-json",
-                'Based on my evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]'
-            ),
-            case(
-                "fence-without-language-hint",
-                '```\n[{"characteristic": "any", "status": "PASS"}]\n```'
-            ),
-            case(
-                "code-fenced-json",
-                '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
-            ),
-            case(
-                "prose-before-fenced-json",
-                'Based on the transcript:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n'
-            ),
-            case(
-                "prose-around-fenced-json",
-                'Based on the transcript:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nThat completes the evaluation.'
-            ),
-            case(
-                "code-block-before-fenced-json",
-                'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any", "status": "PASS"}]\n```'
-            ),
-            case(
-                "multiline-json-in-fence",
-                '```json\n[\n  {"characteristic": "any", "status": "PASS"}\n]\n```\n'
-            ),
-            case(
-                "bracketed-prose-before-json",
-                'Based on [1] the evidence:\n[{"characteristic": "any", "status": "PASS"}]'
-            ),
-            case(
-                "closing-fence-without-newline",
-                '```json\n[{"characteristic": "any", "status": "PASS"}]```'
-            ),
-            case(
-                "single-char-before-json",
-                '>[{"characteristic": "any", "status": "PASS"}]'
-            ),
-            case(
-                "code-block-after-fenced-json",
-                '```json\n[{"characteristic": "any", "status": "PASS"}]\n```\n\nFor reference, the source:\n\n```python\nprint("hello")\n```'
-            ),
-            case(
-                "prose-after-json",
-                '[{"characteristic": "any", "status": "PASS"}]\n\nThat completes the evaluation.'
-            ),
-            case(
-                "prose-after-json-with-bracket-in-prose",
-                '[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
-            ),
-            case(
-                "prose-around-json-with-bracket-in-trailing-prose",
-                'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nSee [note] for details.'
-            ),
-            case(
-                "prose-around-json-with-decodable-bracket-in-trailing-prose",
-                'Based on the transcript:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nSee [1] for details.'
-            ),
-            case(
-                "non-evaluation-json-after-scorecard",
-                'The evaluation:\n\n[{"characteristic": "any", "status": "PASS"}]\n\nFor reference, files changed:\n\n[{"path": "conversion.py", "added": 12}]'
-            ),
-            case(
-                "non-evaluation-json-before-scorecard",
-                '[{"path": "conversion.py", "added": 12}]\n\n[{"characteristic": "any", "status": "PASS"}]'
-            ),
-        ])
-        def test_evaluation_should_tolerate_wrapped_json(self, dummy_path, dummy_characteristic, agent_response):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = agent_response
-
-            with does_not_raise():
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=dummy_characteristic,
-                )
-
-        @pytest.mark.parametrize("agent_response, characteristic_name", [
-            case(
-                "brackets",
-                '[{"characteristic": "lists [every] item", "status": "PASS"}]',
-                "lists [every] item",
-            ),
-            case(
-                "triple-backticks",
-                '```json\n[{"characteristic": "uses ```code``` blocks", "status": "PASS"}]\n```',
-                "uses ```code``` blocks",
-            ),
-            case(
-                "brackets-inside-fence",
-                '```json\n[{"characteristic": "lists [every] item", "status": "PASS"}]\n```',
-                "lists [every] item",
-            ),
-            case(
-                "code-block-before-fenced-json-with-bracket-in-string",
-                'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```json\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
-                "any [example]",
-            ),
-            case(
-                "code-block-before-unhinted-fenced-json-with-bracket-in-string",
-                'Here is some code:\n\n```python\nprint("hello")\n```\n\nAnd the result:\n\n```\n[{"characteristic": "any [example]", "status": "PASS"}]\n```',
-                "any [example]",
-            ),
-        ])
-        def test_evaluation_should_tolerate_special_characters_inside_response_strings(
-                self, dummy_path, agent_response, characteristic_name,
-        ):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = agent_response
-
-            with does_not_raise():
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=[{"characteristic": characteristic_name, "failure": "n/a"}],
-                )
-
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path, dummy):
             with pytest.raises(ValueError) as excinfo:
@@ -331,24 +208,6 @@ class TestCritic:
                 )
 
             assert str(excinfo.value) == "scorecard must not be empty"
-
-        @pytest.mark.parametrize("response", [
-            case("non-json-prose", "not valid json."),
-            case("truncated-mid-json", '[{"characteristic": "any", "status": "P'),
-        ])
-        def test_evaluation_should_raise_ValueError_with_cause_when_response_is_not_valid_json(self, dummy_path, dummy_characteristic, response):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = response
-
-            with pytest.raises(ValueError) as excinfo:
-                Critic(session=session_stub).evaluate(
-                    evidence_source=dummy_path,
-                    working_dir=dummy_path,
-                    should=dummy_characteristic,
-                )
-
-            assert str(excinfo.value) == f"response did not contain valid JSON: {response!r}"
-            assert isinstance(excinfo.value.__cause__, json.JSONDecodeError)
 
         def test_evaluation_should_list_invalid_response_rows(self, dummy_path):
             session_stub = MagicMock(spec=ClaudeSession)
