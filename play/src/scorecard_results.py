@@ -31,7 +31,8 @@ class ScorecardResults:
         return cls(should=should, results=results)
 
     def failures(self):
-        return self.should[:1]
+        statuses = {row["characteristic"]: row["status"] for row in self.results}
+        return [row for row in self.should if statuses.get(row["characteristic"]) != "PASS"]
 
 
 def _results_unless(maybe_results, *, has_problem, raising_error):

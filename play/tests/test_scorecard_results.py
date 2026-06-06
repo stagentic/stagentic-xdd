@@ -201,6 +201,25 @@ class TestScorecardResults:
 
         assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
 
+    def test_failures_lists_every_characteristic_that_did_not_pass(self):
+        scorecard = ScorecardResults.from_(
+            maybe_results=[
+                {"characteristic": "first", "status": "FAIL"},
+                {"characteristic": "middle", "status": "PASS"},
+                {"characteristic": "third", "status": "FAIL"},
+            ],
+            should=[
+                {"characteristic": "first", "failure": "first failure"},
+                {"characteristic": "middle", "failure": "middle failure"},
+                {"characteristic": "third", "failure": "third failure"},
+            ],
+        )
+
+        assert scorecard.failures() == [
+            {"characteristic": "first", "failure": "first failure"},
+            {"characteristic": "third", "failure": "third failure"},
+        ]
+
     def test_from_reports_every_coherence_problem_together(self):
         results = [
             {"characteristic": "alpha", "status": "PASS"},
