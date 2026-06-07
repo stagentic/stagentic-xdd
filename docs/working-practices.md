@@ -34,7 +34,22 @@ Per ADR
 mutation testing is part of doing the work — scoped to the files in
 `source_paths`, not the whole codebase.
 
-**First — focused, on the file you're developing.** On green, run
+**The file you're developing belongs in `source_paths` while you work on it.**
+If it isn't a mutation target yet — a new module, or even a test helper such as
+`tests/matchers.py` — add its path to `source_paths` so mutmut mutates it, and
+run the focused check after *every* green. Keep that `source_paths` addition
+uncommitted until the work's final green. A green with no surviving mutants — or
+with no mutants at all, when the code is too minimal to mutate — both mean
+nothing is running ahead of the tests.
+
+**Start from a clean baseline.** A survivor after a red-green only implicates
+your new code if the file had none before you started. For a file that predates
+your change, baseline it with the focused check first; if it already carries
+survivors — pre-existing speculative code, or coverage gaps — close them before
+writing the new test/code, so any survivor that appears afterwards is
+unambiguously yours to dial back.
+
+**First — focused, on the file you're developing.** After every green, run
 `mutmut run "<file>*"`. It's fast, and a surviving mutant means the
 implementation is running ahead of its tests — speculative code no test pins.
 Dial it back to what the test demands before going on.
