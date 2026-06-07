@@ -1,5 +1,5 @@
 [project]
-name = "play"
+name = "test_utilities"
 version = "0.0.0"
 requires-python = ">=3.12"
 
@@ -38,13 +38,8 @@ extend-select = [
 ]
 
 [tool.pytest.ini_options]
-pythonpath = ["src", "tests", "../test_utilities/src"]
-markers = [
-    "contract: tests that call the real claude CLI (slow, require claude to be installed)",
-    "integration: tests that exercise the full critic with a real claude CLI (slow)",
-]
+pythonpath = ["src", "tests"]
 
 [tool.mutmut]
-source_paths = ["src/critic.py"]
+source_paths = ["src/matchers.py"]
 also_copy = ["src/"]
-pytest_add_cli_args_test_selection = ["-m", "not contract and not integration"]

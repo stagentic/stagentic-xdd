@@ -1,4 +1,5 @@
 from hamcrest import assert_that
+
 from matchers import contains_strings
 
 
