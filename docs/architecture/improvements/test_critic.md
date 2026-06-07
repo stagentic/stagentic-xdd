@@ -3,12 +3,6 @@
 Known improvements for `play/tests/test_critic.py`. Surfaced while assessing
 critic as a reference-standard candidate; not yet actioned.
 
-## Loose spy/stub vocabulary
-
-In `TestBuildsPrompt`, `session_spy` plays both stub (canned return) and spy
-(reads `call_args`). Defensible, but the naming drifts across the file. A
-consistency pass would align names with the role each double actually plays.
-
 ## `dummy_characteristic` is singular but returns a list
 
 The fixture name reads as one characteristic; it returns a list of one row.

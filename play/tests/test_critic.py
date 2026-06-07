@@ -26,17 +26,17 @@ class TestCritic:
         def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
             working_dir = tmp_path / "workspace"
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
+            session_that_fails = MagicMock(spec=ClaudeSession)
+            session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
 
             with pytest.raises(AssertionError) as excinfo:
-                Critic(session=session_spy).evaluate(
+                Critic(session=session_that_fails).evaluate(
                     evidence_source=evidence_source,
                     working_dir=working_dir,
                     should=[{"characteristic": "alpha", "failure": "alpha reason"}],
                 )
 
-            session_spy.run.assert_called_once_with(
+            session_that_fails.run.assert_called_once_with(
                 prompt=ANY, working_dir=ANY, transcript_path=ANY,
             )
             assert str(excinfo.value) == formatted_failures_for([
@@ -45,14 +45,14 @@ class TestCritic:
 
     class TestPasses:
         def test_evaluation_should_not_raise_when_all_characteristics_pass(self, dummy_path):
-            session_stub = MagicMock(spec=ClaudeSession)
-            session_stub.run.return_value = (
+            session_that_passes = MagicMock(spec=ClaudeSession)
+            session_that_passes.run.return_value = (
                 '[{"characteristic": "first", "status": "PASS"},'
                 ' {"characteristic": "second", "status": "PASS"}]'
             )
 
             with does_not_raise():
-                Critic(session=session_stub).evaluate(
+                Critic(session=session_that_passes).evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[
@@ -83,13 +83,13 @@ class TestCritic:
             assert str(tmp_path / "embedded_in_prompt") in prompt
 
         def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path):
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = (
+            session_that_passes = MagicMock(spec=ClaudeSession)
+            session_that_passes.run.return_value = (
                 '[{"characteristic": "first thing", "status": "PASS"},'
                 ' {"characteristic": "second thing", "status": "PASS"}]'
             )
 
-            Critic(session=session_spy).evaluate(
+            Critic(session=session_that_passes).evaluate(
                 should=[
                     {"characteristic": "first thing", "failure": "n/a"},
                     {"characteristic": "second thing", "failure": "n/a"},
@@ -97,7 +97,7 @@ class TestCritic:
                 evidence_source=dummy_path, working_dir=dummy_path,
             )
 
-            prompt = session_spy.run.call_args.kwargs["prompt"]
+            prompt = session_that_passes.run.call_args.kwargs["prompt"]
             assert "- first thing\n- second thing" in prompt
 
     class TestCallsSession:
