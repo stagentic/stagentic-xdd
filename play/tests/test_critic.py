@@ -45,8 +45,8 @@ class TestCritic:
                     contains_string(f"Workspace: {working_dir}\n"),
                     contains_string("- alpha"),
                 )),
-                working_dir=matching(equal_to(working_dir)),
-                transcript_path=matching(equal_to(working_dir / "critique.md")),
+                working_dir=working_dir,
+                transcript_path=working_dir / "critique.md",
             )
             assert_that(str(excinfo.value), equal_to(formatted_failures_for([
                 {"characteristic": "alpha", "failure": "alpha reason"},
