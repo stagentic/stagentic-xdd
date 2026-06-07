@@ -4,48 +4,35 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Stand up the `test_utilities` project (ADR 0012) — current focus
+## 1. `test_utilities` project (ADR 0012) — Phase 1 done, Phase 2 remaining
 
-Implement ADR
-[0012](docs/architecture/decisions/0012-home-shared-test-utilities-in-a-dedicated-project.md)
-(Proposed): move shared test helpers (`matchers`; later `case`,
-`does_not_raise`) into a `test_utilities` project peer to `play`/`spec`, so they
-gain their own tests and mutation coverage. mutmut can't mutate a helper under
-`tests/` — its source roots (`.`, `src`, `source`) are hardcoded — which is why
-the move is needed.
+**Phase 1 done** (committed): shared `matchers` now live in `test_utilities/src`,
+a project peer to `play`/`spec`, with their own tests and a permanent mutation
+gate; `play` reaches them via a relative `pythonpath`. `contains_strings` was
+hardened by TDD in its new home (requires every substring, mutation-clean) and
+wired into `test_critic_integration.py` as the first cross-project consumer.
+`CLAUDE.md` "Layout", `COMMANDS.md`, and `working-practices.md` are updated for
+the new project.
 
-**Uncommitted working-tree state to resolve first:**
-- `play/tests/matchers.py`, `play/tests/test_matchers.py` — in-progress
-  `contains_strings` hardening (2nd test + `contain_string(substrings[-1])`
-  impl) on top of the committed fake-it (`anything()`) state (commit `4f4b39a`).
-- `play/pyproject.toml` — a temporary `source_paths` addition of
-  `tests/matchers.py` that does **not** work (see ADR 0012); revert it.
+**Phase 2 — make `test_utilities` an installable package.** A uv workspace
+member that `play`/`spec` declare as a dependency, retiring the relative
+`pythonpath`. Bigger than Phase 1: there is no workspace root today and both
+`play` and `spec` are standalone (`package = false`), so this introduces a root
+workspace, flips both to members sharing one lockfile, and gives
+`test_utilities` a build backend. A dependency/lockfile change means each
+project's host `.venv-jb` must be re-synced on the host afterwards.
 
-**Sequence:**
-1. Revert the WIP on `matchers.py`/`test_matchers.py` to their committed
-   fake-it state, and revert the `play/pyproject` `source_paths` change — so the
-   move is a clean structural rename. (The hardening gets redone via TDD in the
-   new home, where mutation works.)
-2. **Structural:** create `test_utilities/` (`pyproject.toml` mirroring `play`'s;
-   `src/`, `tests/`). `git mv` `matchers.py` → `test_utilities/src/` and
-   `test_matchers.py` → `test_utilities/tests/`. Add `"../test_utilities/src"`
-   to `play`'s (and `spec`'s, if it imports `matchers`) pytest `pythonpath`.
-   `test_utilities` carries its own `[tool.mutmut] source_paths =
-   ["src/matchers.py"]`. Commit.
-3. Finish the `contains_strings` TDD in `test_utilities` (add the "first
-   substring missing" test → `all_of(contain_string …)` impl), mutation-verified
-   after each green (`mutmut run "matchers*"`).
-4. Wire `contains_strings` into `test_critic_integration.py` (the two positive
-   `contains_string` calls → one `contains_strings`); green + committed →
-   **Phase 1 done**.
-5. **Phase 2:** convert `test_utilities` to a proper installable package (uv
-   workspace member that `play`/`spec` depend on), retiring the relative
-   `pythonpath`.
+**Later helpers to home here (ADR 0012 scope):** `case` (consolidate the three
+definitions across two signatures into one) and `does_not_raise`.
 
-**Docs to update as this lands:** `CLAUDE.md` "Layout" (new project),
-`COMMANDS.md` (its test/lint/mutmut commands), and the working-practices
-"add the file you're developing to `source_paths`" wording → point shared
-helpers at `test_utilities`.
+**Follow-on idea — a `contains_none_of` matcher.** Asserts *none* of the given
+substrings appear, for collapsing repeated `does_not(contain_string(...))`
+checks into one. Mind the De Morgan trap: `does_not(contains_strings(a, b))` is
+`is_not(all_of(...))` = "at least one absent", **not** "all absent". The
+all-absent form is `is_not(any_of(contain_string …))` (≡
+`all_of(does_not(contain_string …))`), which reports a combined failure message
+rather than independent ones. TDD it in `test_utilities`, mirroring the
+`contains_strings` rhythm.
 
 ## 2. Improvement plan
 
