@@ -3,15 +3,6 @@
 Known improvements for `play/tests/test_critic.py`. Surfaced while assessing
 critic as a reference-standard candidate; not yet actioned.
 
-## Repeated session setup
-
-Nearly every test rebuilds `MagicMock(spec=ClaudeSession)` and sets
-`.run.return_value` to a canned all-`PASS` array. A `passing_session` fixture
-would remove the repetition for tests where the response is incidental
-(`TestBuildsPrompt`, `TestCallsSession`). `TestFails` / `TestPasses` vary the
-response deliberately and would keep building inline, so the fixture serves only
-the "response doesn't matter" tests — at a small cost to their self-containment.
-
 ## Loose spy/stub vocabulary
 
 In `TestBuildsPrompt`, `session_spy` plays both stub (canned return) and spy

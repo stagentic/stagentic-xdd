@@ -16,6 +16,12 @@ class TestCritic:
     @pytest.fixture
     def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
 
+    @pytest.fixture
+    def session_that_passes(self):
+        session = MagicMock(spec=ClaudeSession)
+        session.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
+        return session
+
     class TestFails:
         def test_evaluation_should_call_session_and_raise_for_failed_characteristics(self, tmp_path):
             evidence_source = tmp_path / "transcript.md"
@@ -56,29 +62,24 @@ class TestCritic:
                 )
 
     class TestBuildsPrompt:
-        def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
+        def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
             evidence_source = tmp_path / "different_transcript.md"
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
 
-            Critic(session=session_spy).evaluate(
+            Critic(session=session_that_passes).evaluate(
                 evidence_source=evidence_source,
                 working_dir=dummy_path, should=dummy_characteristic,
             )
 
-            prompt = session_spy.run.call_args.kwargs["prompt"]
+            prompt = session_that_passes.run.call_args.kwargs["prompt"]
             assert str(evidence_source) in prompt
 
-        def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, dummy_characteristic, tmp_path):
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
-
-            Critic(session=session_spy).evaluate(
+        def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+            Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "embedded_in_prompt",
                 evidence_source=dummy_path, should=dummy_characteristic,
             )
 
-            prompt = session_spy.run.call_args.kwargs["prompt"]
+            prompt = session_that_passes.run.call_args.kwargs["prompt"]
             assert str(tmp_path / "embedded_in_prompt") in prompt
 
         def test_evaluation_should_list_characteristic_names_in_prompt(self, dummy_path):
@@ -100,30 +101,24 @@ class TestCritic:
             assert "- first thing\n- second thing" in prompt
 
     class TestCallsSession:
-        def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, dummy_characteristic, tmp_path):
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
-
-            Critic(session=session_spy).evaluate(
+        def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+            Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "passed_to_session",
                 evidence_source=dummy_path, should=dummy_characteristic,
             )
 
-            session_spy.run.assert_called_once_with(
+            session_that_passes.run.assert_called_once_with(
                 working_dir=tmp_path / "passed_to_session",
                 prompt=ANY, transcript_path=ANY,
             )
 
-        def test_evaluation_should_derive_critique_path_from_working_dir(self, dummy_path, dummy_characteristic, tmp_path):
-            session_spy = MagicMock(spec=ClaudeSession)
-            session_spy.run.return_value = '[{"characteristic": "any", "status": "PASS"}]'
-
-            Critic(session=session_spy).evaluate(
+        def test_evaluation_should_derive_critique_path_from_working_dir(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+            Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "derives_critique_path",
                 evidence_source=dummy_path, should=dummy_characteristic,
             )
 
-            session_spy.run.assert_called_once_with(
+            session_that_passes.run.assert_called_once_with(
                 transcript_path=tmp_path / "derives_critique_path" / "critique.md",
                 prompt=ANY, working_dir=ANY,
             )
