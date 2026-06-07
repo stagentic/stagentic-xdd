@@ -1,6 +1,6 @@
 # Test conventions
 
-Test-shape and MagicMock conventions that should persist across refactors. A fresh contributor might be tempted to "simplify" or "improve" these patterns; this document captures why each one is the way it is.
+Conventions for tests in this repo — follow them when writing or changing tests. Each rule's **Why** explains what it guards, so it isn't naively "simplified" away.
 
 ## Test naming: `test_<subject>_should_<behaviour>`
 
@@ -12,35 +12,27 @@ Test methods are named `test_<subject>_should_<behaviour>` (e.g. `test_evaluatio
 
 Tests inside a `TestX` class are ordered to mirror the execution flow of the production method under test: precondition guards first, then the mechanism (what the method does internally), then the outcomes (happy path, then unhappy path).
 
-**Why:** a reader walking the file in order encounters tests in the same direction the production code runs — guard checks first, then the work, then the results. The file reads as a sequence of "here's what happens next" rather than an unordered grab bag.
-
-The primary-behaviour test leads its containing scope, before the rest.
+**Why:** a reader walking the file in order encounters tests in the same direction the production code runs — guard checks first, then the work, then the results. The file reads as a sequence of "here's what happens next".
 
 ## Whole-story tests
 
 A **whole-story test** pins *everything the subject does* — such as every call to every collaborator, in one test. Per-property tests drill into smaller specific facts the whole-story covers. The whole-story test may be written first or last (the latter allowing for the code to be built up one test at a time).
 
-**The whole-story test shows the subject's distinguishing outcome.** When the subject's purpose is to dispatch a call to a collaborator (e.g. `ClaudeSession.run`), the whole-story shows that call going through. When the subject's purpose is to raise — to assert, to signal a failure — the whole-story shows it raising, because without the raise the test stops short of what the subject *does*. The reader sees the subject end-to-end, not just up to the work that precedes the user-facing outcome.
+**The whole-story test shows the subject's distinguishing outcome.** When the subject's purpose is to dispatch a call to a collaborator (e.g. `ClaudeSession.run`), the whole-story shows that call going through. When the subject's purpose is to raise — to assert, to signal a failure — the whole-story shows it raising, because without the raise the test stops short of what the subject *does*.
 
-**Not every exact-match (`==`) test is a whole-story test.** Pinning one error message via `==` is just exact-match pinning of one aspect (see *Pin exact composed output once via `==`*); it tells the reader *the format of one error*, not *everything the subject does*.
-
-**Term discipline:** always refer to it as a "whole-story test" (the noun phrase), not the bare adjective "a whole-story". The noun makes clear it is a kind of test, not a kind of assertion.
-
-**Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
+**Shape:** pin the composed collaborator interaction exactly via `==` / `assert_called_once_with` (see *Pin exact composed output once via `==`*); slots whose check isn't plain `==` carry a matcher via `matching(...)` (see *Assertion vocabulary*). One example per property is enough in the whole-story itself — the second example for each property comes from a sibling per-property test (see companion rule below).
 
 **Position:** the test illustrating the scope's *primary behaviour* leads its containing class — the behaviour a reader most needs to see first to grasp what the subject is for. The primary outcome class leads, the secondary outcome follows. Remaining per-property tests (that do not change the outcome) follow in execution-flow order (*Test order follows the production code's execution flow*).
 
-Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths. The outcome class holding the primary behaviour leads.
+Outcome and phase groupings can combine: outcome classes (`TestPasses`, `TestFails`) frame the file; phase classes (`TestBuildsPrompt`, `TestCallsSession`, `TestParsesResponse`) sit in between in play order; `TestErrors` trails as the exception paths.
 
 **Companion rule for per-property tests:** when a whole-story test exists, per-property tests for value-flow properties may collapse from parametrised (≥2 cases) to a single example — provided that example uses a value *different* from the whole-story's. The pair (per-property + whole-story) supplies the ≥2 examples needed for mutation coverage (see *Parametrise value-flow tests over ≥2 cases with `ids`*). If the values match, the second example evaporates.
 
-**Don't split into per-fact tests.** When a whole-story test exists, per-property tests don't earn their place by virtue of being possible — they earn their place when value, presence, or absence alters behaviour (see *Pin exact composed output once via `==`*). Fragmenting a whole-story test into one test per fact loses the integrated narrative the whole-story conveys.
+**Don't fragment into one test per fact.** When a whole-story test exists, per-property tests don't earn their place by virtue of being possible — they earn their place when value, presence, or absence alters behaviour (see *Pin exact composed output once via `==`*). Fragmenting a whole-story test into one test per fact loses the integrated narrative the whole-story conveys.
 
-**Why:** without a whole-story test, the integrated behaviour exists only as something the reader assembles from focused tests.
+## Per-property test layout: relevant kwargs at the top
 
-## Per-fact test layout: relevant kwargs at the top
-
-In per-fact tests, lay out multi-line kwarg blocks so the relevant slots sit at the top of each call (constructor, method call, `assert_called_once_with`). Irrelevant slots go below. Bundling adapts to the counts so the top stays focused.
+In per-property tests, lay out multi-line kwarg blocks so the relevant slots sit at the top of each call (constructor, method call, `assert_called_once_with`). Irrelevant slots go below. Bundling adapts to the counts so the top stays focused.
 
 **1 relevant + ≥1 irrelevant** — relevant alone on top; irrelevants bundled on a single line below:
 
@@ -60,19 +52,11 @@ ClaudeSession(
 )
 ```
 
-Apply the same shape at every kwarg block in the test — constructor, method call, `assert_called_once_with`. A reader's eye learns the layout once and recognises it across the test.
+Apply the same shape at every kwarg block in the test — constructor, method call, `assert_called_once_with`.
 
-**Why:** what appears at the top of a kwarg block draws the reader's eye. Placing relevant data at the top signals what the test is about; bundling adapts to the counts so the top stays concise.
+**Why:** relevant data at the top signals what the test is about; bundling keeps the top concise.
 
 **Whole-story tests are exempt** — they follow production signature order. They aren't focused on one slot, so there's no "relevance-first" to express. See *Whole-story tests*.
-
-## Pin exact composed output once via `==`
-
-When the production code composes a value from inputs, write one assertion that pins the exact composed string or structure via `==`.
-
-**Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path. Whole-story tests embody this convention's exact-match pinning — see *Whole-story tests*.
-
-**Why:** the exact-match documents the shape — prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source, and catches accidental drift in the composition. Per-property tests make behavioural facts explicit that a whole-story exact-match alone wouldn't surface.
 
 ## Explicit no-raise via `does_not_raise`
 
@@ -120,7 +104,7 @@ The helper starts in the test file; lift it to `conftest.py` when a second file 
 
 **When this doesn't apply:** structural assertions that don't carry a value — e.g. "no exception raised when all checks pass" or "the path is under `.claude/projects`" — are correctly exercised with a single example, because the property isn't "this value flowed through" but "this structural fact holds."
 
-The two cases may also be split across a whole-story test and a sibling per-property test, provided the values differ — see *Whole-story tests*.
+The two cases may instead be split across a whole-story and a per-property test — see *Whole-story tests*.
 
 ## Don't test Python's own enforcement
 
@@ -128,13 +112,33 @@ Tests should cover behaviour the code *chooses*, not behaviour Python provides f
 
 **Why:** by that logic every signature would need a test for its required-vs-optional status and every type hint would need a test for its enforcement. The tests would balloon to document Python rather than the code. Runtime guards the code *adds* (e.g. `if not should: raise ValueError`) DO warrant tests — those are choices.
 
+## Assertion vocabulary: PyHamcrest matchers
+
+Assertions use PyHamcrest matchers (ADR 0011), in two places:
+
+- **Inline** — `assert_that(actual, <matcher>)`.
+- **Test-double call assertions** — when an exact match can't work, wrap the
+  matcher in `matching` (alias for `match_equality`, `from matchers import
+  matching`) so it rides inside `assert_called_once_with`:
+  `prompt=matching(contains_string(...))`. `ANY` still marks don't-care slots.
+
+**Why:** one vocabulary across inline and call assertions, and call assertions
+constrain every argument they name rather than pulling values back out of
+`call_args`.
+
+## Pin exact composed output once via `==`
+
+When the production code composes a value from inputs, write one assertion that pins the exact composed string or structure via `==`.
+
+**Per-property tests** (separate methods focused on a single property) earn their place when a property's **value, presence, or absence alters behaviour** — e.g. an omitted flag that triggers a different code path. Whole-story tests embody this convention's exact-match pinning — see *Whole-story tests*.
+
+**Why:** the exact-match documents the shape — prefix, separator, ordering, glue — that a reader would otherwise have to infer from the production source, and catches accidental drift in the composition. Per-property tests make behavioural facts explicit that a whole-story exact-match alone wouldn't surface.
+
 ## MagicMock interrogation forms
 
-Spy interrogation uses one of these five forms — picked by the shape of the call being spied on and what the assertion needs to express.
+Spy interrogation uses one of these four forms — picked by the shape of the call being spied on and what the assertion needs to express.
 
-**Equality on kwargs / no-spec spies:** `spy.method.assert_called_once_with(arg=expected, other=ANY)` with `unittest.mock.ANY` for don't-care slots. Pins call count, the named arg's value, and the presence of the other kwargs in a single expression.
-
-**Predicate, or `spec=Class` directly-callable spies:** `spy.assert_called_once(); value = spy.call_args.kwargs[name]; assert <predicate>(value)`. Use when the assertion isn't equality (substring, startswith, cross-spy compare) or when the spec gotcha (see below) prevents `assert_called_once_with` from binding.
+**Kwargs on `assert_called_once_with`:** `spy.method.assert_called_once_with(arg=expected, other=ANY)` — each named slot is an expected value (`==`), `matching(<matcher>)` where `==` can't express the check (see *Assertion vocabulary*), or `ANY` for a don't-care slot. Pins call count and every named slot in one expression. Fall back to a `call_args` pull (`value = spy.call_args.kwargs[name]; assert <predicate>(value)`) only when `matching` can't bind — the `spec=Class` gotcha (see below) or a cross-spy compare.
 
 **Record-and-delegate:** `spy = MagicMock(side_effect=stub_callable)`. When the spy needs to record calls AND return a real-shape result, `side_effect` invokes the stub with the same args and returns its result; `spy.call_args` records the call as usual.
 
@@ -148,7 +152,7 @@ Spy interrogation uses one of these five forms — picked by the shape of the ca
 
 When the spy stands in for a class whose *methods* you call (`session_spy.run(...)`), use `MagicMock(spec=ClassName)` — the class form. When the spy is *invoked directly* as `spy(...)` (because the underlying type is itself a callable, e.g. `ClaudeCli.__call__`), use `MagicMock(spec=ClassName())` — an instance.
 
-**Why:** with `spec=Class`, MagicMock binds `mock(...)` to `Class.__init__`'s signature — because calling a class is constructing an instance. If the real call site invokes `__call__` (different signature), `assert_called_once_with` runs both expected and actual through `_call_matcher`, which fails to bind both as `TypeError`, and the assertion fails even when the args visibly match. `spec=Class()` introspects the instance, binding `mock(...)` to the instance's `__call__` method instead.
+**Why:** `spec=Class` binds `mock(...)` to `Class.__init__`'s signature; if the real call site invokes `__call__` (a different signature), `assert_called_once_with` fails to bind and the assertion fails even when the args match. `spec=Class()` binds to the instance's `__call__` instead.
 
 **Trigger to revisit:** if a new spy target is itself directly callable (has `__call__`) and the assertion uses `assert_called_once_with`, prefer the instance spec form.
 
