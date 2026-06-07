@@ -1,11 +1,7 @@
 # Improvements: test_critic.py
 
-Known improvements for `play/tests/test_critic.py`. Surfaced while assessing
-critic as a reference-standard candidate; not yet actioned.
-
-## `dummy_characteristic` is singular but returns a list
-
-The fixture name reads as one characteristic; it returns a list of one row.
+Surfaced while assessing critic as a reference-standard candidate. The
+improvements have been actioned; what remains here is one accepted decision.
 
 ## `TestPasses` is intentionally kept despite zero mutation coverage
 

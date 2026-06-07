@@ -14,7 +14,7 @@ class TestCritic:
     def dummy_path(self): return Path("/dummy")
 
     @pytest.fixture
-    def dummy_characteristic(self): return [{"characteristic": "any", "failure": "n/a"}]
+    def one_characteristic_scorecard(self): return [{"characteristic": "any", "failure": "n/a"}]
 
     @pytest.fixture
     def session_that_passes(self):
@@ -62,21 +62,21 @@ class TestCritic:
                 )
 
     class TestBuildsPrompt:
-        def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+        def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, dummy_path, one_characteristic_scorecard, session_that_passes, tmp_path):
             evidence_source = tmp_path / "different_transcript.md"
 
             Critic(session=session_that_passes).evaluate(
                 evidence_source=evidence_source,
-                working_dir=dummy_path, should=dummy_characteristic,
+                working_dir=dummy_path, should=one_characteristic_scorecard,
             )
 
             prompt = session_that_passes.run.call_args.kwargs["prompt"]
             assert str(evidence_source) in prompt
 
-        def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+        def test_evaluation_should_embed_working_dir_in_prompt(self, dummy_path, one_characteristic_scorecard, session_that_passes, tmp_path):
             Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "embedded_in_prompt",
-                evidence_source=dummy_path, should=dummy_characteristic,
+                evidence_source=dummy_path, should=one_characteristic_scorecard,
             )
 
             prompt = session_that_passes.run.call_args.kwargs["prompt"]
@@ -101,10 +101,10 @@ class TestCritic:
             assert "- first thing\n- second thing" in prompt
 
     class TestCallsSession:
-        def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+        def test_evaluation_should_pass_working_dir_to_session(self, dummy_path, one_characteristic_scorecard, session_that_passes, tmp_path):
             Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "passed_to_session",
-                evidence_source=dummy_path, should=dummy_characteristic,
+                evidence_source=dummy_path, should=one_characteristic_scorecard,
             )
 
             session_that_passes.run.assert_called_once_with(
@@ -112,10 +112,10 @@ class TestCritic:
                 prompt=ANY, transcript_path=ANY,
             )
 
-        def test_evaluation_should_derive_critique_path_from_working_dir(self, dummy_path, dummy_characteristic, session_that_passes, tmp_path):
+        def test_evaluation_should_derive_critique_path_from_working_dir(self, dummy_path, one_characteristic_scorecard, session_that_passes, tmp_path):
             Critic(session=session_that_passes).evaluate(
                 working_dir=tmp_path / "derives_critique_path",
-                evidence_source=dummy_path, should=dummy_characteristic,
+                evidence_source=dummy_path, should=one_characteristic_scorecard,
             )
 
             session_that_passes.run.assert_called_once_with(
