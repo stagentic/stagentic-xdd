@@ -2,8 +2,8 @@ from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
-from hamcrest import all_of, assert_that, contains_string
-from matchers import contain_string, does_not
+from hamcrest import all_of, assert_that
+from matchers import contain_string, contains_strings, does_not
 
 from claude_cli import ClaudeCli
 from claude_session import ClaudeSession
@@ -50,8 +50,10 @@ class TestCriticIntegration:
             )
 
         assert_that(str(excinfo.value), all_of(
-            contains_string("Transcript shows a PASS pytest result"),
-            contains_string("No PASS result found in the transcript"),
+            contains_strings(
+                "Transcript shows a PASS pytest result",
+                "No PASS result found in the transcript",
+            ),
             does_not(contain_string("Transcript shows the agent ran pytest")),
             does_not(contain_string("No pytest invocation found in the transcript")),
         ))
