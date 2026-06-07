@@ -48,6 +48,11 @@ don't bury NEXT.md.
   - Outstanding improvements tracked in
     [`docs/architecture/improvements/scorecard_results.md`](docs/architecture/improvements/scorecard_results.md).
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
+- [ ] `claude_jsonl_path.py` (and `tests/test_claude_jsonl_path.py`)
+- [ ] `failure_message.py` (and `tests/test_failure_message.py`)
+- [ ] `raise_if.py` (and `tests/test_raise_if.py`)
+- [ ] `scorecard_json_extraction.py` (and `tests/test_scorecard_json_extraction.py`)
+- [ ] `inspector.py` — No test yet
 
 A cross-cutting improvement surfaced by the critic extraction — a
 `ScorecardEntry` type spanning `Critic`, `Auditor`, and `formatted_failures_for`
