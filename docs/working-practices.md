@@ -34,6 +34,12 @@ Per ADR
 mutation testing is part of doing the work — scoped to the files in
 `source_paths`, not the whole codebase.
 
+This is the green-step discipline. While a `source_paths` file is in flight,
+reaching green is not yet the cue to propose a commit: the green step is
+**run the suite → focused mutmut → dial back any survivor → full-set gate →
+propose the commit**. Don't propose a commit straight off a green when the file
+you're developing is a mutation target.
+
 **The file you're developing belongs in `source_paths` while you work on it.**
 If it isn't a mutation target yet — a new module, or even a test helper such as
 `tests/matchers.py` — add its path to `source_paths` so mutmut mutates it, and
@@ -52,7 +58,12 @@ unambiguously yours to dial back.
 **First — focused, on the file you're developing.** After every green, run
 `mutmut run "<file>*"`. It's fast, and a surviving mutant means the
 implementation is running ahead of its tests — speculative code no test pins.
-Dial it back to what the test demands before going on.
+Dial it back to what the test demands before going on: *remove* the unpinned
+implementation — don't write a new test to cover the survivor. A survivor says
+subtract code, not add coverage. The generality you strip is deferred, not
+abandoned: it returns as its own red-green when a later test genuinely demands
+it. Two beats — dial the overstep back against the current tests, then let a new
+failing test drive the generalisation in.
 
 **Then — the full set, as a regression gate.** Once the focused run is clean,
 run `mutmut run` over `source_paths` before committing: it must come back clean,
