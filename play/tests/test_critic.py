@@ -3,6 +3,8 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
+from hamcrest import all_of, assert_that, contains_string, equal_to
+from matchers import matching
 
 from claude_session import ClaudeSession
 from critic import Critic
@@ -38,15 +40,17 @@ class TestCritic:
                 )
 
             session_that_fails.run.assert_called_once_with(
-                prompt=ANY, working_dir=ANY, transcript_path=ANY,
+                prompt=matching(all_of(
+                    contains_string(f"Transcript: {evidence_source}\n"),
+                    contains_string(f"Workspace: {working_dir}\n"),
+                    contains_string("- alpha"),
+                )),
+                working_dir=matching(equal_to(working_dir)),
+                transcript_path=matching(equal_to(working_dir / "critique.md")),
             )
-            prompt = session_that_fails.run.call_args.kwargs["prompt"]
-            assert f"Transcript: {evidence_source}\n" in prompt
-            assert f"Workspace: {working_dir}\n" in prompt
-            assert "- alpha" in prompt
-            assert str(excinfo.value) == formatted_failures_for([
+            assert_that(str(excinfo.value), equal_to(formatted_failures_for([
                 {"characteristic": "alpha", "failure": "alpha reason"},
-            ])
+            ])))
 
     class TestPasses:
         def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence_source, working_dir):
@@ -75,8 +79,12 @@ class TestCritic:
                 working_dir=working_dir, should=one_characteristic_scorecard,
             )
 
-            prompt = session_that_passes.run.call_args.kwargs["prompt"]
-            assert f"Transcript: {evidence_source}\n" in prompt
+            session_that_passes.run.assert_called_once_with(
+                prompt=matching(contains_string(
+                    f"Transcript: {evidence_source}\n"
+                )),
+                working_dir=ANY, transcript_path=ANY,
+            )
 
         def test_evaluation_should_embed_working_dir_in_prompt(self, evidence_source, one_characteristic_scorecard, session_that_passes):
             working_dir = Path("/workspace/embedded-in-prompt")
@@ -86,8 +94,12 @@ class TestCritic:
                 evidence_source=evidence_source, should=one_characteristic_scorecard,
             )
 
-            prompt = session_that_passes.run.call_args.kwargs["prompt"]
-            assert f"Workspace: {working_dir}\n" in prompt
+            session_that_passes.run.assert_called_once_with(
+                prompt=matching(contains_string(
+                    f"Workspace: {working_dir}\n"
+                )),
+                working_dir=ANY, transcript_path=ANY,
+            )
 
         def test_evaluation_should_list_characteristic_names_in_prompt(self, evidence_source, working_dir):
             session_that_passes = MagicMock(spec=ClaudeSession)
@@ -104,8 +116,12 @@ class TestCritic:
                 evidence_source=evidence_source, working_dir=working_dir,
             )
 
-            prompt = session_that_passes.run.call_args.kwargs["prompt"]
-            assert "- first thing\n- second thing" in prompt
+            session_that_passes.run.assert_called_once_with(
+                prompt=matching(contains_string(
+                    "- first thing\n- second thing"
+                )),
+                working_dir=ANY, transcript_path=ANY,
+            )
 
     class TestCallsSession:
         def test_evaluation_should_pass_working_dir_to_session(self, evidence_source, one_characteristic_scorecard, session_that_passes):
@@ -142,4 +158,6 @@ class TestCritic:
                     evidence_source=evidence_source, working_dir=working_dir,
                 )
 
-            assert str(excinfo.value) == "scorecard must not be empty"
+            assert_that(str(excinfo.value), equal_to(
+                "scorecard must not be empty"
+            ))
