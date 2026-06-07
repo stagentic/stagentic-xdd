@@ -18,8 +18,7 @@ acceptable coverage.
 
 Order, most-recently-refactored first:
 
-1. `critic.py` — survivors feed its punch list
-   ([`test_critic.md`](docs/architecture/improvements/test_critic.md)).
+1. `critic.py` — done: 39/39 mutants killed, added to `source_paths`.
 2. `auditor.py`
 3. `claude_session.py`
 4. `claude_cli.py`
@@ -73,9 +72,7 @@ The already-refactored files are swept first; see §1.
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
-- [ ] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
-  - Outstanding improvements tracked in
-    [`docs/architecture/improvements/test_critic.md`](docs/architecture/improvements/test_critic.md).
+- [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
   - Outstanding improvements tracked in
     [`docs/architecture/improvements/scorecard_results.md`](docs/architecture/improvements/scorecard_results.md).
