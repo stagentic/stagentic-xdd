@@ -6,6 +6,7 @@
   so a negated check reads as `does_not(contain_string(...))`.
 """
 
+from hamcrest import all_of
 from hamcrest import contains_string as contain_string
 from hamcrest import is_not as does_not
 from hamcrest import match_equality as matching
@@ -14,4 +15,4 @@ __all__ = ["contain_string", "contains_strings", "does_not", "matching"]
 
 
 def contains_strings(*substrings):
-    return contain_string(substrings[1])
+    return all_of(*[contain_string(s) for s in substrings])

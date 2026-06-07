@@ -12,6 +12,14 @@ class TestContainsStrings:
         with pytest.raises(AssertionError) as excinfo:
             assert_that("only alpha", contains_strings("alpha", "beta"))
         assert_that(str(excinfo.value), equal_to(
-            "\nExpected: a string containing 'beta'\n"
-            "     but: was 'only alpha'\n"
+            "\nExpected: (a string containing 'alpha' and a string containing 'beta')\n"
+            "     but: a string containing 'beta' was 'only alpha'\n"
+        ))
+
+    def test_does_not_match_when_the_first_substring_is_missing(self):
+        with pytest.raises(AssertionError) as excinfo:
+            assert_that("only beta", contains_strings("alpha", "beta"))
+        assert_that(str(excinfo.value), equal_to(
+            "\nExpected: (a string containing 'alpha' and a string containing 'beta')\n"
+            "     but: a string containing 'alpha' was 'only beta'\n"
         ))
