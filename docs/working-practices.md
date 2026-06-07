@@ -41,12 +41,16 @@ propose the commit**. Don't propose a commit straight off a green when the file
 you're developing is a mutation target.
 
 **The file you're developing belongs in `source_paths` while you work on it.**
-If it isn't a mutation target yet — a new module, or even a test helper such as
-`tests/matchers.py` — add its path to `source_paths` so mutmut mutates it, and
-run the focused check after *every* green. Keep that `source_paths` addition
-uncommitted until the work's final green. A green with no surviving mutants — or
-with no mutants at all, when the code is too minimal to mutate — both mean
-nothing is running ahead of the tests.
+If it isn't a mutation target yet — a new module — add its path to `source_paths`
+so mutmut mutates it, and run the focused check after *every* green. Keep that
+`source_paths` addition uncommitted until the work's final green. (A *shared test
+helper* can't be mutated from under `tests/`: mutmut's source roots are
+hardcoded, so a `tests/`-located file's mutants never map to a covering test.
+Home it in `test_utilities/src` instead, where it's a permanent mutation target
+like any module — see ADR
+[0012](architecture/decisions/0012-home-shared-test-utilities-in-a-dedicated-project.md).)
+A green with no surviving mutants — or with no mutants at all, when the code is
+too minimal to mutate — both mean nothing is running ahead of the tests.
 
 **Start from a clean baseline.** A survivor after a red-green only implicates
 your new code if the file had none before you started. For a file that predates

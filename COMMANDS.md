@@ -7,6 +7,7 @@ Key developer commands for this repo. All commands run from the repo root.
 ```
 uv run --directory play ruff check .
 uv run --directory spec ruff check .
+uv run --directory test_utilities ruff check .
 ```
 
 ## Tests
@@ -33,6 +34,12 @@ uv run --directory play pytest tests -m contract
 
 ```
 uv run --directory play pytest
+```
+
+### `test_utilities/` tests
+
+```
+uv run --directory test_utilities pytest
 ```
 
 ### `spec/` scenarios
@@ -81,6 +88,10 @@ uv run --directory spec pytest tests --agent=real --inspector=critic
 
 Mutates the files in `source_paths` (`play/pyproject.toml`) against the fast
 unit lane. See ADR [0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md).
+
+`test_utilities` is mutated the same way against its own `source_paths`
+(`test_utilities/pyproject.toml`) — swap `--directory play` for
+`--directory test_utilities` in the commands below.
 
 ### Focus one file (during TDD or review)
 

@@ -61,6 +61,11 @@ The approach is explained in ADR 0001
   `play/tests/test_doubles/`; contract tests (marked `contract`) live in
   `play/tests/contract/`; integration tests (marked `integration`) live in
   `play/tests/integration/`.
+- `test_utilities/` — pytest project peer to `play`/`spec` that homes shared
+  *test* helpers (currently `matchers`) in `src/`, with its own tests and a
+  permanent mutation gate. `play` (and `spec`, when it needs them) reaches the
+  helpers via a relative `pythonpath` entry. See ADR 0012; Phase 2 will make it
+  an installable workspace member and retire the relative path.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
@@ -102,7 +107,7 @@ conventions (`transcript`, `working_dir`, scene projects).
 
 Default suite. Run at the start of every new session, and any time the
 "Change in `play/` beyond a single test file" rule applies. Launch all
-four with `run_in_background: true` in a single message — foreground
+five with `run_in_background: true` in a single message — foreground
 Bash calls in one message queue and run one-after-another, only
 `run_in_background` makes them truly parallel. Read each suite's output
 file when its completion notification arrives.
@@ -119,6 +124,7 @@ file as its notification lands.
 
 - [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
 - [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
+- [`test_utilities/` tests](COMMANDS.md#test_utilities-tests) — fast; no claude CLI
 - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
 - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
 - Real agent excluded while the xdd skill is in development.
@@ -144,6 +150,8 @@ Then run the tests relevant to the change:
   test files, or test infrastructure: run spec configurations in parallel:
   - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
   - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
+- **Change in `test_utilities/` beyond a single test file**: run the
+  [`test_utilities/` tests](COMMANDS.md#test_utilities-tests) (fast, no claude CLI).
 - **Change in `play/` beyond a single test file** (or anything integrated):
   the [Full baseline](#full-baseline).
 - **Changed a src file in `source_paths`**: first run the focused
