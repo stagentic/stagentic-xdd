@@ -30,9 +30,6 @@ test files of `play/`:
   times, in two different signatures: `def case(id, *values)`
   (`test_scorecard_results.py`, `test_scorecard_json_extraction.py`) and
   `def case(id, **named_values)` (`test_raise_if.py`).
-- **`does_not_raise`** — `from contextlib import nullcontext as does_not_raise`
-  — repeated in three files (`test_critic.py`, `test_raise_if.py`,
-  `test_critic_integration.py`).
 
 Two problems follow. First, these helpers have no single home: they are
 duplicated (and have already drifted, as the two `case` signatures show), and
@@ -110,7 +107,7 @@ create **`test_utilities/`** as the first such package — a peer project to
   `pythonpath` entry never achieves.
 - Consolidate `case` into a single signature in `test_utilities`; the call
   sites adopt it.
-- Initial scope: `matchers`, `case`, `does_not_raise`. Domain-specific helpers
+- Initial scope: `matchers` and `case`. Domain-specific helpers
   stay where they are — `characteristics_for_all` and the `dummy` fixture in
   `play/`, and `spec`'s `inspector`/`agent` fixtures, `pytest_*` hooks, `_have`,
   and `_tree_diff`.
@@ -120,7 +117,7 @@ create **`test_utilities/`** as the first such package — a peer project to
 - Shared test utilities gain one home, their own tests, and mutation coverage —
   closing the structural gap that mutmut cannot mutate a `tests/`-located
   helper.
-- Duplication goes away: one `case`, one `does_not_raise`, one `matchers`.
+- Duplication goes away: one `case`, one `matchers`.
 - Mutation config simplifies: helpers are permanent mutation targets in their
   own project, so no temporary, uncommitted `source_paths` edits during
   development.
