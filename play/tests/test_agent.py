@@ -50,22 +50,6 @@ class TestAgent:
             transcript_path=transcript_path,
         )
 
-    def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with, session_spy):
-        create_test_task_with("dummy prompt")
-        working_dir = "/other/dir"
-
-        agent = Agent(
-            tasks_root=tasks_root,
-            session=session_spy,
-        )
-
-        agent.perform(
-            working_dir=Path(working_dir),
-            task=_TASK_NAME,
-        )
-
-        assert agent.transcript == Path(working_dir) / "transcript.md"
-
     class TestCallsSession:
         def test_prompt_should_be_read_from_task_file(self, tasks_root, create_test_task_with, dummy, session_spy):
             task_prompt = "do the other thing"
@@ -132,3 +116,20 @@ class TestAgent:
                 transcript_path=Path("/other/dir") / "transcript.md",
                 prompt=ANY, working_dir=ANY,
             )
+
+    class TestExposesTranscript:
+        def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with, session_spy):
+            create_test_task_with("dummy prompt")
+            working_dir = "/other/dir"
+
+            agent = Agent(
+                tasks_root=tasks_root,
+                session=session_spy,
+            )
+
+            agent.perform(
+                working_dir=Path(working_dir),
+                task=_TASK_NAME,
+            )
+
+            assert agent.transcript == Path(working_dir) / "transcript.md"
