@@ -122,6 +122,24 @@ Once `--agent=real` is green:
 
 ## Enforcing working-practices via hooks
 
+**These hooks are spike code.** They were written quickly — not test-first —
+purely to make the ongoing process less painful while the real work continues.
+They are not productionised: there are no tests, and the scripts parse text and
+git/shell output ad hoc. They will be TDD'd into productionised code as part of
+the improvement plan above; for now they are a pragmatic stopgap that earns its
+place only by reducing friction.
+
+**Landed — the focused-mutmut-after-green nudge (committed, observed firing).**
+The first problem tackled empirically: the focused mutation test after green kept
+getting skipped. `.claude/hooks/post_green_focused_mutmut_nudge.py`, wired as a
+PostToolUse(Bash) hook in `.claude/settings.json`, fires only on a pytest green
+while a `source_paths` file is uncommitted and in flight, and injects a reminder
+to run focused mutmut before continuing; silent on greens with nothing in flight,
+on any failure, and on non-pytest commands. It writes nothing to disk. PostToolUse
+cannot block (it runs after the tool), so this is a reminder. It fired as intended
+this session; whether the reminder alone changes behaviour over time is what we
+keep watching before reaching for a blocking gate.
+
 `docs/working-practices.md` is now a mandatory session-start read in
 CLAUDE.md, but a CLAUDE.md pointer is advisory — it relies on the agent
 reading *and* applying it, both of which have failed in practice
@@ -135,11 +153,11 @@ checked-in `.claude/settings.json`.
   literal text of `docs/working-practices.md` into context via
   `hookSpecificOutput.additionalContext` — the actual words, not a pointer,
   because the failure mode was paraphrase rather than ignorance. Cannot block.
-- **PostToolUse after pytest — green nudge (deferred).** Inspects the Bash
-  command for a pytest run; on success injects a reminder to run focused
-  `mutmut run "<file>*"` on the in-flight file before continuing. Cannot
-  block (runs after the tool); a pure reminder. Targets the specific miss of
-  moving on from a green without the focused mutmut run.
+- **PostToolUse after pytest — green nudge (landed — see top of
+  section).** Inspects the Bash command for a pytest run; on success injects a
+  reminder to run focused `mutmut run "<module>*"` on the in-flight file before
+  continuing. Cannot block (runs after the tool); a pure reminder. Targets the
+  specific miss of moving on from a green without the focused mutmut run.
 - **PostToolUse after mutmut — marker writer (deferred).** Detects
   `mutmut run`, parses the result, and writes a marker (timestamp +
   clean/dirty) that the commit gate reads.
@@ -165,6 +183,9 @@ string matchers are bypassable by variant spellings; judgement clauses cannot
 be encoded. None of this removes the agent's obligation to apply the doc — the
 hooks backstop the mechanical steps only.
 
-Status: SessionStart is implemented. The PostToolUse nudge, marker writer, and
-commit gate are deferred pending observed behaviour — whether the SessionStart
-injection alone changes outcomes is being monitored before wiring the gate.
+Status: SessionStart and the PostToolUse green nudge are implemented (the latter
+observed firing this session). The remaining options — the marker writer, the
+commit gate, and the open decisions above — are candidates, not commitments:
+each will be built only if observation turns up cases where the lighter nudges
+prove insufficient and the heavier mechanism is genuinely required. Until then
+they stay deferred. What is implemented is spike code awaiting the TDD pass.
