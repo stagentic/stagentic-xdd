@@ -4,35 +4,30 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. `test_utilities` project (ADR 0012) — Phase 1 done, Phase 2 remaining
+## 1. Helpers in `test_utilities`
 
-**Phase 1 done** (committed): shared `matchers` now live in `test_utilities/src`,
-a project peer to `play`/`spec`, with their own tests and a permanent mutation
-gate; `play` reaches them via a relative `pythonpath`. `contains_strings` was
-hardened by TDD in its new home (requires every substring, mutation-clean) and
-wired into `test_critic_integration.py` as the first cross-project consumer.
-`CLAUDE.md` "Layout", `COMMANDS.md`, and `working-practices.md` are updated for
-the new project.
-
-**Phase 2 — make `test_utilities` an installable package.** A uv workspace
-member that `play`/`spec` declare as a dependency, retiring the relative
-`pythonpath`. Bigger than Phase 1: there is no workspace root today and both
-`play` and `spec` are standalone (`package = false`), so this introduces a root
-workspace, flips both to members sharing one lockfile, and gives
-`test_utilities` a build backend. A dependency/lockfile change means each
-project's host `.venv-jb` must be re-synced on the host afterwards.
-
-**Later helpers to home here (ADR 0012 scope):** `case` (consolidate the three
-definitions across two signatures into one) and `does_not_raise`.
-
-**Follow-on idea — a `contains_none_of` matcher.** Asserts *none* of the given
-substrings appear, for collapsing repeated `does_not(contain_string(...))`
-checks into one. Mind the De Morgan trap: `does_not(contains_strings(a, b))` is
-`is_not(all_of(...))` = "at least one absent", **not** "all absent". The
-all-absent form is `is_not(any_of(contain_string …))` (≡
-`all_of(does_not(contain_string …))`), which reports a combined failure message
-rather than independent ones. TDD it in `test_utilities`, mirroring the
+**`contains_any` — a new matcher to TDD (does not exist yet).** The `any_of`
+counterpart to `contains_strings`: `contains_any(s1, s2, …)` asserts *at least
+one* of the substrings appears. Negated with the existing `does_not` it
+expresses "none present": `does_not(contains_any(…))` = `is_not(any_of(…))` =
+all absent. First use is `test_critic_integration.py:57–58`, whose two adjacent
+`does_not(contain_string(...))` checks collapse into one
+`does_not(contains_any(...))`. Build it in `test_utilities`, mirroring the
 `contains_strings` rhythm.
+
+Use `contains_any`, do not negate `contains_strings`:
+`does_not(contains_strings(a, b))` is `is_not(all_of(...))` = "at least one
+absent", **not** all absent — the De Morgan trap. Only `any_of` inside the
+negation yields all-absent.
+
+**Consolidate existing duplicated helpers into `test_utilities` (ADR 0012 scope).**
+`matchers` was the first; the helper below already exists, duplicated across
+`play`'s test files, and wants the same single, tested home:
+- **`case`** — a `pytest.param` wrapper that puts the id first, already defined
+  three times in two signatures (`def case(id, *values)` in
+  `test_scorecard_results.py`/`test_scorecard_json_extraction.py`,
+  `def case(id, **named_values)` in `test_raise_if.py`). Consolidate to one
+  signature; the call sites adopt it.
 
 ## 2. Improvement plan
 
