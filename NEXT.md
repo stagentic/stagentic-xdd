@@ -119,3 +119,52 @@ Once `--agent=real` is green:
   exclude or clean them before the agent runs.
 - The agent's cwd must be the workspace root for `uv run pytest` to
   resolve correctly.
+
+## Enforcing working-practices via hooks
+
+`docs/working-practices.md` is now a mandatory session-start read in
+CLAUDE.md, but a CLAUDE.md pointer is advisory — it relies on the agent
+reading *and* applying it, both of which have failed in practice
+(read-but-not-applied, and applied-as-paraphrase). Automated "before/after X"
+behaviours are the harness's job via hooks in `.claude/settings.json`, not
+something prose can guarantee. These hooks move the load-bearing rules from
+prose to mechanism. Hook scripts live in `.claude/hooks/`; config in the
+checked-in `.claude/settings.json`.
+
+- **SessionStart — inject working-practices (implemented).** Prints the
+  literal text of `docs/working-practices.md` into context via
+  `hookSpecificOutput.additionalContext` — the actual words, not a pointer,
+  because the failure mode was paraphrase rather than ignorance. Cannot block.
+- **PostToolUse after pytest — green nudge (deferred).** Inspects the Bash
+  command for a pytest run; on success injects a reminder to run focused
+  `mutmut run "<file>*"` on the in-flight file before continuing. Cannot
+  block (runs after the tool); a pure reminder. Targets the specific miss of
+  moving on from a green without the focused mutmut run.
+- **PostToolUse after mutmut — marker writer (deferred).** Detects
+  `mutmut run`, parses the result, and writes a marker (timestamp +
+  clean/dirty) that the commit gate reads.
+- **PreToolUse before commit — the gate (deferred).** Blocks the commit
+  (exit 2 / `permissionDecision: deny`) unless the mutmut marker is newer
+  than the most-recently-edited `source_paths` file. Reason string lists the
+  missing steps.
+
+Open decisions for the gate:
+
+- **Hard block or soft warn.** A hard block enforces the mechanical gate but
+  is brittle — a buggy gate blocks legitimate commits, and judgement clauses
+  ("a survivor must be a *documented* accepted-mutation") cannot be encoded,
+  so it would block on survivors it cannot evaluate. Current lean: hard block
+  on the strictly-mechanical check (mutmut ran clean since last edit), with
+  survivors-present emitting a warn-not-block, leaving judgement with the agent.
+- **Matcher robustness.** The scripts parse `tool_input.command` themselves
+  rather than rely on an `if: Bash(git commit*)` glob, because the repo
+  convention is `git -C <repo> commit`, which the naive glob misses.
+
+Known limitations: hooks see one command plus its args, not session meaning;
+string matchers are bypassable by variant spellings; judgement clauses cannot
+be encoded. None of this removes the agent's obligation to apply the doc — the
+hooks backstop the mechanical steps only.
+
+Status: SessionStart is implemented. The PostToolUse nudge, marker writer, and
+commit gate are deferred pending observed behaviour — whether the SessionStart
+injection alone changes outcomes is being monitored before wiring the gate.
