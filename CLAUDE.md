@@ -34,6 +34,7 @@ Read these thoroughly when relevant; don't rely on the one-line summary alone:
   environment-agnostic mechanisms).
 - `docs/working-practices.md` — workflow practices: lead with the
   proposed commit; separate behavioural from structural changes.
+  Read it at session start, alongside NEXT.md.
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.

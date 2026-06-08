@@ -31,6 +31,18 @@
       "Bash(git push*)"
     ]
   },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session_start_working_practices.sh"
+          }
+        ]
+      }
+    ]
+  },
   "enabledPlugins": {
     "stagentic-promptbook@stagentic": true
   }
