@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
+from hamcrest import assert_that, equal_to
 
 from agent import Agent
 from claude_session import ClaudeSession
@@ -43,11 +44,13 @@ class TestAgent:
             working_dir=working_dir,
         )
 
-        assert agent.transcript == transcript_path
         session_spy.run.assert_called_once_with(
             prompt=task_prompt,
             working_dir=working_dir,
             transcript_path=transcript_path,
+        )
+        assert_that(
+            agent.transcript, equal_to(transcript_path)
         )
 
     class TestCallsSession:
@@ -132,4 +135,6 @@ class TestAgent:
                 task=_TASK_NAME,
             )
 
-            assert agent.transcript == working_dir / "transcript.md"
+            assert_that(
+                agent.transcript, equal_to(working_dir / "transcript.md")
+            )
