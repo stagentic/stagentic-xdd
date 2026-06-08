@@ -4,17 +4,7 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Helpers in `test_utilities`
-
-**Consolidate the duplicated `case` helper into `test_utilities` (ADR 0012 scope).**
-`case` — a `pytest.param` wrapper that puts the id first — is still defined three
-times across `play`'s test files in two signatures (`def case(id, *values)` in
-`test_scorecard_results.py`/`test_scorecard_json_extraction.py`,
-`def case(id, **named_values)` in `test_raise_if.py`). It wants one tested home
-in `test_utilities`; consolidate to a single signature and have the call sites
-adopt it.
-
-## 2. Improvement plan
+## 1. Improvement plan
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
@@ -74,7 +64,7 @@ A cross-cutting improvement surfaced by the critic extraction — a
 - [ ] `archiver.py` (and `tests/test_archiver.py`)
 - [ ] `conftest.py`
 
-## 3. Write the xdd skill
+## 2. Write the xdd skill
 
 The `play/` harness is committed: `Agent`, `Transcriber`, and JSONL path
 computation are in `play/src/`. What remains on the harness side is wiring
