@@ -24,11 +24,14 @@ class TestAgent:
             (task / "TASK.md").write_text(prompt)
         return make
 
-    def test_should_call_claude_session_and_make_transcript_available(self, tasks_root, create_test_task_with):
+    @pytest.fixture
+    def session_spy(self):
+        return MagicMock(spec=ClaudeSession)
+
+    def test_should_call_claude_session_and_make_transcript_available(self, tasks_root, create_test_task_with, session_spy):
         task_prompt = "do the thing"
         working_dir = Path("/work")
         transcript_path = working_dir / "transcript.md"
-        session_spy = MagicMock(spec=ClaudeSession)
         create_test_task_with(prompt=task_prompt, name=_TASK_NAME)
 
         agent = Agent(
@@ -47,8 +50,7 @@ class TestAgent:
             transcript_path=transcript_path,
         )
 
-    def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with):
-        session_spy = MagicMock(spec=ClaudeSession)
+    def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with, session_spy):
         create_test_task_with("dummy prompt")
         working_dir = "/other/dir"
 
@@ -65,8 +67,7 @@ class TestAgent:
         assert agent.transcript == Path(working_dir) / "transcript.md"
 
     class TestCallsSession:
-        def test_prompt_should_be_read_from_task_file(self, tasks_root, create_test_task_with, dummy):
-            session_spy = MagicMock(spec=ClaudeSession)
+        def test_prompt_should_be_read_from_task_file(self, tasks_root, create_test_task_with, dummy, session_spy):
             task_prompt = "do the other thing"
             create_test_task_with(task_prompt)
 
@@ -82,8 +83,7 @@ class TestAgent:
                 working_dir=ANY, transcript_path=ANY,
             )
 
-        def test_prompt_should_be_read_from_the_named_task(self, tasks_root, create_test_task_with, dummy):
-            session_spy = MagicMock(spec=ClaudeSession)
+        def test_prompt_should_be_read_from_the_named_task(self, tasks_root, create_test_task_with, dummy, session_spy):
             task_name = "another-task"
             task_prompt = "the prompt"
             create_test_task_with(prompt=task_prompt, name=task_name)
@@ -101,8 +101,7 @@ class TestAgent:
                 working_dir=ANY, transcript_path=ANY,
             )
 
-        def test_working_dir_should_be_passed_to_session(self, tasks_root, create_test_task_with):
-            session_spy = MagicMock(spec=ClaudeSession)
+        def test_working_dir_should_be_passed_to_session(self, tasks_root, create_test_task_with, session_spy):
             create_test_task_with("dummy prompt")
 
             Agent(
@@ -118,8 +117,7 @@ class TestAgent:
                 prompt=ANY, transcript_path=ANY,
             )
 
-        def test_transcript_path_should_be_inside_working_dir(self, tasks_root, create_test_task_with):
-            session_spy = MagicMock(spec=ClaudeSession)
+        def test_transcript_path_should_be_inside_working_dir(self, tasks_root, create_test_task_with, session_spy):
             create_test_task_with("dummy prompt")
 
             Agent(
