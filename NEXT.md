@@ -40,6 +40,8 @@ don't bury NEXT.md.
 
 - [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
 - [ ] `agent.py` (and `tests/test_agent.py`)
+  - Outstanding improvements tracked in
+    [`docs/architecture/improvements/agent.md`](docs/architecture/improvements/agent.md).
 - [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [ ] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [ ] `claude_session.py` (and `tests/test_claude_session.py`)
