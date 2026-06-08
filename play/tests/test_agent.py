@@ -24,19 +24,19 @@ class TestAgent:
             (task / "TASK.md").write_text(prompt)
         return make
 
-    def test_perform_should_call_session_with_the_task_and_make_the_transcript_available(self, tasks_root, create_test_task_with):
+    def test_should_call_claude_session_and_make_transcript_available(self, tasks_root, create_test_task_with):
         task_prompt = "do the thing"
         working_dir = Path("/work")
         transcript_path = working_dir / "transcript.md"
         session_spy = MagicMock(spec=ClaudeSession)
-        create_test_task_with(prompt=task_prompt, name=(_TASK_NAME))
+        create_test_task_with(prompt=task_prompt, name=_TASK_NAME)
 
         agent = Agent(
             tasks_root=tasks_root,
             session=session_spy,
         )
         agent.perform(
-            task=(_TASK_NAME),
+            task=_TASK_NAME,
             working_dir=working_dir,
         )
 
@@ -47,7 +47,7 @@ class TestAgent:
             transcript_path=transcript_path,
         )
 
-    def test_transcript_location_should_be_available_after_perform(self, tasks_root, create_test_task_with):
+    def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with):
         session_spy = MagicMock(spec=ClaudeSession)
         create_test_task_with("dummy prompt")
         working_dir = "/other/dir"
