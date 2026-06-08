@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 from hamcrest import all_of, assert_that
-from matchers import contain_string, contains_strings, does_not
+from matchers import contains_any as contain_any
+from matchers import contains_strings, does_not
 
 from claude_cli import ClaudeCli
 from claude_session import ClaudeSession
@@ -54,8 +55,10 @@ class TestCriticIntegration:
                 "Transcript shows a PASS pytest result",
                 "No PASS result found in the transcript",
             ),
-            does_not(contain_string("Transcript shows the agent ran pytest")),
-            does_not(contain_string("No pytest invocation found in the transcript")),
+            does_not(contain_any(
+                "Transcript shows the agent ran pytest",
+                "No pytest invocation found in the transcript",
+            )),
         ))
 
     def test_evaluation_should_pass_when_all_characteristics_are_met(self, session, tmp_path):
