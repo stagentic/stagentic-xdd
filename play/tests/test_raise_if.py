@@ -1,12 +1,9 @@
 from contextlib import nullcontext as does_not_raise
 
 import pytest
+from cases import case
 
 from raise_if import raise_if
-
-
-def case(id, **named_values):
-    return pytest.param(*named_values.values(), id=id)
 
 
 class TestRaiseIf:
