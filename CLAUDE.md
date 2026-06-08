@@ -56,16 +56,17 @@ The approach is explained in ADR 0001
     task completes. See ADR 0007 for the chain pattern.
 - `play/` — the in-repo embryo of `stagentic-play` (ADR 0001 §33).
   Framework code — `Agent`, `FakeAgent`, `Transcriber`, `Auditor`, `Critic`,
-  `ClaudeSession`, `ClaudeCli`, and `Inspector` — that scenarios reach via pytest fixtures. Has its own
-  pyproject.toml and unit-test suite. Test doubles live in
+  `ClaudeSession`, `ClaudeCli`, and `Inspector` — that scenarios reach via pytest fixtures. Is an
+  installable package with its own pyproject.toml and unit-test suite, which
+  `spec` consumes via an editable path source. Test doubles live in
   `play/tests/test_doubles/`; contract tests (marked `contract`) live in
   `play/tests/contract/`; integration tests (marked `integration`) live in
   `play/tests/integration/`.
 - `test_utilities/` — pytest project peer to `play`/`spec` that homes shared
   *test* helpers (currently `matchers`) in `src/`, with its own tests and a
-  permanent mutation gate. `play` (and `spec`, when it needs them) reaches the
-  helpers via a relative `pythonpath` entry. See ADR 0012; Phase 2 will make it
-  an installable workspace member and retire the relative path.
+  permanent mutation gate. It is an installable package (hatchling) that `play`
+  (and `spec`, when it needs them) consumes via an editable path source; there
+  is no shared workspace. See ADR 0012.
 - `experiments/` — spikes. `agentic-screenplay-spike/` prototypes a
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
