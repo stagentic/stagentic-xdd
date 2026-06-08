@@ -120,7 +120,7 @@ class TestAgent:
     class TestExposesTranscript:
         def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with, session_spy):
             create_test_task_with("dummy prompt")
-            working_dir = "/other/dir"
+            working_dir = Path("/other/dir")
 
             agent = Agent(
                 tasks_root=tasks_root,
@@ -128,8 +128,8 @@ class TestAgent:
             )
 
             agent.perform(
-                working_dir=Path(working_dir),
+                working_dir=working_dir,
                 task=_TASK_NAME,
             )
 
-            assert agent.transcript == Path(working_dir) / "transcript.md"
+            assert agent.transcript == working_dir / "transcript.md"
