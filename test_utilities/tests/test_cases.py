@@ -16,3 +16,8 @@ class TestCase:
 
         assert param.id == scenario_name
         assert param.values == ("amber",)
+
+    def test_case_has_an_arbitrarily_named_value(self):
+        param = case("scenario name", wave="sine")
+
+        assert param.values == ("sine",)
