@@ -28,3 +28,11 @@ class TestContainsStrings:
 class TestContainsAny:
     def test_matches_text_containing_any_substring(self):
         assert_that("alpha and beta", contains_any("alpha", "beta"))
+
+    def test_does_not_match_when_no_substring_is_present(self):
+        with pytest.raises(AssertionError) as excinfo:
+            assert_that("only gamma", contains_any("alpha", "beta"))
+        assert_that(str(excinfo.value), equal_to(
+            "\nExpected: a string containing 'alpha'\n"
+            "     but: was 'only gamma'\n"
+        ))
