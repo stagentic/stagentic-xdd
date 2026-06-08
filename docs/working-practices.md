@@ -36,9 +36,11 @@ mutation testing is part of doing the work — scoped to the files in
 
 This is the green-step discipline. While a `source_paths` file is in flight,
 reaching green is not yet the cue to propose a commit: the green step is
-**run the suite → focused mutmut → dial back any survivor → full-set gate →
-propose the commit**. Don't propose a commit straight off a green when the file
-you're developing is a mutation target.
+**focused mutmut on the file → dial back any survivor to the most naive code
+that still passes, re-running until clean → run the test suite the change's
+scope calls for → full-set mutmut gate → propose the commit**. Don't propose a
+commit straight off a green when the file you're developing is a mutation
+target.
 
 **The file you're developing belongs in `source_paths` while you work on it.**
 If it isn't a mutation target yet — a new module — add its path to `source_paths`
