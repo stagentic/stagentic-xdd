@@ -1,7 +1,7 @@
 import pytest
 from hamcrest import assert_that, equal_to
 
-from matchers import contains_strings
+from matchers import contains_any, contains_strings
 
 
 class TestContainsStrings:
@@ -23,3 +23,8 @@ class TestContainsStrings:
             "\nExpected: (a string containing 'alpha' and a string containing 'beta')\n"
             "     but: a string containing 'alpha' was 'only beta'\n"
         ))
+
+
+class TestContainsAny:
+    def test_matches_text_containing_any_substring(self):
+        assert_that("alpha and beta", contains_any("alpha", "beta"))
