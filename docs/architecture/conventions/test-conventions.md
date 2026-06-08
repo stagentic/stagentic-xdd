@@ -75,30 +75,39 @@ The context manager does nothing at runtime — pytest would still fail the test
 
 The alias starts in the test file; lift it to `conftest.py` when a second file needs it.
 
-## Parametrise value-flow tests over ≥2 cases with `ids`
+## Write parametrise rows with `case`
 
-When a test asserts that a value passed in flows through to a destination, parametrise it over at least two cases — each labelled with an id so the case name leads the row. A single hard-coded literal could pass coincidentally if the production code hard-coded the same literal.
-
-**Shape:** parametrise via a small `case(id, value)` helper so the id leads each row, even though `pytest.param`'s id is positionally last:
+Parametrised rows use the shared `case` helper (`from cases import case`) rather than a bare `pytest.param` or tuple. `case(scenario_name, **named_values)` takes the scenario name first — so the id leads each row, even though `pytest.param`'s id is positionally last — and takes its values as **keyword arguments only**; there is no positional-values form. Name each value for the `parametrize` argname it feeds:
 
 ```python
-def case(id, value):
-    return pytest.param(value, id=id)
-
-
 @pytest.mark.parametrize("agent_response", [
     case(
         "prose-before-json",
-        '...',
+        agent_response='...',
     ),
     case(
         "code-fenced-json",
-        '...',
+        agent_response='...',
     ),
 ])
 ```
 
-The helper starts in the test file; lift it to `conftest.py` when a second file needs it.
+**Why:** the named value at the call site makes which value maps to which test-method argument obvious, instead of the reader matching positions against the `parametrize` header; the id leading the row keeps the case name in view.
+
+`case` is homed in `test_utilities` (`src/cases.py`); import it rather than redefining it per file. **The only exception is `case`'s own tests in `test_cases.py`** — they can't use `case` to exercise `case`.
+
+## Parametrise value-flow tests over ≥2 cases with `ids`
+
+When a test asserts that a value passed in flows through to a destination, parametrise it over at least two cases — each labelled with an id so the case name leads the row. A single hard-coded literal could pass coincidentally if the production code hard-coded the same literal.
+
+**Shape:** one `case` row per example (see *Write parametrise rows with `case`*), each labelled with an id so the case name leads the row:
+
+```python
+@pytest.mark.parametrize("agent_response", [
+    case("prose-before-json", agent_response='...'),
+    case("code-fenced-json", agent_response='...'),
+])
+```
 
 **Why:** the test asserts a behaviour (the value reaches its destination), not a specific value. Two cases prove the value is general; one case proves only that one specific value works.
 
