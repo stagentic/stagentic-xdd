@@ -6,11 +6,17 @@ agent-directive: |
 
 > **Portability:** Do not link to files outside this repository. Intra-repo links and external web URLs are fine. Inline context rather than linking out when the content is critical to understanding the ADR.
 
-# 0012 — Home shared test utilities in a dedicated `test_utilities` project
+# 0012 — Adopt path-source packages for cross-project code
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
+
+`play/`, `spec/`, and the shared test helpers are separate bodies of code that
+need to reference one another: the helpers are shared between `play` and `spec`,
+and `play` is imported by `spec` (and is the embryo slated for extraction to its
+own repo). The question this ADR settles is how cross-project code is shared.
+Two specific forces drive it.
 
 `play/` and `spec/` are separate pytest projects, each with its own `src/`,
 `tests/`, `pyproject.toml`, and mutation gate. Shared *test* helpers — not
@@ -51,14 +57,22 @@ cannot mutation-test a helper that lives under `tests/`:
 `critic` matches its import. Adding a `tests/` helper to a `source_paths` list
 does not help.
 
+Second, `spec`'s scenarios import `play`'s framework code. Today that is a
+relative `pythonpath` entry (`"../play/src"`), which breaks the moment `play`
+is extracted and is invisible to the IDE — the same weakness as the helper
+wiring.
+
 The forces: one home for shared test utilities, with their own tests and
-mutation coverage; a single `case`; reuse across `play` and `spec`; and working
-*with* mutmut's source-root convention rather than against it.
+mutation coverage; a single `case`; cross-project reuse (`play`↔`spec` helpers,
+and `spec` importing `play`); a sharing mechanism that survives `play`'s
+extraction and resolves in the IDE; and working *with* mutmut's source-root
+convention rather than against it.
 
 ## Decision
 
-Create **`test_utilities/`** as a peer project to `play/` and `spec/`, with its
-own `src/`, `tests/`, and `pyproject.toml`.
+Adopt path-source packages as the mechanism for all cross-project code, and
+create **`test_utilities/`** as the first such package — a peer project to
+`play/` and `spec/`, with its own `src/`, `tests/`, and `pyproject.toml`.
 
 - Shared helpers live in `test_utilities/src/` as top-level modules (e.g.
   `matchers.py`), imported as `from matchers import …`. Under the recognised
@@ -68,17 +82,32 @@ own `src/`, `tests/`, and `pyproject.toml`.
   (`[tool.mutmut] source_paths = ["src/matchers.py", …]`), **permanently**.
   This retires the workaround of temporarily adding a test helper to another
   project's `source_paths`, which cannot work (see Context).
-- **Wiring lands in two phases — both committed.**
+- **Wiring lands in two phases — each committed.**
   - *Phase 1 (`pythonpath`):* `play` and `spec` each add
     `"../test_utilities/src"` to their `[tool.pytest.ini_options] pythonpath`,
     sharing the helpers and getting them mutation-tested with minimal wiring.
-  - *Phase 2 (standalone package):* `test_utilities` becomes a properly
-    packaged, installable project (uv workspace member) that `play` and `spec`
-    declare as a dependency, retiring the relative-`pythonpath` entry.
+    This is a stepping stone, not the destination: a relative path breaks once
+    the projects are no longer siblings (so it does not survive `play`'s
+    extraction), and the IDE cannot resolve a `pythonpath` entry.
+  - *Phase 2 (standalone packages):* the shared and cross-imported code becomes
+    installable packages, declared as dependencies.
+    - `test_utilities` gains a build backend and ships its flat `src/` modules
+      as top-level imports (`from matchers import …` unchanged), so it is
+      installable without restructuring.
+    - `play` becomes an installable package too — it is imported by `spec`, and
+      it is the embryo that will be extracted to its own repository.
+    - `play` and `spec` declare the dependencies via path sources
+      (`[tool.uv.sources] test_utilities = { path = "../test_utilities" }`, and
+      `spec` likewise on `play`), retiring the `pythonpath` entries. Each
+      project keeps its own `pyproject.toml`, lockfile, and environment; there is
+      no workspace.
 
-  Phase 1 is a deliberate stepping stone, not the destination — Phase 2 is
-  planned, so the relative-`pythonpath` wiring does not calcify into a permanent
-  hack.
+  Standalone packages are chosen deliberately. A declared package dependency is
+  what `play` carries across the repo boundary when it is extracted: the path
+  source becomes a git or published source, with nothing structural to unpick.
+  It is also what the IDE resolves natively — a packaged dependency lives in
+  each project's environment, where editor and test runner both find it, which a
+  `pythonpath` entry never achieves.
 - Consolidate `case` into a single signature in `test_utilities`; the call
   sites adopt it.
 - Initial scope: `matchers`, `case`, `does_not_raise`. Domain-specific helpers
@@ -100,9 +129,17 @@ own `src/`, `tests/`, and `pyproject.toml`.
   the project; the test-conventions "lift the alias to `conftest.py`" guidance
   and the working-practices "add the file you're developing to `source_paths`"
   wording are revised to point at `test_utilities` for shared helpers.
-- Phase 1's cross-project wiring is a relative `pythonpath` entry — light and a
-  little unconventional, but explicitly temporary: Phase 2 replaces it with a
-  packaged dependency.
+- Phase 1's `pythonpath` wiring is explicitly temporary — light but
+  unconventional, invisible to the IDE, and not extraction-safe; Phase 2
+  replaces it with declared package dependencies.
+- `play` becoming a package is a step toward its planned extraction: its
+  dependency on `test_utilities` is already declared, so extraction only changes
+  where that package is sourced from (a git or published source in place of the
+  local path).
+- Each project keeps its own lockfile and environment; there is no shared
+  workspace environment. Cross-project code is present because it is installed
+  (editable) as a declared dependency, not because a path entry points at a
+  sibling's `src/`.
 - Consolidating `case` forces choosing one signature; the call sites that used
   the other form change with it.
 
@@ -122,3 +159,14 @@ own `src/`, `tests/`, and `pyproject.toml`.
   fixtures within a single project, not across `play`/`spec`, and gives neither
   mutation coverage nor a tested home for non-fixture helpers like `matchers`
   and `case`.
+- **A uv workspace (single root, shared lockfile and environment).** Make
+  `play`, `spec`, and `test_utilities` members under one root `pyproject.toml`
+  sharing a single lockfile and environment — either keeping `pythonpath` or
+  consuming the helpers as a workspace-member dependency (`{ workspace = true }`).
+  Tried, then rejected: it is a monorepo arrangement that `play`'s planned
+  extraction would have to unpick — a workspace member is not an independently
+  installable dependency, so the wiring would be built now only to be reworked
+  at extraction. Keeping `pythonpath` under the workspace still left the IDE
+  unable to resolve the helpers (the env is shared, but nothing is declared or
+  installed), and the single shared environment collapsed the per-project
+  environments the projects otherwise keep independent.
