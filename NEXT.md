@@ -6,28 +6,13 @@
 
 ## 1. Helpers in `test_utilities`
 
-**`contains_any` — a new matcher to TDD (does not exist yet).** The `any_of`
-counterpart to `contains_strings`: `contains_any(s1, s2, …)` asserts *at least
-one* of the substrings appears. Negated with the existing `does_not` it
-expresses "none present": `does_not(contains_any(…))` = `is_not(any_of(…))` =
-all absent. First use is `test_critic_integration.py:57–58`, whose two adjacent
-`does_not(contain_string(...))` checks collapse into one
-`does_not(contains_any(...))`. Build it in `test_utilities`, mirroring the
-`contains_strings` rhythm.
-
-Use `contains_any`, do not negate `contains_strings`:
-`does_not(contains_strings(a, b))` is `is_not(all_of(...))` = "at least one
-absent", **not** all absent — the De Morgan trap. Only `any_of` inside the
-negation yields all-absent.
-
-**Consolidate existing duplicated helpers into `test_utilities` (ADR 0012 scope).**
-`matchers` was the first; the helper below already exists, duplicated across
-`play`'s test files, and wants the same single, tested home:
-- **`case`** — a `pytest.param` wrapper that puts the id first, already defined
-  three times in two signatures (`def case(id, *values)` in
-  `test_scorecard_results.py`/`test_scorecard_json_extraction.py`,
-  `def case(id, **named_values)` in `test_raise_if.py`). Consolidate to one
-  signature; the call sites adopt it.
+**Consolidate the duplicated `case` helper into `test_utilities` (ADR 0012 scope).**
+`case` — a `pytest.param` wrapper that puts the id first — is still defined three
+times across `play`'s test files in two signatures (`def case(id, *values)` in
+`test_scorecard_results.py`/`test_scorecard_json_extraction.py`,
+`def case(id, **named_values)` in `test_raise_if.py`). It wants one tested home
+in `test_utilities`; consolidate to a single signature and have the call sites
+adopt it.
 
 ## 2. Improvement plan
 
