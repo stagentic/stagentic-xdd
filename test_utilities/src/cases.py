@@ -1,6 +1,5 @@
 import pytest
 
 
-def case(id, **named_value):
-    (value,) = named_value.values()
-    return pytest.param(value, id=id)
+def case(id, **named_values):
+    return pytest.param(*named_values.values(), id=id)

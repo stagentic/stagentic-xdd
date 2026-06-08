@@ -21,3 +21,8 @@ class TestCase:
         param = case("scenario name", wave="sine")
 
         assert param.values == ("sine",)
+
+    def test_case_can_have_multiple_arbitrarily_named_values(self):
+        param = case("scenario name", shape="hexagon", size="large")
+
+        assert param.values == ("hexagon", "large")
