@@ -122,70 +122,76 @@ Once `--agent=real` is green:
 
 ## Enforcing working-practices via hooks
 
-**These hooks are spike code.** They were written quickly — not test-first —
-purely to make the ongoing process less painful while the real work continues.
-They are not productionised: there are no tests, and the scripts parse text and
-git/shell output ad hoc. They will be TDD'd into productionised code as part of
-the improvement plan above; for now they are a pragmatic stopgap that earns its
-place only by reducing friction.
+This began as a way to make the dev process less painful. It became more
+than that: a technique we tested and proved, and one that may turn into a
+mechanism for building the xdd skill itself.
 
-**Landed — the focused-mutmut-after-green nudge (committed, observed firing).**
-The first problem tackled empirically: the focused mutation test after green kept
-getting skipped. `.claude/hooks/post_green_focused_mutmut_nudge.py`, wired as a
-PostToolUse(Bash) hook in `.claude/settings.json`, fires only on a pytest green
-while a `source_paths` file is uncommitted and in flight, and injects a reminder
-to run focused mutmut before continuing; silent on greens with nothing in flight,
-on any failure, and on non-pytest commands. It writes nothing to disk. PostToolUse
-cannot block (it runs after the tool), so this is a reminder. It fired as intended
-this session; whether the reminder alone changes behaviour over time is what we
-keep watching before reaching for a blocking gate.
+**What happened.** The working practices live in
+`docs/working-practices.md`, and the agent reads them at session start.
+Even so, it kept skipping steps — pulled back toward habits from its
+training data.
 
-`docs/working-practices.md` is now a mandatory session-start read in
-CLAUDE.md, but a CLAUDE.md pointer is advisory — it relies on the agent
-reading *and* applying it, both of which have failed in practice
-(read-but-not-applied, and applied-as-paraphrase). Automated "before/after X"
-behaviours are the harness's job via hooks in `.claude/settings.json`, not
-something prose can guarantee. These hooks move the load-bearing rules from
-prose to mechanism. Hook scripts live in `.claude/hooks/`; config in the
-checked-in `.claude/settings.json`.
+The specific miss: on every green, the agent skipped both the focused
+mutation test and the commit. It was too eager to get on to writing the
+next test.
 
-- **SessionStart — inject working-practices (implemented).** Prints the
-  literal text of `docs/working-practices.md` into context via
+**What we decided.** Nudge the agent with a hook at the moment it reaches
+green — exactly where the miss happens. A reminder injected into context,
+not a block.
+
+It was tested this session and worked: the nudge fired on each green with
+a mutation target in flight, and pulled the green step back into view.
+
+**Why it matters beyond the dev process.** The xdd skill's job is to steer
+an agent through Red-Green-Refactor. A hook that nudges at green is that
+same kind of steering. So what we prove here may carry straight into how
+the skill is built — this is learning for the product, not throwaway
+scaffolding.
+
+The hooks are still spike code: written quickly, no tests yet. If they
+become part of the skill, they get the proper TDD treatment then.
+
+**Why a hook, not just the doc.** A `CLAUDE.md` pointer is advisory — it
+needs the agent to read *and* apply the doc, and both have failed
+(read-but-not-applied, and applied-as-paraphrase). A hook puts the nudge
+in the harness instead of in prose. Scripts live in `.claude/hooks/`;
+config in the checked-in `.claude/settings.json`.
+
+The hooks — built, and candidates:
+
+- **SessionStart — inject working-practices (built).** Prints the literal
+  text of `docs/working-practices.md` into context via
   `hookSpecificOutput.additionalContext` — the actual words, not a pointer,
-  because the failure mode was paraphrase rather than ignorance. Cannot block.
-- **PostToolUse after pytest — green nudge (landed — see top of
-  section).** Inspects the Bash command for a pytest run; on success injects a
-  reminder to run focused `mutmut run "<module>*"` on the in-flight file before
-  continuing. Cannot block (runs after the tool); a pure reminder. Targets the
-  specific miss of moving on from a green without the focused mutmut run.
-- **PostToolUse after mutmut — marker writer (deferred).** Detects
-  `mutmut run`, parses the result, and writes a marker (timestamp +
-  clean/dirty) that the commit gate reads.
-- **PreToolUse before commit — the gate (deferred).** Blocks the commit
-  (exit 2 / `permissionDecision: deny`) unless the mutmut marker is newer
-  than the most-recently-edited `source_paths` file. Reason string lists the
+  because the failure mode was paraphrase, not ignorance. Cannot block.
+- **PostToolUse after pytest — green nudge (built, proven this session).**
+  On a pytest green, injects a reminder to run focused
+  `mutmut run "<module>*"` on the in-flight file before moving on. Cannot
+  block (it runs after the tool); a pure reminder. Targets the exact miss:
+  moving on from a green without the focused mutation test.
+- **PostToolUse after mutmut — marker writer (candidate).** Would detect
+  `mutmut run`, parse the result, and write a marker (timestamp +
+  clean/dirty) for a commit gate to read.
+- **PreToolUse before commit — the gate (candidate).** Would block the
+  commit (exit 2 / `permissionDecision: deny`) unless the mutmut marker is
+  newer than the most-recently-edited `source_paths` file, and list the
   missing steps.
 
-Open decisions for the gate:
+The marker writer and the gate are ideas, not plans. We build them only if
+we see cases where the nudges alone aren't enough.
 
-- **Hard block or soft warn.** A hard block enforces the mechanical gate but
-  is brittle — a buggy gate blocks legitimate commits, and judgement clauses
-  ("a survivor must be a *documented* accepted-mutation") cannot be encoded,
-  so it would block on survivors it cannot evaluate. Current lean: hard block
-  on the strictly-mechanical check (mutmut ran clean since last edit), with
-  survivors-present emitting a warn-not-block, leaving judgement with the agent.
-- **Matcher robustness.** The scripts parse `tool_input.command` themselves
-  rather than rely on an `if: Bash(git commit*)` glob, because the repo
-  convention is `git -C <repo> commit`, which the naive glob misses.
+If we do build the gate, two questions are open:
 
-Known limitations: hooks see one command plus its args, not session meaning;
-string matchers are bypassable by variant spellings; judgement clauses cannot
-be encoded. None of this removes the agent's obligation to apply the doc — the
-hooks backstop the mechanical steps only.
+- **Hard block or soft warn.** A hard block enforces the mechanical check
+  but is brittle: a buggy gate blocks good commits, and judgement clauses
+  ("a survivor must be a *documented* accepted-mutation") can't be encoded,
+  so it would block on survivors it can't judge. Current lean: hard block
+  on the mechanical check (mutmut ran clean since the last edit), warn-only
+  when survivors are present, leaving judgement to the agent.
+- **Matcher robustness.** The scripts parse `tool_input.command`
+  themselves rather than trust an `if: Bash(git commit*)` glob, because the
+  repo convention is `git -C <repo> commit`, which the naive glob misses.
 
-Status: SessionStart and the PostToolUse green nudge are implemented (the latter
-observed firing this session). The remaining options — the marker writer, the
-commit gate, and the open decisions above — are candidates, not commitments:
-each will be built only if observation turns up cases where the lighter nudges
-prove insufficient and the heavier mechanism is genuinely required. Until then
-they stay deferred. What is implemented is spike code awaiting the TDD pass.
+**Known limits.** A hook sees one command and its args, not the meaning of
+the session. String matchers can be dodged by spelling things differently.
+Judgement clauses can't be encoded. So the hooks back up the mechanical
+steps only — they don't remove the agent's job of applying the doc.
