@@ -25,7 +25,9 @@
       "Bash(python3 -m pytest --collect-only -q)",
       "Bash(python3 -m pytest --collect-only -q *)",
       "Bash(pytest --collect-only -q)",
-      "Bash(uv run pytest*)"
+      "Bash(uv run pytest*)",
+      "Bash(uv run --directory * mutmut*)",
+      "Bash(rm -rf */mutants)"
     ],
     "deny": [
       "Bash(git push*)"
