@@ -2,29 +2,16 @@
 
 Known improvements for `play/src/agent.py`, measured against
 `docs/architecture/conventions/src-conventions.md` and the reference standard
-`src/critic.py`. Mutation coverage is clean (18 mutants, 0 survivors), so these
-are convention divergences, not coverage gaps.
+`src/critic.py`. Mutation coverage is clean (21 mutants, 0 survivors), so the
+open item (**b**) is a design observation, not a coverage gap.
 
-## a — `perform` mixes mechanism with the orchestration call
+## a — `perform` mixes mechanism with the orchestration call (resolved)
 
-The *Orchestrator methods read at a single level of abstraction* convention asks
-a public method's body to read as declarative steps, with no inline mechanism
-beside the calls. `critic.evaluate` reads that way (`prompt=_prompt_for(...)`,
-`candidate_scorecard_from(...)`, …). `perform` inlines the *how* of obtaining
-the prompt:
-
-    prompt = (self._tasks_root / task / "TASK.md").read_text()
-
-Candidate: extract a `_prompt_for(tasks_root, task)` helper — matching `critic`'s
-`_prompt_for` and the `_X_for` suffix — inlined into the `session.run` call, so
-`perform` reads as "expose the transcript, run the session for this task".
-
-- Pro: separates *what* (run the session for the task) from *how* (read the
-  TASK.md); matches the reference.
-- Con: it's a one-line helper, so it risks over-structuring a three-line method.
-- Note: leave `self.transcript = working_dir / "transcript.md"` inline — `critic`
-  inlines its analogous `working_dir / "critique.md"`, and here the assignment is
-  the *exposing* of state, not a throwaway temp.
+Resolved: `_prompt_for(tasks_root, task)` extracted to module level — matching
+`critic`'s `_prompt_for` and the `_X_for` suffix — and inlined into the
+`session.run` call, so `perform` reads as "expose the transcript, run the
+session for this task". `self.transcript = working_dir / "transcript.md"` was
+left inline, as the assignment is the *exposing* of state.
 
 ## b — `self.transcript` is not established in `__init__`
 
@@ -36,11 +23,10 @@ observation.
 - Trade-off: declaring it in `__init__` would mean a `| None` initial state,
   which *src-conventions* (Required vs optional) discourages. Tension either way.
 
-## c — Trailing comma on the last `session.run` argument
+## c — Trailing comma on the last `session.run` argument (resolved)
 
-`self._session.run(...)`'s last argument (`transcript_path=self.transcript`)
-carries no trailing comma; `critic`'s multi-line calls do. Cosmetic; folds into
-**a** if that call is touched.
+Resolved alongside **a**: the trailing comma was added to
+`transcript_path=self.transcript`, matching `critic`'s multi-line calls.
 
 ## Considered — error handling (no action)
 
