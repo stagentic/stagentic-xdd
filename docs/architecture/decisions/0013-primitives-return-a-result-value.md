@@ -44,10 +44,13 @@ domain outcome:
 
 - `Agent.perform` returns a `Result` carrying the transcript path.
 - `Critic`/`Auditor`.`evaluate` returns the **same** `Result` type — a "Verdict"
-  by name, not by type. Its payload is the scorecard outcome — one row per
-  characteristic with its status: `Success` when every row is PASS (carrying that
-  scorecard), `Failure` when any row is FAIL (the same scorecard plus the failure
-  messages for the failed rows).
+  by name, not by type. Each variant carries a **single** payload (Rust's
+  `Result<T, E>` shape, where the two arms hold different types): `Success` when
+  every row is PASS, carrying the passing scorecard; `Failure` when any row is
+  FAIL, carrying the failed rows — which is what the matcher needs to describe the
+  mismatch. The scorecard is not duplicated onto `Failure`; no caller needs it
+  back out, and a single generic `value` field per variant matches `Success`'s
+  shape and stays swap-compatible with `returns`.
 
 The `Result` is a single, shared, **hand-rolled, project-owned** type:
 

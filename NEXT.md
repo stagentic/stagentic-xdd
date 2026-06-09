@@ -37,7 +37,7 @@ nothing can break.
 **Movement 2 — inspector verdict + `Failure` matcher:**
 
 - `2a` expand — add a returning `verdict(...)` on `Critic` and `Auditor` —
-  `Success(scorecard)` / `Failure(scorecard, failures)` — alongside the existing
+  `Success(scorecard)` / `Failure(failed_rows)` — alongside the existing
   raising `evaluate`; unit-test both arms. Add the `is_a_success` matcher in
   `test_utilities/src` (a mutation target).
 - `2b` migrate — spec asserts `assert_that(inspector.verdict(...),
