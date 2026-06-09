@@ -51,9 +51,6 @@ class TestAgent:
             transcript_path=transcript_path,
         )
         assert_that(
-            agent.transcript, equal_to(transcript_path)
-        )
-        assert_that(
             result, equal_to(Success(transcript_path))
         )
 
@@ -124,25 +121,7 @@ class TestAgent:
                 prompt=ANY, working_dir=ANY,
             )
 
-    class TestExposesTranscript:
-        def test_transcript_location_should_be_exposed(self, tasks_root, create_test_task_with, session_spy):
-            create_test_task_with("dummy prompt")
-            working_dir = Path("/other/dir")
-
-            agent = Agent(
-                tasks_root=tasks_root,
-                session=session_spy,
-            )
-
-            agent.perform(
-                working_dir=working_dir,
-                task=_TASK_NAME,
-            )
-
-            assert_that(
-                agent.transcript, equal_to(working_dir / "transcript.md")
-            )
-
+    class TestReturnsTranscript:
         def test_transcript_should_be_returned_wrapped_in_success_for_now(self, tasks_root, create_test_task_with, session_spy):
             create_test_task_with("dummy prompt")
             working_dir = Path("/other/dir")

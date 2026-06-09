@@ -15,7 +15,6 @@ class Agent:
 
     def perform(self, *, task: str, working_dir: Path) -> Success:
         transcript_path = working_dir / "transcript.md"
-        self.transcript = transcript_path
 
         self._session.run(
             prompt=_prompt_for(
