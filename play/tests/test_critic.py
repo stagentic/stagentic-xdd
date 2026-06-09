@@ -9,6 +9,7 @@ from matchers import matching
 from claude_session import ClaudeSession
 from critic import Critic
 from failure_message import formatted_failures_for
+from result import Failure
 
 
 class TestCritic:
@@ -51,6 +52,40 @@ class TestCritic:
             assert_that(str(excinfo.value), equal_to(formatted_failures_for([
                 {"characteristic": "alpha", "failure": "alpha reason"},
             ])))
+
+        def test_evaluate2_should_return_failure_with_the_failed_rows(self, evidence_source, working_dir):
+            session_that_fails = MagicMock(spec=ClaudeSession)
+            session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
+
+            result = Critic(session=session_that_fails).evaluate2(
+                evidence_source=evidence_source,
+                working_dir=working_dir,
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+            )
+
+            assert_that(result, equal_to(Failure(
+                [{"characteristic": "alpha", "failure": "alpha reason"}])
+            ))
+
+        def test_evaluate2_should_return_only_the_failed_rows(self, evidence_source, working_dir):
+            session = MagicMock(spec=ClaudeSession)
+            session.run.return_value = (
+                '[{"characteristic": "alpha", "status": "PASS"},'
+                ' {"characteristic": "beta", "status": "FAIL"}]'
+            )
+
+            result = Critic(session=session).evaluate2(
+                evidence_source=evidence_source,
+                working_dir=working_dir,
+                should=[
+                    {"characteristic": "alpha", "failure": "alpha reason"},
+                    {"characteristic": "beta", "failure": "beta reason"},
+                ],
+            )
+
+            assert_that(result, equal_to(Failure(
+                [{"characteristic": "beta", "failure": "beta reason"}])
+            ))
 
     class TestPasses:
         def test_evaluation_should_not_raise_when_all_characteristics_pass(self, evidence_source, working_dir):

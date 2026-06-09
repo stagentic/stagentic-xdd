@@ -3,6 +3,7 @@ from pathlib import Path
 from claude_session import ClaudeSession
 from failure_message import formatted_failures_for
 from raise_if import raise_if
+from result import Failure
 from scorecard_json_extraction import candidate_scorecard_from
 from scorecard_results import ScorecardResults
 
@@ -19,6 +20,19 @@ class Critic:
     ):
         if not should: raise ValueError("scorecard must not be empty")
 
+        result = self.evaluate2(
+            evidence_source=evidence_source,
+            working_dir=working_dir,
+            should=should,
+        )
+
+        raise_if(
+            result.value,
+            raising_error=AssertionError,
+            with_message=formatted_failures_for,
+        )
+
+    def evaluate2(self, *, evidence_source, working_dir, should):
         agent_response = self._session.run(
             prompt=_prompt_for(
                 evidence_source, working_dir, should
@@ -26,18 +40,11 @@ class Critic:
             working_dir=working_dir,
             transcript_path=working_dir / "critique.md",
         )
-        candidate_scorecard = candidate_scorecard_from(agent_response)
-
         scorecard = ScorecardResults.from_(
-            maybe_results=candidate_scorecard,
+            maybe_results=candidate_scorecard_from(agent_response),
             should=should,
         )
-
-        raise_if(
-            scorecard.failures(),
-            raising_error=AssertionError,
-            with_message=formatted_failures_for,
-        )
+        return Failure(scorecard.failures())
 
 
 def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:
