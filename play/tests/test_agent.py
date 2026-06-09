@@ -140,7 +140,7 @@ class TestAgent:
                 agent.transcript, equal_to(working_dir / "transcript.md")
             )
 
-        def test_perform_should_return_the_transcript_in_a_success(self, tasks_root, create_test_task_with, session_spy):
+        def test_transcript_should_be_returned_wrapped_in_success_for_now(self, tasks_root, create_test_task_with, session_spy):
             create_test_task_with("dummy prompt")
             working_dir = Path("/other/dir")
 
