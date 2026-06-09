@@ -6,6 +6,6 @@ class Success:
     value: object
 
 
+@dataclass
 class Failure:
-    def __init__(self, value):
-        self.value = value
+    value: object

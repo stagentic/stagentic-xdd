@@ -19,3 +19,7 @@ class TestFailure:
     def test_should_carry_its_value(self):
         failure = Failure("the failures")
         assert_that(failure.value, equal_to("the failures"))
+
+    def test_should_equal_another_with_the_same_value(self):
+        failure = Failure("the failures")
+        assert_that(failure, equal_to(Failure("the failures")))
