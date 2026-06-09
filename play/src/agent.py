@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from claude_session import ClaudeSession
+from result import Success
 
 
 class Agent:
@@ -23,6 +24,8 @@ class Agent:
             working_dir=working_dir,
             transcript_path=self.transcript,
         )
+
+        return Success(self.transcript)
 
 
 def _prompt_for(tasks_root: Path, task: str) -> str:

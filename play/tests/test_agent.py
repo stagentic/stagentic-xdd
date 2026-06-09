@@ -6,6 +6,7 @@ from hamcrest import assert_that, equal_to
 
 from agent import Agent
 from claude_session import ClaudeSession
+from result import Success
 
 _TASK_NAME = "my-task"
 
@@ -137,4 +138,22 @@ class TestAgent:
 
             assert_that(
                 agent.transcript, equal_to(working_dir / "transcript.md")
+            )
+
+        def test_perform_should_return_the_transcript_in_a_success(self, tasks_root, create_test_task_with, session_spy):
+            create_test_task_with("dummy prompt")
+            working_dir = Path("/other/dir")
+
+            agent = Agent(
+                tasks_root=tasks_root,
+                session=session_spy,
+            )
+
+            result = agent.perform(
+                working_dir=working_dir,
+                task=_TASK_NAME,
+            )
+
+            assert_that(
+                result, equal_to(Success(working_dir / "transcript.md"))
             )
