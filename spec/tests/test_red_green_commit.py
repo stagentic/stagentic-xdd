@@ -11,9 +11,12 @@ class TestRedGreenCommit:
         shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)
         task = TASKS / "1-first-test-for-miles-to-km-converter"
 
-        agent.perform(task="1-first-test-for-miles-to-km-converter", working_dir=working_dir)
+        transcript = agent.perform(
+            task="1-first-test-for-miles-to-km-converter", working_dir=working_dir
+        ).value
+
         inspector.evaluate(
-            evidence_source=agent.transcript,
+            evidence_source=transcript,
             working_dir=working_dir,
             should=_have(task, working_dir, matching=[
                 "Production module exists at src/conversion.py with content",
