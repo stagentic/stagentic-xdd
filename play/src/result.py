@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Success:
-    value: object
+class Success[T]:
+    value: T
 
 
 @dataclass
-class Failure:
-    value: object
+class Failure[T]:
+    value: T
