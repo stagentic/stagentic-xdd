@@ -8,7 +8,7 @@ class FakeAgent:
     def __init__(self, *, tasks_root: Path):
         self._tasks_root = tasks_root
 
-    def perform(self, *, task: str, working_dir: Path):
+    def perform(self, *, task: str, working_dir: Path) -> Success:
         command = str(self._tasks_root / task / "fake-task.sh")
         subprocess.run(
             ["bash", command],
