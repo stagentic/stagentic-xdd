@@ -4,7 +4,61 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Improvement plan
+## 1. Result-returning primitives
+
+`Agent` and the inspector (`Critic`/`Auditor`) will return a hand-rolled
+`Result` (`Success`/`Failure`) instead of exposing state or raising on a domain
+outcome. See ADR
+[0013](docs/architecture/decisions/0013-primitives-return-a-result-value.md) for
+the decision, rationale, deferred surface, and inspiration.
+
+Land it by **expand–contract** (parallel change): add each new return alongside
+the existing path, migrate the spec onto it, then remove the old path — the suite
+stays green at every commit, and each lettered step is its own green commit.
+
+**Phase 0 — introduce the type.** TDD `play/src/result.py` with `Success` /
+`Failure` (frozen dataclasses, public fields, `__match_args__`) and its own
+`test_result.py`. Add `result` to `source_paths`. Nothing integrates yet, so
+nothing can break.
+
+**Movement 1 — agent `Success`:**
+
+- `1a` expand — `Agent.perform` and `FakeAgent.perform` also `return
+  Success(transcript)` while still setting `self.transcript`; the agent unit tests
+  gain a return assertion alongside the existing `agent.transcript` one. Spec
+  untouched.
+- `1b` migrate — the spec extracts the path from the returned `Success`
+  (`match`/`case`) to feed `inspector.evaluate`, instead of reading
+  `agent.transcript`.
+- `1c` contract — nothing reads `agent.transcript` now: demote it to a local in
+  both agents and replace the attribute assertion in the agent unit tests with the
+  return assertion. Closes item **b** in
+  [`improvements/agent.md`](docs/architecture/improvements/agent.md).
+
+**Movement 2 — inspector verdict + `Failure` matcher:**
+
+- `2a` expand — add a returning `verdict(...)` on `Critic` and `Auditor` —
+  `Success(scorecard)` / `Failure(scorecard, failures)` — alongside the existing
+  raising `evaluate`; unit-test both arms. Add the `is_a_success` matcher in
+  `test_utilities/src` (a mutation target).
+- `2b` migrate — spec asserts `assert_that(inspector.verdict(...),
+  is_a_success())` instead of relying on the raise.
+- `2c` contract — remove the raising `evaluate` once nothing calls it; migrate the
+  critic/auditor unit tests from "raises `AssertionError`" to "returns `Failure`";
+  the existing failure formatting moves into the matcher's mismatch description.
+  Keep the empty-scorecard `ValueError` (misuse, not a verdict). Optional: rename
+  `verdict` → `evaluate`.
+
+Near-term surface is just the two variants, their public fields, and the
+matchers. `match`/`case` works for free via `__match_args__` but is a caller
+convention, not framework; a default `unwrap`, `value_or`, and the combinators
+stay deferred until a caller needs them (ADR 0013).
+
+Run the focused `mutmut` after each green, and the full-set gate before each
+commit (ADR
+[0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md)).
+
+## 2. Improvement plan
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
@@ -66,7 +120,7 @@ A cross-cutting improvement surfaced by the critic extraction — a
 - [ ] `archiver.py` (and `tests/test_archiver.py`)
 - [ ] `conftest.py`
 
-## 2. Write the xdd skill
+## 3. Write the xdd skill
 
 The `play/` harness is committed: `Agent`, `Transcriber`, and JSONL path
 computation are in `play/src/`. What remains on the harness side is wiring
