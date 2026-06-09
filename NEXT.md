@@ -32,8 +32,7 @@ nothing can break.
   `agent.transcript`.
 - `1c` contract — nothing reads `agent.transcript` now: demote it to a local in
   both agents and replace the attribute assertion in the agent unit tests with the
-  return assertion. Closes item **b** in
-  [`improvements/agent.md`](docs/architecture/improvements/agent.md).
+  return assertion.
 
 **Movement 2 — inspector verdict + `Failure` matcher:**
 
@@ -93,9 +92,7 @@ don't bury NEXT.md.
 ### `play/src/`
 
 - [x] `critic.py` (and `tests/test_critic.py`, `tests/integration/test_critic_integration.py`)
-- [ ] `agent.py` (and `tests/test_agent.py`)
-  - Outstanding improvements tracked in
-    [`docs/architecture/improvements/agent.md`](docs/architecture/improvements/agent.md).
+- [x] `agent.py` (and `tests/test_agent.py`)
 - [ ] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [ ] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [ ] `claude_session.py` (and `tests/test_claude_session.py`)
