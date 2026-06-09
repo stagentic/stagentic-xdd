@@ -13,7 +13,7 @@ class Agent:
         self._tasks_root = tasks_root
         self._session = session
 
-    def perform(self, *, task: str, working_dir: Path):
+    def perform(self, *, task: str, working_dir: Path) -> Success:
         transcript_path = working_dir / "transcript.md"
         self.transcript = transcript_path
 
