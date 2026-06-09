@@ -1,4 +1,5 @@
 import pytest
+from hamcrest import assert_that, equal_to
 
 from fake_agent import FakeAgent
 
@@ -26,7 +27,7 @@ class TestFakeAgent:
             (task / "fake-task.sh").write_text(script)
         return make
 
-    def test_perform_should_run_the_task_script_in_working_dir_and_make_the_transcript_available(self, tasks_root, working_dir, create_test_task_with):
+    def test_should_run_the_task_script_and_make_the_transcript_available(self, tasks_root, working_dir, create_test_task_with):
         sentinel_file = "sentinel.txt"
         create_test_task_with(script=f"touch {sentinel_file}\n", name=_TASK_NAME)
 
@@ -36,10 +37,10 @@ class TestFakeAgent:
             working_dir=working_dir,
         )
 
-        assert (working_dir / sentinel_file).exists()
-        assert agent.transcript == working_dir / "transcript.md"
+        assert_that((working_dir / sentinel_file).exists(), equal_to(True))
+        assert_that(agent.transcript, equal_to(working_dir / "transcript.md"))
 
-    def test_perform_runs_the_named_task_script_in_the_working_directory(self, tasks_root, working_dir, create_test_task_with):
+    def test_named_task_script_should_run_in_the_working_directory(self, tasks_root, working_dir, create_test_task_with):
         task_name = "another-task"
         sentinel_file = "sentinel.txt"
         create_test_task_with(script=f"touch {sentinel_file}\n", name=task_name)
@@ -48,9 +49,9 @@ class TestFakeAgent:
             task=task_name, working_dir=working_dir,
         )
 
-        assert (working_dir / sentinel_file).exists()
+        assert_that((working_dir / sentinel_file).exists(), equal_to(True))
 
-    def test_transcript_is_the_path_in_the_working_directory_after_perform(self, tmp_path, tasks_root, create_test_task_with):
+    def test_transcript_should_be_the_path_in_the_working_directory(self, tmp_path, tasks_root, create_test_task_with):
         working_dir = tmp_path / "other-workspace"
         working_dir.mkdir()
         create_test_task_with(script="true\n")
@@ -58,4 +59,4 @@ class TestFakeAgent:
         agent = FakeAgent(tasks_root=tasks_root)
         agent.perform(task=_TASK_NAME, working_dir=working_dir)
 
-        assert agent.transcript == working_dir / "transcript.md"
+        assert_that(agent.transcript, equal_to(working_dir / "transcript.md"))
