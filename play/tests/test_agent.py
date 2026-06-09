@@ -40,7 +40,7 @@ class TestAgent:
             tasks_root=tasks_root,
             session=session_spy,
         )
-        agent.perform(
+        result = agent.perform(
             task=_TASK_NAME,
             working_dir=working_dir,
         )
@@ -52,6 +52,9 @@ class TestAgent:
         )
         assert_that(
             agent.transcript, equal_to(transcript_path)
+        )
+        assert_that(
+            result, equal_to(Success(transcript_path))
         )
 
     class TestCallsSession:
