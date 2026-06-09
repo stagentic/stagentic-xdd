@@ -3,7 +3,7 @@ from pathlib import Path
 from claude_session import ClaudeSession
 from failure_message import formatted_failures_for
 from raise_if import raise_if
-from result import Failure, Success
+from result import Failure, Result, Success
 from scorecard_json_extraction import candidate_scorecard_from
 from scorecard_results import ScorecardResults
 
@@ -33,7 +33,12 @@ class Critic:
                 with_message=formatted_failures_for,
             )
 
-    def evaluate2(self, *, evidence_source, working_dir, should):
+    def evaluate2(
+            self, *,
+            evidence_source: Path,
+            working_dir: Path,
+            should: list[dict[str, str]],
+    ) -> Result[ScorecardResults, list[dict[str, str]]]:
         agent_response = self._session.run(
             prompt=_prompt_for(
                 evidence_source, working_dir, should

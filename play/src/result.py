@@ -9,3 +9,6 @@ class Success[T]:
 @dataclass
 class Failure[T]:
     value: T
+
+
+type Result[T, E] = Success[T] | Failure[E]
