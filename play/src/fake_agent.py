@@ -17,7 +17,6 @@ class FakeAgent:
             check=True,
         )
         transcript_path = working_dir / "transcript.md"
-        self.transcript = transcript_path
         return Success(transcript_path)
 
 

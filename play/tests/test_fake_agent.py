@@ -44,9 +44,6 @@ class TestFakeAgent:
             (working_dir / sentinel_file).exists(), equal_to(True)
         )
         assert_that(
-            agent.transcript, equal_to(working_dir / "transcript.md")
-        )
-        assert_that(
             result, equal_to(Success(working_dir / "transcript.md"))
         )
 
@@ -61,18 +58,6 @@ class TestFakeAgent:
 
         assert_that(
             (working_dir / sentinel_file).exists(), equal_to(True)
-        )
-
-    def test_transcript_should_be_the_path_in_the_working_directory(self, tmp_path, tasks_root, create_test_task_with):
-        working_dir = tmp_path / "other-workspace"
-        working_dir.mkdir()
-        create_test_task_with(script="true\n")
-
-        agent = FakeAgent(tasks_root=tasks_root)
-        agent.perform(task=_TASK_NAME, working_dir=working_dir)
-
-        assert_that(
-            agent.transcript, equal_to(working_dir / "transcript.md")
         )
 
     def test_transcript_should_be_returned_wrapped_in_success_for_now(self, tasks_root, working_dir, create_test_task_with):
