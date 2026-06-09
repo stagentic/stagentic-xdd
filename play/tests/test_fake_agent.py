@@ -35,7 +35,7 @@ class TestFakeAgent:
         create_test_task_with(script=f"touch {sentinel_file}\n", name=_TASK_NAME)
 
         agent = FakeAgent(tasks_root=tasks_root)
-        agent.perform(
+        result = agent.perform(
             task=_TASK_NAME,
             working_dir=working_dir,
         )
@@ -45,6 +45,9 @@ class TestFakeAgent:
         )
         assert_that(
             agent.transcript, equal_to(working_dir / "transcript.md")
+        )
+        assert_that(
+            result, equal_to(Success(working_dir / "transcript.md"))
         )
 
     def test_named_task_script_should_run_in_the_working_directory(self, tasks_root, working_dir, create_test_task_with):
