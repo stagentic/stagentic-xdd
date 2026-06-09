@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+from result import Success
+
 
 class FakeAgent:
     def __init__(self, *, tasks_root: Path):
@@ -14,3 +16,4 @@ class FakeAgent:
             check=True,
         )
         self.transcript = working_dir / "transcript.md"
+        return Success(self.transcript)

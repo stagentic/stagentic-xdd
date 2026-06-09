@@ -4,6 +4,7 @@ import pytest
 from hamcrest import assert_that, equal_to
 
 from fake_agent import FakeAgent
+from result import Success
 
 _TASK_NAME = "my-task"
 
@@ -70,6 +71,14 @@ class TestFakeAgent:
         assert_that(
             agent.transcript, equal_to(working_dir / "transcript.md")
         )
+
+    def test_transcript_should_be_returned_wrapped_in_success_for_now(self, tasks_root, working_dir, create_test_task_with):
+        create_test_task_with(script="true\n")
+
+        agent = FakeAgent(tasks_root=tasks_root)
+        result = agent.perform(task=_TASK_NAME, working_dir=working_dir)
+
+        assert_that(result, equal_to(Success(working_dir / "transcript.md")))
 
     def test_should_raise_when_the_task_script_fails(self, tasks_root, working_dir, create_test_task_with):
         create_test_task_with(script="exit 1\n")
