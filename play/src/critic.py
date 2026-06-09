@@ -3,7 +3,7 @@ from pathlib import Path
 from claude_session import ClaudeSession
 from failure_message import formatted_failures_for
 from raise_if import raise_if
-from result import Failure
+from result import Failure, Success
 from scorecard_json_extraction import candidate_scorecard_from
 from scorecard_results import ScorecardResults
 
@@ -26,11 +26,12 @@ class Critic:
             should=should,
         )
 
-        raise_if(
-            result.value,
-            raising_error=AssertionError,
-            with_message=formatted_failures_for,
-        )
+        if isinstance(result, Failure):
+            raise_if(
+                result.value,
+                raising_error=AssertionError,
+                with_message=formatted_failures_for,
+            )
 
     def evaluate2(self, *, evidence_source, working_dir, should):
         agent_response = self._session.run(
@@ -44,7 +45,11 @@ class Critic:
             maybe_results=candidate_scorecard_from(agent_response),
             should=should,
         )
-        return Failure(scorecard.failures())
+        match scorecard.failures():
+            case []:
+                return Success(scorecard)
+            case failures:
+                return Failure(failures)
 
 
 def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:

@@ -9,7 +9,8 @@ from matchers import matching
 from claude_session import ClaudeSession
 from critic import Critic
 from failure_message import formatted_failures_for
-from result import Failure
+from result import Failure, Success
+from scorecard_results import ScorecardResults
 
 
 class TestCritic:
@@ -104,6 +105,21 @@ class TestCritic:
                         {"characteristic": "second", "failure": "neither this"},
                     ],
                 )
+
+        def test_evaluate2_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, working_dir):
+            session = MagicMock(spec=ClaudeSession)
+            session.run.return_value = '[{"characteristic": "alpha", "status": "PASS"}]'
+
+            result = Critic(session=session).evaluate2(
+                evidence_source=evidence_source,
+                working_dir=working_dir,
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+            )
+
+            assert_that(result, equal_to(Success(ScorecardResults(
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+                results=[{"characteristic": "alpha", "status": "PASS"}],
+            ))))
 
     class TestBuildsPrompt:
         def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, working_dir, one_characteristic_scorecard, session_that_passes):
