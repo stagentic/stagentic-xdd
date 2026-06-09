@@ -13,11 +13,17 @@ class Agent:
         self._session = session
 
     def perform(self, *, task: str, working_dir: Path):
-        prompt = (self._tasks_root / task / "TASK.md").read_text()
         self.transcript = working_dir / "transcript.md"
 
         self._session.run(
-            prompt=prompt,
+            prompt=_prompt_for(
+                self._tasks_root,
+                task
+            ),
             working_dir=working_dir,
-            transcript_path=self.transcript
+            transcript_path=self.transcript,
         )
+
+
+def _prompt_for(tasks_root: Path, task: str) -> str:
+    return (tasks_root / task / "TASK.md").read_text()
