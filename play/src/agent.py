@@ -14,7 +14,8 @@ class Agent:
         self._session = session
 
     def perform(self, *, task: str, working_dir: Path):
-        self.transcript = working_dir / "transcript.md"
+        transcript_path = working_dir / "transcript.md"
+        self.transcript = transcript_path
 
         self._session.run(
             prompt=_prompt_for(
@@ -22,10 +23,10 @@ class Agent:
                 task
             ),
             working_dir=working_dir,
-            transcript_path=self.transcript,
+            transcript_path=transcript_path,
         )
 
-        return Success(self.transcript)
+        return Success(transcript_path)
 
 
 def _prompt_for(tasks_root: Path, task: str) -> str:
