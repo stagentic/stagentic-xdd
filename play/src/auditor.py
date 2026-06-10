@@ -29,8 +29,9 @@ class Auditor:
         match _entries_from(_failures_from(evidence_content, working_dir, should)):
             case []:
                 return Success(ScorecardResults(
-                    should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-                    results=[{"characteristic": "alpha", "status": "PASS"}],
+                    should=_entries_from(should),
+                    results=[{"characteristic": row["characteristic"], "status": "PASS"}
+                             for row in should],
                 ))
             case failures:
                 return Failure(failures)

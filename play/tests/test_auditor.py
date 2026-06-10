@@ -90,6 +90,21 @@ class TestAuditor:
                 results=[{"characteristic": "alpha", "status": "PASS"}],
             ))
 
+        def test_evaluate2_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
+            result = Auditor().evaluate2(
+                should=[
+                    {"characteristic": "beta",
+                     "verify": lambda transcript, working_dir: True,
+                     "failure": "beta reason"},
+                ],
+                evidence_source=evidence_source, working_dir=dummy_path,
+            )
+
+            assert result == Success(ScorecardResults(
+                should=[{"characteristic": "beta", "failure": "beta reason"}],
+                results=[{"characteristic": "beta", "status": "PASS"}],
+            ))
+
     class TestFails:
         def test_evaluation_should_fail_with_the_row_characteristic_and_failure(self, evidence_source, dummy_path):
             with pytest.raises(AssertionError) as excinfo:
