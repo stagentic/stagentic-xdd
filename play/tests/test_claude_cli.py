@@ -83,5 +83,5 @@ class TestClaudeCli:
     def test_raises_RuntimeError_when_subprocess_fails(self):
         failing = StubbedSubprocess(returncode=1, stderr="something went wrong")
 
-        with pytest.raises(RuntimeError):
+        with pytest.raises(RuntimeError, match="something went wrong"):
             ClaudeCli(subprocess=failing)("any prompt")
