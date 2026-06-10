@@ -20,7 +20,7 @@ class TestAuditor:
     def dummy_path(self): return Path("/dummy")
 
     class TestSucceeds:
-        def test_evaluate_should_call_verify_with_evidence_text_and_working_dir(self, tmp_path):
+        def test_should_call_verify_with_evidence_text_and_working_dir(self, tmp_path):
             evidence_text = "hello agent"
             transcript = tmp_path / "transcript.md"
             transcript.write_text(evidence_text)
@@ -41,7 +41,7 @@ class TestAuditor:
                 evidence_text, working_dir
             )
 
-        def test_evaluate_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
+        def test_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
             evidence_text = "different transcript"
             transcript = tmp_path / "transcript.md"
             transcript.write_text(evidence_text)
@@ -59,7 +59,7 @@ class TestAuditor:
 
             verify.assert_called_once_with(evidence_text, ANY)
 
-        def test_evaluate_should_pass_working_dir_to_verify(self, evidence_source):
+        def test_should_pass_working_dir_to_verify(self, evidence_source):
             working_dir = Path("/some/other/dir")
             verify = MagicMock(return_value=True)
 
@@ -75,7 +75,7 @@ class TestAuditor:
 
             verify.assert_called_once_with(ANY, working_dir)
 
-        def test_evaluate_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
+        def test_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
                     {"characteristic": "alpha",
@@ -90,7 +90,7 @@ class TestAuditor:
                 results=[{"characteristic": "alpha", "status": "PASS"}],
             ))))
 
-        def test_evaluate_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
+        def test_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
                     {"characteristic": "beta",
@@ -106,7 +106,7 @@ class TestAuditor:
             ))))
 
     class TestFails:
-        def test_evaluate_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
+        def test_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
                     {"characteristic": "first characteristic",
@@ -127,7 +127,7 @@ class TestAuditor:
                 {"characteristic": "third characteristic", "failure": "third failure"},
             ])))
 
-        def test_evaluate_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
+        def test_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
                     {"characteristic": "my characteristic",
@@ -142,7 +142,7 @@ class TestAuditor:
             ])))
 
     class TestErrors:
-        def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
+        def test_should_raise_when_the_scorecard_is_empty(self, dummy_path):
             with pytest.raises(ValueError) as excinfo:
                 Auditor().evaluate(
                     evidence_source=dummy_path,
