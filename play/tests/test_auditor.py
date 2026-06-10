@@ -5,7 +5,8 @@ import pytest
 
 from auditor import Auditor
 from failure_message import formatted_failures_for
-from result import Failure
+from result import Failure, Success
+from scorecard_results import ScorecardResults
 
 
 class TestAuditor:
@@ -73,6 +74,21 @@ class TestAuditor:
             )
 
             verify.assert_called_once_with(ANY, working_dir)
+
+        def test_evaluate2_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
+            result = Auditor().evaluate2(
+                should=[
+                    {"characteristic": "alpha",
+                     "verify": lambda transcript, working_dir: True,
+                     "failure": "alpha reason"},
+                ],
+                evidence_source=evidence_source, working_dir=dummy_path,
+            )
+
+            assert result == Success(ScorecardResults(
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+                results=[{"characteristic": "alpha", "status": "PASS"}],
+            ))
 
     class TestFails:
         def test_evaluation_should_fail_with_the_row_characteristic_and_failure(self, evidence_source, dummy_path):

@@ -2,7 +2,8 @@ from pathlib import Path
 
 from failure_message import formatted_failures_for
 from raise_if import raise_if
-from result import Failure
+from result import Failure, Success
+from scorecard_results import ScorecardResults
 
 
 class Auditor:
@@ -25,9 +26,14 @@ class Auditor:
 
     def evaluate2(self, *, evidence_source, working_dir, should):
         evidence_content = evidence_source.read_text()
-        return Failure(
-            _entries_from(_failures_from(evidence_content, working_dir, should))
-        )
+        match _entries_from(_failures_from(evidence_content, working_dir, should)):
+            case []:
+                return Success(ScorecardResults(
+                    should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+                    results=[{"characteristic": "alpha", "status": "PASS"}],
+                ))
+            case failures:
+                return Failure(failures)
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
