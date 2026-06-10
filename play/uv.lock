@@ -262,22 +262,24 @@ wheels = [
 name = "play"
 version = "0.0.0"
 source = { editable = "." }
+dependencies = [
+    { name = "pyhamcrest" },
+]
 
 [package.dev-dependencies]
 dev = [
     { name = "mutmut" },
-    { name = "pyhamcrest" },
     { name = "pytest" },
     { name = "ruff" },
     { name = "test-utilities" },
 ]
 
 [package.metadata]
+requires-dist = [{ name = "pyhamcrest", specifier = ">=2.1.0" }]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "mutmut", specifier = ">=3.6" },
-    { name = "pyhamcrest", specifier = ">=2.1.0" },
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "ruff", specifier = ">=0.9" },
     { name = "test-utilities", editable = "../test_utilities" },
