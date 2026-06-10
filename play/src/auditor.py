@@ -2,6 +2,7 @@ from pathlib import Path
 
 from failure_message import formatted_failures_for
 from raise_if import raise_if
+from result import Failure
 
 
 class Auditor:
@@ -16,6 +17,9 @@ class Auditor:
             raising_error=AssertionError,
             with_message=_formatted_failures,
         )
+
+    def evaluate2(self, *, evidence_source, working_dir, should):
+        return Failure([{"characteristic": "my characteristic", "failure": "my failure message"}])
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:

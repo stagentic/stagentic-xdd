@@ -5,6 +5,7 @@ import pytest
 
 from auditor import Auditor
 from failure_message import formatted_failures_for
+from result import Failure
 
 
 class TestAuditor:
@@ -109,6 +110,20 @@ class TestAuditor:
             assert str(excinfo.value) == formatted_failures_for([
                 {"characteristic": "first characteristic", "failure": "first failure"},
                 {"characteristic": "third characteristic", "failure": "third failure"},
+            ])
+
+        def test_evaluate2_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
+            result = Auditor().evaluate2(
+                should=[
+                    {"characteristic": "my characteristic",
+                     "verify": lambda transcript, working_dir: False,
+                     "failure": "my failure message"},
+                ],
+                evidence_source=evidence_source, working_dir=dummy_path,
+            )
+
+            assert result == Failure([
+                {"characteristic": "my characteristic", "failure": "my failure message"}
             ])
 
     class TestErrors:
