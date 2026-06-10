@@ -10,10 +10,6 @@ class TestIsASuccess:
         result = Success("anything")
         assert_that(result, is_a_success())
 
-    def test_should_raise_when_the_result_is_a_failure(self):
-        with pytest.raises(AssertionError):
-            assert_that(Failure("the failures"), is_a_success())
-
     def test_should_report_a_success_was_expected_and_show_the_failure(self):
         with pytest.raises(AssertionError) as excinfo:
             assert_that(Failure(["alpha failed"]), is_a_success())
