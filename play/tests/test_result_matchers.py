@@ -10,11 +10,14 @@ class TestIsASuccess:
         result = Success("anything")
         assert_that(result, is_a_success())
 
-    def test_should_report_a_success_was_expected_and_show_the_failure(self):
+    def test_should_report_a_success_was_expected_and_format_the_failures(self):
         with pytest.raises(AssertionError) as excinfo:
-            assert_that(Failure(["alpha failed"]), is_a_success())
+            assert_that(
+                Failure([{"characteristic": "alpha", "failure": "alpha reason"}]),
+                is_a_success(),
+            )
 
         assert_that(str(excinfo.value), equal_to(
             "\nExpected: a Success\n"
-            "     but: was <Failure(value=['alpha failed'])>\n"
+            "     but: - alpha: alpha reason\n"
         ))
