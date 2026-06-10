@@ -8,7 +8,7 @@ class _IsASuccess(BaseMatcher):
         return isinstance(item, Success)
 
     def describe_to(self, description):
-        ... # Avoid not implemented error
+        description.append_text("a Success")
 
 
 def is_a_success():
