@@ -6,9 +6,9 @@ agent-directive: |
 
 > **Portability:** Do not link to files outside this repository. Intra-repo links and external web URLs are fine. Inline context rather than linking out when the content is critical to understanding the ADR.
 
-# 0013 — Play primitives return a Result value rather than state or exceptions
+# 0013 — Agents and inspectors return a Result value rather than state or exceptions
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
@@ -16,10 +16,10 @@ Two concrete needs are settled for today: `Agent.perform` must yield the
 transcript path, and `Critic`/`Auditor`.`evaluate` must yield a pass/fail
 verdict a test can assert on.
 
-The current shapes bake a consumption style into each primitive. The agent
-exposes `self.transcript` — state set lazily inside `perform` — and the
-inspector raises `AssertionError` internally on a failing scorecard. Neither is
-a value the caller receives and decides what to do with.
+A consumption style was baked into the agent and inspectors. The agent
+exposed `self.transcript` — state set lazily inside `perform` — and the
+inspector raised `AssertionError` internally on a failing scorecard. Neither was
+a value the caller received and decided what to do with.
 
 The motivating goal is that `stagentic-play` (which `play` becomes) be usable in
 three styles:
@@ -32,15 +32,15 @@ Returning values is the common substrate for all three. The traditional style
 asserts directly on returns; the Screenplay style captures returns into
 cross-step state (held by an actor or a shared assistant); Gherkin delegates to
 Screenplay. State-retention is a Screenplay concern, so it does not belong in
-the primitive — `self.transcript` was that concern leaking in early.
+the agent or inspector — `self.transcript` was that concern leaking in early.
 
 Python has no built-in `Result`/`Either`; it is a borrowed pattern, available
 only via a library or hand-rolled.
 
 ## Decision
 
-Play's primitives return a value rather than exposing state or raising on a
-domain outcome:
+Play's agents and inspectors return a value rather than exposing state or raising
+on a domain outcome:
 
 - `Agent.perform` returns a `Result` carrying the transcript path.
 - `Critic`/`Auditor`.`evaluate` returns the **same** `Result` type — a "Verdict"
@@ -59,6 +59,12 @@ The `Result` is a single, shared, **hand-rolled, project-owned** type:
 - Not two domain types — one shared shape gives the Screenplay layer a uniform
   thing to capture, and is fully exercised today (the agent pins the `Success`
   side; the critic pins both `Success` and `Failure`).
+- Realised as a **generic union alias** — the variants are `Success[T]` /
+  `Failure[E]` (PEP 695) and `Result` is `type Result[T, E] = Success[T] |
+  Failure[E]`. The type parameter lets a return annotation such as
+  `evaluate(...) -> Result[ScorecardResults, list[dict[str, str]]]` keep
+  `result.value` concretely typed at the call site rather than degrading to
+  `object`.
 
 Its variants are named `Success` and `Failure`, consumed the Python way:
 
@@ -67,7 +73,7 @@ Its variants are named `Success` and `Failure`, consumed the Python way:
   for its mismatch message. No extractor — success- or failure-side `unwrap` — is
   needed, because the matcher already knows which variant it holds.
 - The framework's surface is the two variants, their public fields, and the
-  matchers. The dataclasses support `match`/`case` for free (via
+  matcher. The dataclasses support `match`/`case` for free (via
   `__match_args__`), but consuming with `match` is a *caller* convention, not part
   of the framework; whether to prefer it over `if`/`else` is a style question,
   captured in `conventions/` only if it earns its place.
@@ -83,7 +89,7 @@ domain outcomes* — chiefly a scorecard `Failure`. A failing scorecard is what 
 spec exists to detect, so it is a verdict to assert on, not an error to throw.
 
 Keep the surface minimal — the two variants and their public fields, plus the
-matchers. Defer until a test demands them:
+matcher. Defer until a test demands them:
 
 - extractors — a success-side `unwrap()`, a failure-side `unwrap_err()` /
   `failure()`, and `value_or(default)` / `unwrap_or_else(f)` — none are needed
@@ -123,7 +129,7 @@ verdict (step 2), with the spec migrations between (step 3).
   changes from raising to returning; spec scenarios assert on the verdict.
 - Consistent with ADR
   [0001](0001-start-with-tdab-and-vanilla-pytest.md): this returns values from
-  primitives, it does **not** adopt a BDD/Screenplay DSL. The current scenario
+  agents and inspectors, it does **not** adopt a BDD/Screenplay DSL. The current scenario
   stays a traditional test with asserts; the other two styles are enabled, not
   introduced.
 - The new `Result` module joins `source_paths` while it is developed (ADR
@@ -175,7 +181,7 @@ prior implementation:
   dormant since its Apr 2024 release, no Python 3.13 classifier, 2024 issues
   unanswered — the same public-API lifecycle risk as `result`, less advanced.
 - **Keep raising / keep `self.transcript`** — bakes a consumption style into the
-  primitive and cannot serve traditional, Screenplay, and Gherkin styles from
+  agent or inspector and cannot serve traditional, Screenplay, and Gherkin styles from
   one substrate. Rejected.
 - **Return a bare `Path` / bare failures with no wrapper** — the critic genuinely
   needs a two-arm verdict, and a bare `Path` for the agent would split the surface

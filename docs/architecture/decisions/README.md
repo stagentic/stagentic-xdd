@@ -34,4 +34,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0010](0010-adopt-mutation-testing-with-a-staged-rollout.md) | Adopt mutation testing with a staged rollout | Accepted |
 | [0011](0011-adopt-pyhamcrest-for-declarative-assertions.md) | Adopt PyHamcrest for declarative test assertions | Accepted |
 | [0012](0012-adopt-path-source-packages-for-cross-project-code.md) | Adopt path-source packages for cross-project code | Accepted |
-| [0013](0013-primitives-return-a-result-value.md) | Play primitives return a Result value rather than state or exceptions | Proposed |
+| [0013](0013-agents-and-inspectors-return-a-result-value.md) | Agents and inspectors return a Result value rather than state or exceptions | Accepted |
