@@ -10,8 +10,6 @@ class Auditor:
     # noinspection PyMethodMayBeStatic
     # - to preserve consistency with Critic.evaluate
     def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
-        if not should: raise ValueError("scorecard must not be empty")
-
         result = self.evaluate2(
             evidence_source=evidence_source,
             working_dir=working_dir,
@@ -25,6 +23,8 @@ class Auditor:
             )
 
     def evaluate2(self, *, evidence_source, working_dir, should):
+        if not should: raise ValueError("scorecard must not be empty")
+
         evidence_content = evidence_source.read_text()
         match _entries_from(_failures_from(evidence_content, working_dir, should)):
             case []:
