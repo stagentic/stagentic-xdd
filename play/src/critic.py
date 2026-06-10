@@ -18,8 +18,6 @@ class Critic:
             working_dir: Path,
             should: list[dict[str, str]]
     ):
-        if not should: raise ValueError("scorecard must not be empty")
-
         result = self.evaluate2(
             evidence_source=evidence_source,
             working_dir=working_dir,
@@ -39,6 +37,8 @@ class Critic:
             working_dir: Path,
             should: list[dict[str, str]],
     ) -> Result[ScorecardResults, list[dict[str, str]]]:
+        if not should: raise ValueError("scorecard must not be empty")
+
         agent_response = self._session.run(
             prompt=_prompt_for(
                 evidence_source, working_dir, should
