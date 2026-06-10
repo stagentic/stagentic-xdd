@@ -1,27 +1,12 @@
 from pathlib import Path
 
-from failure_message import formatted_failures_for
-from raise_if import raise_if
 from result import Failure, Success
 from scorecard_results import ScorecardResults
 
 
 class Auditor:
     # noinspection PyMethodMayBeStatic
-    # - to preserve consistency with Critic.evaluate
-    def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
-        result = self.evaluate2(
-            evidence_source=evidence_source,
-            working_dir=working_dir,
-            should=should,
-        )
-        if isinstance(result, Failure):
-            raise_if(
-                result.value,
-                raising_error=AssertionError,
-                with_message=formatted_failures_for,
-            )
-
+    # - to preserve consistency with Critic.evaluate2
     def evaluate2(self, *, evidence_source, working_dir, should):
         if not should: raise ValueError("scorecard must not be empty")
 

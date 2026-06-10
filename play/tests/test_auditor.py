@@ -4,7 +4,6 @@ from unittest.mock import ANY, MagicMock
 import pytest
 
 from auditor import Auditor
-from failure_message import formatted_failures_for
 from result import Failure, Success
 from scorecard_results import ScorecardResults
 
@@ -27,7 +26,7 @@ class TestAuditor:
             working_dir = tmp_path / "workspace"
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(
+            Auditor().evaluate2(
                 evidence_source=transcript,
                 working_dir=working_dir,
                 should=[
@@ -47,7 +46,7 @@ class TestAuditor:
             transcript.write_text(evidence_text)
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(
+            Auditor().evaluate2(
                 evidence_source=transcript,
                 should=[
                     {"characteristic": "captures input",
@@ -63,7 +62,7 @@ class TestAuditor:
             working_dir = Path("/some/other/dir")
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(
+            Auditor().evaluate2(
                 working_dir=working_dir,
                 should=[
                     {"characteristic": "captures input",
@@ -106,39 +105,23 @@ class TestAuditor:
             ))
 
     class TestFails:
-        def test_evaluation_should_fail_with_the_row_characteristic_and_failure(self, evidence_source, dummy_path):
-            with pytest.raises(AssertionError) as excinfo:
-                Auditor().evaluate(
-                    should=[
-                        {"characteristic": "my characteristic",
-                         "verify": lambda transcript, working_dir: False,
-                         "failure": "my failure message"},
-                    ],
-                    evidence_source=evidence_source, working_dir=dummy_path,
-                )
+        def test_evaluate2_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
+            result = Auditor().evaluate2(
+                should=[
+                    {"characteristic": "first characteristic",
+                     "verify": lambda transcript, working_dir: False,
+                     "failure": "first failure"},
+                    {"characteristic": "middle characteristic",
+                     "verify": lambda transcript, working_dir: True,
+                     "failure": "middle failure"},
+                    {"characteristic": "third characteristic",
+                     "verify": lambda transcript, working_dir: False,
+                     "failure": "third failure"},
+                ],
+                evidence_source=evidence_source, working_dir=dummy_path,
+            )
 
-            assert str(excinfo.value) == formatted_failures_for([
-                {"characteristic": "my characteristic", "failure": "my failure message"}
-            ])
-
-        def test_evaluation_should_list_every_failed_row(self, evidence_source, dummy_path):
-            with pytest.raises(AssertionError) as excinfo:
-                Auditor().evaluate(
-                    should=[
-                        {"characteristic": "first characteristic",
-                         "verify": lambda transcript, working_dir: False,
-                         "failure": "first failure"},
-                        {"characteristic": "middle characteristic",
-                         "verify": lambda transcript, working_dir: True,
-                         "failure": "middle failure"},
-                        {"characteristic": "third characteristic",
-                         "verify": lambda transcript, working_dir: False,
-                         "failure": "third failure"},
-                    ],
-                    evidence_source=evidence_source, working_dir=dummy_path,
-                )
-
-            assert str(excinfo.value) == formatted_failures_for([
+            assert result == Failure([
                 {"characteristic": "first characteristic", "failure": "first failure"},
                 {"characteristic": "third characteristic", "failure": "third failure"},
             ])
@@ -160,7 +143,7 @@ class TestAuditor:
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
             with pytest.raises(ValueError) as excinfo:
-                Auditor().evaluate(
+                Auditor().evaluate2(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[],
