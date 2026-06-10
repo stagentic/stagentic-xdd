@@ -2,6 +2,9 @@ import re
 import shutil
 from pathlib import Path
 
+from hamcrest import assert_that
+from result_matchers import is_a_success
+
 TASKS = Path(__file__).parent.parent / "tasks"
 
 
@@ -15,16 +18,19 @@ class TestRedGreenCommit:
             task="1-first-test-for-miles-to-km-converter", working_dir=working_dir
         ).value
 
-        inspector.evaluate(
-            evidence_source=transcript,
-            working_dir=working_dir,
-            should=_have(task, working_dir, matching=[
-                "Production module exists at src/conversion.py with content",
-                "Workspace state matches the expected end-state (src, tests, transcript)",
-                "Transcript shows the agent ran pytest",
-                "Transcript shows a FAILED pytest result",
-                "First test fails for the right reason",
-            ]),
+        assert_that(
+            inspector.evaluate2(
+                evidence_source=transcript,
+                working_dir=working_dir,
+                should=_have(task, working_dir, matching=[
+                    "Production module exists at src/conversion.py with content",
+                    "Workspace state matches the expected end-state (src, tests, transcript)",
+                    "Transcript shows the agent ran pytest",
+                    "Transcript shows a FAILED pytest result",
+                    "First test fails for the right reason",
+                ]),
+            ),
+            is_a_success(),
         )
 
 
