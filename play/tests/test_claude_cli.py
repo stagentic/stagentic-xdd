@@ -1,6 +1,8 @@
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
+from hamcrest import has_item, has_items, is_not
+from matchers import matching
 from test_doubles.stubbed_subprocess import StubbedSubprocess
 
 from claude_cli import ClaudeCli
@@ -49,24 +51,28 @@ class TestClaudeCli:
         def test_should_include_the_prompt(self, subprocess_that_succeeds):
             ClaudeCli(subprocess=subprocess_that_succeeds)("another prompt")
 
-            cmd = subprocess_that_succeeds.call_args.args[0]
-            assert "another prompt" in cmd
+            subprocess_that_succeeds.assert_called_once_with(
+                matching(has_item("another prompt")),
+                cwd=ANY, capture_output=ANY, text=ANY,
+            )
 
         def test_should_include_the_session_id(self, subprocess_that_succeeds):
             ClaudeCli(subprocess=subprocess_that_succeeds)(
                 "any prompt", session_id="xyz-789"
             )
 
-            cmd = subprocess_that_succeeds.call_args.args[0]
-            assert "--session-id" in cmd
-            assert "xyz-789" in cmd
+            subprocess_that_succeeds.assert_called_once_with(
+                matching(has_items("--session-id", "xyz-789")),
+                cwd=ANY, capture_output=ANY, text=ANY,
+            )
 
         def test_should_omit_the_session_id_when_not_provided(self, subprocess_that_succeeds):
             ClaudeCli(subprocess=subprocess_that_succeeds)("any prompt")
 
-            subprocess_that_succeeds.assert_called_once()
-            cmd = subprocess_that_succeeds.call_args.args[0]
-            assert "--session-id" not in cmd
+            subprocess_that_succeeds.assert_called_once_with(
+                matching(is_not(has_item("--session-id"))),
+                cwd=ANY, capture_output=ANY, text=ANY,
+            )
 
         def test_should_pass_the_workspace_as_add_dir_and_cwd(self, tmp_path, subprocess_that_succeeds):
             ClaudeCli(subprocess=subprocess_that_succeeds)(
@@ -74,19 +80,20 @@ class TestClaudeCli:
                 workspace=tmp_path
             )
 
-            cmd = subprocess_that_succeeds.call_args.args[0]
-            assert "--add-dir" in cmd
-            assert str(tmp_path) in cmd
-            assert subprocess_that_succeeds.call_args.kwargs["cwd"] == tmp_path
+            subprocess_that_succeeds.assert_called_once_with(
+                matching(has_items("--add-dir", str(tmp_path))),
+                cwd=tmp_path,
+                capture_output=ANY, text=ANY,
+            )
 
         def test_should_omit_the_workspace_when_not_provided(self, subprocess_that_succeeds):
             ClaudeCli(subprocess=subprocess_that_succeeds)("any prompt")
 
-            subprocess_that_succeeds.assert_called_once()
-            cmd = subprocess_that_succeeds.call_args.args[0]
-            kwargs = subprocess_that_succeeds.call_args.kwargs
-            assert "--add-dir" not in cmd
-            assert kwargs["cwd"] is None
+            subprocess_that_succeeds.assert_called_once_with(
+                matching(is_not(has_item("--add-dir"))),
+                cwd=None,
+                capture_output=ANY, text=ANY,
+            )
 
     class TestErrors:
         def test_should_raise_RuntimeError_when_subprocess_fails(self):
