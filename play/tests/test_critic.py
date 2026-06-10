@@ -2,13 +2,12 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
-from hamcrest import all_of, assert_that, contains_string, equal_to, instance_of
+from hamcrest import all_of, assert_that, contains_string, equal_to
 from matchers import matching
 
 from claude_session import ClaudeSession
 from critic import Critic
 from result import Failure, Success
-from result_matchers import is_a_success
 from scorecard_results import ScorecardResults
 
 
@@ -48,18 +47,6 @@ class TestCritic:
                 working_dir=working_dir,
                 transcript_path=working_dir / "critique.md",
             )
-            assert_that(result, instance_of(Failure))
-
-        def test_evaluate_should_return_failure_with_the_failed_rows(self, evidence_source, working_dir):
-            session_that_fails = MagicMock(spec=ClaudeSession)
-            session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
-
-            result = Critic(session=session_that_fails).evaluate(
-                evidence_source=evidence_source,
-                working_dir=working_dir,
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-            )
-
             assert_that(result, equal_to(Failure(
                 [{"characteristic": "alpha", "failure": "alpha reason"}])
             ))
@@ -85,24 +72,6 @@ class TestCritic:
             ))
 
     class TestPasses:
-        def test_evaluation_should_return_a_success_when_all_characteristics_pass(self, evidence_source, working_dir):
-            session_that_passes = MagicMock(spec=ClaudeSession)
-            session_that_passes.run.return_value = (
-                '[{"characteristic": "first", "status": "PASS"},'
-                ' {"characteristic": "second", "status": "PASS"}]'
-            )
-
-            result = Critic(session=session_that_passes).evaluate(
-                evidence_source=evidence_source,
-                working_dir=working_dir,
-                should=[
-                    {"characteristic": "first", "failure": "should never see this"},
-                    {"characteristic": "second", "failure": "neither this"},
-                ],
-            )
-
-            assert_that(result, is_a_success())
-
         def test_evaluate_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, working_dir):
             session = MagicMock(spec=ClaudeSession)
             session.run.return_value = '[{"characteristic": "alpha", "status": "PASS"}]'
