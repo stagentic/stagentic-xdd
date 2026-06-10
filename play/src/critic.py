@@ -10,7 +10,7 @@ class Critic:
     def __init__(self, *, session: ClaudeSession):
         self._session = session
 
-    def evaluate2(
+    def evaluate(
             self, *,
             evidence_source: Path,
             working_dir: Path,

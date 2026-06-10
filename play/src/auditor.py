@@ -6,8 +6,8 @@ from scorecard_results import ScorecardResults
 
 class Auditor:
     # noinspection PyMethodMayBeStatic
-    # - to preserve consistency with Critic.evaluate2
-    def evaluate2(self, *, evidence_source, working_dir, should):
+    # - to preserve consistency with Critic.evaluate
+    def evaluate(self, *, evidence_source, working_dir, should):
         if not should: raise ValueError("scorecard must not be empty")
 
         evidence_content = evidence_source.read_text()

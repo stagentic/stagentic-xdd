@@ -26,7 +26,7 @@ class TestAuditor:
             working_dir = tmp_path / "workspace"
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate2(
+            Auditor().evaluate(
                 evidence_source=transcript,
                 working_dir=working_dir,
                 should=[
@@ -46,7 +46,7 @@ class TestAuditor:
             transcript.write_text(evidence_text)
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate2(
+            Auditor().evaluate(
                 evidence_source=transcript,
                 should=[
                     {"characteristic": "captures input",
@@ -62,7 +62,7 @@ class TestAuditor:
             working_dir = Path("/some/other/dir")
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate2(
+            Auditor().evaluate(
                 working_dir=working_dir,
                 should=[
                     {"characteristic": "captures input",
@@ -74,8 +74,8 @@ class TestAuditor:
 
             verify.assert_called_once_with(ANY, working_dir)
 
-        def test_evaluate2_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
-            result = Auditor().evaluate2(
+        def test_evaluate_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
                 should=[
                     {"characteristic": "alpha",
                      "verify": lambda transcript, working_dir: True,
@@ -89,8 +89,8 @@ class TestAuditor:
                 results=[{"characteristic": "alpha", "status": "PASS"}],
             ))
 
-        def test_evaluate2_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
-            result = Auditor().evaluate2(
+        def test_evaluate_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
                 should=[
                     {"characteristic": "beta",
                      "verify": lambda transcript, working_dir: True,
@@ -105,8 +105,8 @@ class TestAuditor:
             ))
 
     class TestFails:
-        def test_evaluate2_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
-            result = Auditor().evaluate2(
+        def test_evaluate_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
                 should=[
                     {"characteristic": "first characteristic",
                      "verify": lambda transcript, working_dir: False,
@@ -126,8 +126,8 @@ class TestAuditor:
                 {"characteristic": "third characteristic", "failure": "third failure"},
             ])
 
-        def test_evaluate2_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
-            result = Auditor().evaluate2(
+        def test_evaluate_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
                 should=[
                     {"characteristic": "my characteristic",
                      "verify": lambda transcript, working_dir: False,
@@ -143,7 +143,7 @@ class TestAuditor:
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
             with pytest.raises(ValueError) as excinfo:
-                Auditor().evaluate2(
+                Auditor().evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[],

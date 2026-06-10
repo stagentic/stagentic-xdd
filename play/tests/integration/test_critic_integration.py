@@ -37,7 +37,7 @@ class TestCriticIntegration:
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
-        result = Critic(session=session).evaluate2(
+        result = Critic(session=session).evaluate(
             evidence_source=transcript,
             working_dir=tmp_path,
             should=[
@@ -58,7 +58,7 @@ class TestCriticIntegration:
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
 
-        result = Critic(session=session).evaluate2(
+        result = Critic(session=session).evaluate(
             evidence_source=transcript,
             working_dir=tmp_path,
             should=[

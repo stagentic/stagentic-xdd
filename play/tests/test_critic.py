@@ -33,7 +33,7 @@ class TestCritic:
             session_that_fails = MagicMock(spec=ClaudeSession)
             session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
 
-            result = Critic(session=session_that_fails).evaluate2(
+            result = Critic(session=session_that_fails).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
@@ -50,11 +50,11 @@ class TestCritic:
             )
             assert_that(result, instance_of(Failure))
 
-        def test_evaluate2_should_return_failure_with_the_failed_rows(self, evidence_source, working_dir):
+        def test_evaluate_should_return_failure_with_the_failed_rows(self, evidence_source, working_dir):
             session_that_fails = MagicMock(spec=ClaudeSession)
             session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
 
-            result = Critic(session=session_that_fails).evaluate2(
+            result = Critic(session=session_that_fails).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
@@ -64,14 +64,14 @@ class TestCritic:
                 [{"characteristic": "alpha", "failure": "alpha reason"}])
             ))
 
-        def test_evaluate2_should_return_only_the_failed_rows(self, evidence_source, working_dir):
+        def test_evaluate_should_return_only_the_failed_rows(self, evidence_source, working_dir):
             session = MagicMock(spec=ClaudeSession)
             session.run.return_value = (
                 '[{"characteristic": "alpha", "status": "PASS"},'
                 ' {"characteristic": "beta", "status": "FAIL"}]'
             )
 
-            result = Critic(session=session).evaluate2(
+            result = Critic(session=session).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[
@@ -92,7 +92,7 @@ class TestCritic:
                 ' {"characteristic": "second", "status": "PASS"}]'
             )
 
-            result = Critic(session=session_that_passes).evaluate2(
+            result = Critic(session=session_that_passes).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[
@@ -103,11 +103,11 @@ class TestCritic:
 
             assert_that(result, is_a_success())
 
-        def test_evaluate2_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, working_dir):
+        def test_evaluate_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, working_dir):
             session = MagicMock(spec=ClaudeSession)
             session.run.return_value = '[{"characteristic": "alpha", "status": "PASS"}]'
 
-            result = Critic(session=session).evaluate2(
+            result = Critic(session=session).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir,
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
@@ -122,7 +122,7 @@ class TestCritic:
         def test_evaluation_should_include_distinct_evidence_source_in_prompt(self, working_dir, one_characteristic_scorecard, session_that_passes):
             evidence_source = Path("/workspace/other-run/transcript.md")
 
-            Critic(session=session_that_passes).evaluate2(
+            Critic(session=session_that_passes).evaluate(
                 evidence_source=evidence_source,
                 working_dir=working_dir, should=one_characteristic_scorecard,
             )
@@ -137,7 +137,7 @@ class TestCritic:
         def test_evaluation_should_embed_working_dir_in_prompt(self, evidence_source, one_characteristic_scorecard, session_that_passes):
             working_dir = Path("/workspace/embedded-in-prompt")
 
-            Critic(session=session_that_passes).evaluate2(
+            Critic(session=session_that_passes).evaluate(
                 working_dir=working_dir,
                 evidence_source=evidence_source, should=one_characteristic_scorecard,
             )
@@ -156,7 +156,7 @@ class TestCritic:
                 ' {"characteristic": "second thing", "status": "PASS"}]'
             )
 
-            Critic(session=session_that_passes).evaluate2(
+            Critic(session=session_that_passes).evaluate(
                 should=[
                     {"characteristic": "first thing", "failure": "n/a"},
                     {"characteristic": "second thing", "failure": "n/a"},
@@ -175,7 +175,7 @@ class TestCritic:
         def test_evaluation_should_pass_working_dir_to_session(self, evidence_source, one_characteristic_scorecard, session_that_passes):
             working_dir = Path("/workspace/passed-to-session")
 
-            Critic(session=session_that_passes).evaluate2(
+            Critic(session=session_that_passes).evaluate(
                 working_dir=working_dir,
                 evidence_source=evidence_source, should=one_characteristic_scorecard,
             )
@@ -188,7 +188,7 @@ class TestCritic:
         def test_evaluation_should_derive_critique_path_from_working_dir(self, evidence_source, one_characteristic_scorecard, session_that_passes):
             working_dir = Path("/workspace/derives-critique-path")
 
-            Critic(session=session_that_passes).evaluate2(
+            Critic(session=session_that_passes).evaluate(
                 working_dir=working_dir,
                 evidence_source=evidence_source, should=one_characteristic_scorecard,
             )
@@ -201,7 +201,7 @@ class TestCritic:
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, evidence_source, working_dir, dummy):
             with pytest.raises(ValueError) as excinfo:
-                Critic(session=dummy).evaluate2(
+                Critic(session=dummy).evaluate(
                     should=[],
                     evidence_source=evidence_source, working_dir=working_dir,
                 )

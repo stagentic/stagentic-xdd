@@ -19,7 +19,7 @@ class TestRedGreenCommit:
         ).value
 
         assert_that(
-            inspector.evaluate2(
+            inspector.evaluate(
                 evidence_source=transcript,
                 working_dir=working_dir,
                 should=_have(task, working_dir, matching=[
