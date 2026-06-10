@@ -11,23 +11,27 @@ class Auditor:
     def evaluate(self, *, evidence_source: Path, working_dir: Path, should: list[dict]):
         if not should: raise ValueError("scorecard must not be empty")
 
-        evidence_content = evidence_source.read_text()
-        raise_if(
-            _failures_from(evidence_content, working_dir, should),
-            raising_error=AssertionError,
-            with_message=_formatted_failures,
+        result = self.evaluate2(
+            evidence_source=evidence_source,
+            working_dir=working_dir,
+            should=should,
         )
+        if isinstance(result, Failure):
+            raise_if(
+                result.value,
+                raising_error=AssertionError,
+                with_message=formatted_failures_for,
+            )
 
     def evaluate2(self, *, evidence_source, working_dir, should):
-        return Failure([{"characteristic": "my characteristic", "failure": "my failure message"}])
+        evidence_content = evidence_source.read_text()
+        return Failure(
+            _entries_from(_failures_from(evidence_content, working_dir, should))
+        )
 
 
 def _failures_from(content: str, working_dir: Path, should: list[dict]) -> list[dict]:
     return [row for row in should if not row["verify"](content, working_dir)]
-
-
-def _formatted_failures(failures: list[dict]) -> str:
-    return formatted_failures_for(_entries_from(failures))
 
 
 def _entries_from(failures: list[dict]) -> list[dict[str, str]]:
