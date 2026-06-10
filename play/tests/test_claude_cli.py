@@ -9,7 +9,11 @@ from claude_cli import ClaudeCli
 class TestClaudeCli:
     class TestSucceeds:
         def test_should_submit_the_full_command_and_return_stdout(self, tmp_path):
-            subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0, stdout="run complete\n"))
+            subprocess = MagicMock(
+                side_effect=StubbedSubprocess(
+                    returncode=0, stdout="run complete\n"
+                )
+            )
 
             result = ClaudeCli(subprocess=subprocess)(
                 "evaluate this",
