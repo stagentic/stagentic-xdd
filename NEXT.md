@@ -73,6 +73,13 @@ computation are in `play/src/`. What remains on the harness side is wiring
 `spec/conftest.py` to expose `--agent=real` — this was built and validated
 locally but reverted pending the scenario passing.
 
+A first draft of the scenario's task,
+`spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md`, already exists in
+the working tree but is deliberately left **untracked**. It lands with the
+commit below (alongside `spec/conftest.py` and
+`0-placeholder/scene/.claude/settings.json`) only once the improvement plan
+(§1) is complete and the scenario passes — not before.
+
 A real run (before the revert) confirmed all five scorecard checks fail —
 the agent lacks the guidance a skill would provide.
 
