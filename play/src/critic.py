@@ -1,8 +1,6 @@
 from pathlib import Path
 
 from claude_session import ClaudeSession
-from failure_message import formatted_failures_for
-from raise_if import raise_if
 from result import Failure, Result, Success
 from scorecard_json_extraction import candidate_scorecard_from
 from scorecard_results import ScorecardResults
@@ -11,25 +9,6 @@ from scorecard_results import ScorecardResults
 class Critic:
     def __init__(self, *, session: ClaudeSession):
         self._session = session
-
-    def evaluate(
-            self, *,
-            evidence_source: Path,
-            working_dir: Path,
-            should: list[dict[str, str]]
-    ):
-        result = self.evaluate2(
-            evidence_source=evidence_source,
-            working_dir=working_dir,
-            should=should,
-        )
-
-        if isinstance(result, Failure):
-            raise_if(
-                result.value,
-                raising_error=AssertionError,
-                with_message=formatted_failures_for,
-            )
 
     def evaluate2(
             self, *,

@@ -1,14 +1,13 @@
-from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
 import pytest
-from hamcrest import all_of, assert_that
-from matchers import contains_any as contain_any
-from matchers import contains_strings, does_not
+from hamcrest import all_of, assert_that, has_item
+from matchers import does_not
 
 from claude_cli import ClaudeCli
 from claude_session import ClaudeSession
 from critic import Critic
+from result_matchers import is_a_success
 from transcriber import Transcriber
 
 _TRANSCRIPT_PYTEST_RAN_AND_PASSED = """\
@@ -38,41 +37,36 @@ class TestCriticIntegration:
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_FAILED)
 
-        with pytest.raises(AssertionError) as excinfo:
-            Critic(session=session).evaluate(
-                evidence_source=transcript,
-                working_dir=tmp_path,
-                should=[
-                    {"characteristic": "Transcript shows the agent ran pytest",
-                     "failure": "No pytest invocation found in the transcript"},
-                    {"characteristic": "Transcript shows a PASS pytest result",
-                     "failure": "No PASS result found in the transcript"},
-                ],
-            )
+        result = Critic(session=session).evaluate2(
+            evidence_source=transcript,
+            working_dir=tmp_path,
+            should=[
+                {"characteristic": "Transcript shows the agent ran pytest",
+                 "failure": "No pytest invocation found in the transcript"},
+                {"characteristic": "Transcript shows a PASS pytest result",
+                 "failure": "No PASS result found in the transcript"},
+            ],
+        )
 
-        assert_that(str(excinfo.value), all_of(
-            contains_strings(
-                "Transcript shows a PASS pytest result",
-                "No PASS result found in the transcript",
-            ),
-            does_not(contain_any(
-                "Transcript shows the agent ran pytest",
-                "No pytest invocation found in the transcript",
-            )),
+        failed_characteristics = [row["characteristic"] for row in result.value]
+        assert_that(failed_characteristics, all_of(
+            has_item("Transcript shows a PASS pytest result"),
+            does_not(has_item("Transcript shows the agent ran pytest")),
         ))
 
     def test_evaluation_should_pass_when_all_characteristics_are_met(self, session, tmp_path):
         transcript = tmp_path / "transcript.md"
         transcript.write_text(_TRANSCRIPT_PYTEST_RAN_AND_PASSED)
 
-        with does_not_raise():
-            Critic(session=session).evaluate(
-                evidence_source=transcript,
-                working_dir=tmp_path,
-                should=[
-                    {"characteristic": "Transcript shows the agent ran pytest",
-                     "failure": "No pytest invocation found in the transcript"},
-                    {"characteristic": "Transcript shows a PASS pytest result",
-                     "failure": "No FAILED result found in the transcript"},
-                ],
-            )
+        result = Critic(session=session).evaluate2(
+            evidence_source=transcript,
+            working_dir=tmp_path,
+            should=[
+                {"characteristic": "Transcript shows the agent ran pytest",
+                 "failure": "No pytest invocation found in the transcript"},
+                {"characteristic": "Transcript shows a PASS pytest result",
+                 "failure": "No FAILED result found in the transcript"},
+            ],
+        )
+
+        assert_that(result, is_a_success())
