@@ -113,9 +113,11 @@ class TestAuditor:
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
-            with pytest.raises(ValueError, match="scorecard must not be empty"):
+            with pytest.raises(ValueError) as excinfo:
                 Auditor().evaluate(
                     evidence_source=dummy_path,
                     working_dir=dummy_path,
                     should=[],
                 )
+
+            assert str(excinfo.value) == "scorecard must not be empty"
