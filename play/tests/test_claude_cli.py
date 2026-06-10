@@ -8,10 +8,10 @@ from claude_cli import ClaudeCli
 
 class TestClaudeCli:
     class TestSucceeds:
-        def test_should_submit_the_full_command(self, tmp_path):
-            subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0))
+        def test_should_submit_the_full_command_and_return_stdout(self, tmp_path):
+            subprocess = MagicMock(side_effect=StubbedSubprocess(returncode=0, stdout="run complete\n"))
 
-            ClaudeCli(subprocess=subprocess)(
+            result = ClaudeCli(subprocess=subprocess)(
                 "evaluate this",
                 workspace=tmp_path,
                 session_id="abc-123"
@@ -26,6 +26,7 @@ class TestClaudeCli:
                 capture_output=True,
                 text=True,
             )
+            assert result == "run complete\n"
 
         def test_should_return_stdout(self):
             successful = StubbedSubprocess(returncode=0, stdout="PASS\n")
