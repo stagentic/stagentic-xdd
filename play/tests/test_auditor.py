@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
+from hamcrest import assert_that, equal_to
 
 from auditor import Auditor
 from result import Failure, Success
@@ -84,10 +85,10 @@ class TestAuditor:
                 evidence_source=evidence_source, working_dir=dummy_path,
             )
 
-            assert result == Success(ScorecardResults(
+            assert_that(result, equal_to(Success(ScorecardResults(
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
                 results=[{"characteristic": "alpha", "status": "PASS"}],
-            ))
+            ))))
 
         def test_evaluate_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
@@ -99,10 +100,10 @@ class TestAuditor:
                 evidence_source=evidence_source, working_dir=dummy_path,
             )
 
-            assert result == Success(ScorecardResults(
+            assert_that(result, equal_to(Success(ScorecardResults(
                 should=[{"characteristic": "beta", "failure": "beta reason"}],
                 results=[{"characteristic": "beta", "status": "PASS"}],
-            ))
+            ))))
 
     class TestFails:
         def test_evaluate_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path):
@@ -121,10 +122,10 @@ class TestAuditor:
                 evidence_source=evidence_source, working_dir=dummy_path,
             )
 
-            assert result == Failure([
+            assert_that(result, equal_to(Failure([
                 {"characteristic": "first characteristic", "failure": "first failure"},
                 {"characteristic": "third characteristic", "failure": "third failure"},
-            ])
+            ])))
 
         def test_evaluate_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
@@ -136,9 +137,9 @@ class TestAuditor:
                 evidence_source=evidence_source, working_dir=dummy_path,
             )
 
-            assert result == Failure([
+            assert_that(result, equal_to(Failure([
                 {"characteristic": "my characteristic", "failure": "my failure message"}
-            ])
+            ])))
 
     class TestErrors:
         def test_evaluation_should_raise_when_the_scorecard_is_empty(self, dummy_path):
@@ -149,4 +150,4 @@ class TestAuditor:
                     should=[],
                 )
 
-            assert str(excinfo.value) == "scorecard must not be empty"
+            assert_that(str(excinfo.value), equal_to("scorecard must not be empty"))
