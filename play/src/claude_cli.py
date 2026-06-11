@@ -1,6 +1,7 @@
 import subprocess as _subprocess_module
 from collections.abc import Callable
 from pathlib import Path
+from subprocess import CompletedProcess
 
 
 class ClaudeCli:
@@ -18,7 +19,10 @@ class ClaudeCli:
         return result.stdout
 
 
-def _submit_to(subprocess, prompt, workspace, session_id):
+def _submit_to(
+        subprocess: Callable, prompt: str,
+        workspace: Path | None, session_id: str | None,
+) -> CompletedProcess:
     return subprocess(
         _command(prompt, workspace, session_id),
         cwd=workspace,
@@ -27,11 +31,11 @@ def _submit_to(subprocess, prompt, workspace, session_id):
     )
 
 
-def _is_not_successful(result) -> bool:
+def _is_not_successful(result: CompletedProcess) -> bool:
     return result.returncode != 0
 
 
-def _command(prompt, workspace, session_id):
+def _command(prompt: str, workspace: Path | None, session_id: str | None) -> list[str]:
     cmd = ["claude", "--permission-mode", "acceptEdits"]
     if session_id is not None:
         cmd += ["--session-id", session_id]
