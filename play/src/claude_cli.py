@@ -41,10 +41,6 @@ def _submit_to(
     )
 
 
-def _is_not_successful(result: subprocess.CompletedProcess) -> bool:
-    return result.returncode != 0
-
-
 def _command(
         prompt: str,
         workspace: Path,
@@ -55,3 +51,7 @@ def _command(
     cmd += ["--session-id", session_id]
     cmd += ["--add-dir", str(workspace)]
     return cmd
+
+
+def _is_not_successful(result: subprocess.CompletedProcess) -> bool:
+    return result.returncode != 0
