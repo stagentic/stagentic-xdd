@@ -1,7 +1,7 @@
 from unittest.mock import ANY, MagicMock
 
 import pytest
-from hamcrest import has_item, has_items, is_not
+from hamcrest import has_item, has_items
 from matchers import matching
 from test_doubles.stubbed_subprocess import StubbedSubprocess
 
@@ -39,7 +39,11 @@ class TestClaudeCli:
                 returncode=0, stdout="PASS\n"
             )
 
-            result = ClaudeCli(runner=successful)("any prompt", workspace=tmp_path)
+            result = ClaudeCli(runner=successful)(
+                "any prompt",
+                workspace=tmp_path,
+                session_id="any session id"
+            )
 
             assert result == "PASS\n"
 
@@ -50,7 +54,9 @@ class TestClaudeCli:
 
         def test_should_include_the_prompt(self, tmp_path, subprocess_that_succeeds):
             ClaudeCli(runner=subprocess_that_succeeds)(
-                "another prompt", workspace=tmp_path
+                "another prompt",
+                workspace=tmp_path,
+                session_id="any session id"
             )
 
             subprocess_that_succeeds.assert_called_once_with(
@@ -68,18 +74,19 @@ class TestClaudeCli:
                 cwd=ANY, capture_output=ANY, text=ANY,
             )
 
-        def test_should_omit_the_session_id_when_not_provided(self, tmp_path, subprocess_that_succeeds):
-            ClaudeCli(runner=subprocess_that_succeeds)("any prompt", workspace=tmp_path)
-
-            subprocess_that_succeeds.assert_called_once_with(
-                matching(is_not(has_item("--session-id"))),
-                cwd=ANY, capture_output=ANY, text=ANY,
-            )
+        # noinspection PyArgumentList
+        # - because we're protecting against changes that make it optional.
+        def test_should_require_a_session_id(self, tmp_path, subprocess_that_succeeds):
+            with pytest.raises(TypeError):
+                ClaudeCli(runner=subprocess_that_succeeds)(
+                    "any prompt", workspace=tmp_path
+                )
 
         def test_should_pass_the_workspace_as_add_dir_and_cwd(self, tmp_path, subprocess_that_succeeds):
             ClaudeCli(runner=subprocess_that_succeeds)(
                 "any prompt",
-                workspace=tmp_path
+                workspace=tmp_path,
+                session_id="any session id"
             )
 
             subprocess_that_succeeds.assert_called_once_with(
@@ -88,6 +95,8 @@ class TestClaudeCli:
                 capture_output=ANY, text=ANY,
             )
 
+        # noinspection PyArgumentList
+        # - because we're protecting against changes that make it optional.
         def test_should_require_a_workspace(self, subprocess_that_succeeds):
             with pytest.raises(TypeError):
                 ClaudeCli(runner=subprocess_that_succeeds)(
@@ -101,4 +110,6 @@ class TestClaudeCli:
             )
 
             with pytest.raises(RuntimeError, match="something went wrong"):
-                ClaudeCli(runner=failing)("any prompt", workspace=tmp_path)
+                ClaudeCli(runner=failing)(
+                    "any prompt", workspace=tmp_path, session_id="any session id"
+                )

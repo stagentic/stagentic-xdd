@@ -10,7 +10,7 @@ class ClaudeCli:
     def __call__(
             self, prompt: str, *,
             workspace: Path,
-            session_id: str | None = None,
+            session_id: str,
     ) -> str:
         result = _submit_to(self._runner, prompt, workspace, session_id)
         if _is_not_successful(result):
@@ -22,7 +22,7 @@ def _submit_to(
         runner: Callable,
         prompt: str,
         workspace: Path,
-        session_id: str | None,
+        session_id: str,
 ) -> subprocess.CompletedProcess:
     return runner(
         _command(prompt, workspace, session_id),
