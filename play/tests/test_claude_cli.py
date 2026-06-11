@@ -16,15 +16,16 @@ class TestClaudeCli:
                     returncode=0, stdout="run complete\n"
                 )
             )
+            prompt = "evaluate this"
 
             result = ClaudeCli(runner=subprocess)(
-                "evaluate this",
+                prompt,
                 workspace=tmp_path,
                 session_id="abc-123"
             )
 
             subprocess.assert_called_once_with(
-                ["claude", "-p", "evaluate this",
+                ["claude", "-p", prompt,
                  "--permission-mode", "acceptEdits",
                  "--session-id", "abc-123",
                  "--add-dir", str(tmp_path)],
@@ -53,14 +54,16 @@ class TestClaudeCli:
             return MagicMock(side_effect=StubbedSubprocess(returncode=0))
 
         def test_should_include_the_prompt(self, tmp_path, subprocess_that_succeeds):
+            prompt = "another prompt"
+
             ClaudeCli(runner=subprocess_that_succeeds)(
-                "another prompt",
+                prompt,
                 workspace=tmp_path,
                 session_id="any session id"
             )
 
             subprocess_that_succeeds.assert_called_once_with(
-                matching(has_item("another prompt")),
+                matching(has_item(prompt)),
                 cwd=ANY, capture_output=ANY, text=ANY,
             )
 
