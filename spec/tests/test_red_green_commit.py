@@ -11,30 +11,39 @@ TASKS = Path(__file__).parent.parent / "tasks"
 class TestRedGreenCommit:
     def test_write_a_failing_test(self, tmp_path, inspector, agent):
         working_dir = tmp_path / "miles-to-km"
-        shutil.copytree(TASKS / "0-placeholder" / "scene", working_dir)
-        task = TASKS / "1-first-test-for-miles-to-km-converter"
+        _opening_scene_for(Path("0-placeholder") / "scene", working_dir)
+        task_name = "1-first-test-for-miles-to-km-converter"
 
         transcript = agent.perform(
-            task="1-first-test-for-miles-to-km-converter", working_dir=working_dir
+            task=task_name, working_dir=working_dir
         ).value
 
         assert_that(
             inspector.evaluate(
                 evidence_source=transcript,
                 working_dir=working_dir,
-                should=_have(task, working_dir, matching=[
-                    "Production module exists at src/conversion.py with content",
-                    "Workspace state matches the expected end-state (src, tests, transcript)",
-                    "Transcript shows the agent ran pytest",
-                    "Transcript shows a FAILED pytest result",
-                    "First test fails for the right reason",
-                ]),
+                should=_have(
+                    task_name,
+                    working_dir,
+                    matching=[
+                        "Production module exists at src/conversion.py with content",
+                        "Workspace state matches the expected end-state (src, tests, transcript)",
+                        "Transcript shows the agent ran pytest",
+                        "Transcript shows a FAILED pytest result",
+                        "First test fails for the right reason",
+                    ],
+                ),
             ),
             is_a_success(),
         )
 
 
-def _have(task, working_dir, *, matching):
+def _opening_scene_for(scene: Path, working_dir: Path) -> None:
+    shutil.copytree(TASKS / scene, working_dir)
+
+
+def _have(task_name, working_dir, *, matching):
+    task_path = TASKS / task_name
     table = {
         "Production module exists at src/conversion.py with content": {
             "verify": lambda transcript, working_dir: (
@@ -44,7 +53,7 @@ def _have(task, working_dir, *, matching):
             "failure": "src/conversion.py is missing or empty",
         },
         "Workspace state matches the expected end-state (src, tests, transcript)": {
-            "verify": lambda transcript, working_dir: not _tree_diff(task / "scene", working_dir),
+            "verify": lambda transcript, working_dir: not _tree_diff(task_path / "scene", working_dir),
             "failure": "workspace contents do not match the expected end-state",
         },
         "Transcript shows the agent ran pytest": {
