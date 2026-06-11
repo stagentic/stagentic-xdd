@@ -55,7 +55,7 @@ don't bury NEXT.md.
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
 - [ ] `claude_jsonl_path.py` (and `tests/test_claude_jsonl_path.py`)
 - [ ] `failure_message.py` (and `tests/test_failure_message.py`)
-- [ ] `raise_if.py` (and `tests/test_raise_if.py`)
+- [ ] `raise_when.py` (and `tests/test_raise_when.py`)
 - [ ] `scorecard_json_extraction.py` (and `tests/test_scorecard_json_extraction.py`)
 - [ ] `inspector.py` — No test yet
 
