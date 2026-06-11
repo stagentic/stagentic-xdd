@@ -1,6 +1,7 @@
 import uuid
 
 import pytest
+from hamcrest import assert_that, contains_string
 
 from claude_cli import ClaudeCli
 
@@ -13,4 +14,4 @@ class TestClaudeCliContract:
             workspace=tmp_path,
             session_id=str(uuid.uuid4()),
         )
-        assert "PASS" in result
+        assert_that(result, contains_string("PASS"))
