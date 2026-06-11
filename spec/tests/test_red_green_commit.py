@@ -41,6 +41,8 @@ def _set_opening_scene_for(task_name: str, working_dir: Path) -> None:
     shutil.copytree(TASKS / task_name / "scene", working_dir)
 
 
+# FULL SCORECARD MAPPING
+# Including optional programmatic Auditor lambdas (ignored by agentic Critic)
 def _have(task_name, *, matching):
     task_path = TASKS / task_name
     table = {
