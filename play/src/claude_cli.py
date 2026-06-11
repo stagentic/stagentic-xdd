@@ -1,12 +1,17 @@
 import subprocess as _subprocess_module
 from collections.abc import Callable
+from pathlib import Path
 
 
 class ClaudeCli:
     def __init__(self, subprocess: Callable = _subprocess_module.run):
         self._subprocess = subprocess
 
-    def __call__(self, prompt, *, workspace=None, session_id=None):
+    def __call__(
+            self, prompt: str, *,
+            workspace: Path | None = None,
+            session_id: str | None = None,
+    ) -> str:
         result = _submit_to(self._subprocess, prompt, workspace, session_id)
         if _is_not_successful(result):
             raise RuntimeError(result.stderr)
