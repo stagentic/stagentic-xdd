@@ -24,10 +24,10 @@ class TestRedGreenCommit:
                     task_name,
                     matching=[
                         "Production module exists at src/conversion.py with content",
-                        "Workspace state matches the expected end-state (src, tests, transcript)",
+                        f"Workspace matches the scene for {task_name} (src, tests)",
                         "Transcript shows the agent ran pytest",
                         "Transcript shows a FAILED pytest result",
-                        "First test fails for the right reason",
+                        "Test fails comparing a return value, not on a missing module or symbol",
                     ],
                 ),
             ),
@@ -49,7 +49,7 @@ def _have(task_name, *, matching):
             ),
             "failure": "src/conversion.py is missing or empty",
         },
-        "Workspace state matches the expected end-state (src, tests, transcript)": {
+        f"Workspace matches the scene for {task_name} (src, tests)": {
             "verify": lambda transcript, target_dir: (
                 not _tree_diff(task_path / "scene", target_dir)
             ),
@@ -69,7 +69,7 @@ def _have(task_name, *, matching):
             ),
             "failure": "transcript shows no FAILED result from pytest",
         },
-        "First test fails for the right reason": {
+        "Test fails comparing a return value, not on a missing module or symbol": {
             "verify": lambda transcript, target_dir: (
                 bool(
                     re.search(
@@ -82,7 +82,7 @@ def _have(task_name, *, matching):
                     re.DOTALL,
                 )
             ),
-            "failure": "assertion not against a stub (type default or input echoed); got a missing-function error instead",
+            "failure": "assertion failed on a missing module or symbol, not on a return value that didn't match",
         },
     }
     return [{"characteristic": name, **table[name]} for name in matching]
