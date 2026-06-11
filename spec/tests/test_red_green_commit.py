@@ -15,7 +15,10 @@ class TestRedGreenCommit:
         _set_opening_scene_for("0-placeholder", working_dir)
         task_name = "1-first-test-for-miles-to-km-converter"
 
-        transcript = agent.perform(task=task_name, working_dir=working_dir).value
+        transcript = agent.perform(
+            task=task_name,
+            working_dir=working_dir
+        ).value
 
         assert_that(
             inspector.evaluate(
