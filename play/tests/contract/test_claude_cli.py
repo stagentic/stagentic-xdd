@@ -5,8 +5,8 @@ import pytest
 from claude_cli import ClaudeCli
 
 
+@pytest.mark.contract
 class TestClaudeCliContract:
-    @pytest.mark.contract
     def test_should_respond_to_a_simple_prompt(self, tmp_path):
         result = ClaudeCli()(
             "Respond with exactly the word PASS and nothing else.",
