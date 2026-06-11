@@ -20,7 +20,7 @@ class TestRedGreenCommit:
         assert_that(
             inspector.evaluate(
                 evidence_source=transcript,
-                working_dir=working_dir,
+                workspace=working_dir,
                 should=_have(
                     task_name,
                     matching=[

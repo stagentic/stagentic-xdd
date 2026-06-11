@@ -9,14 +9,14 @@ class Auditor(Inspector):
     def evaluate(
             self, *,
             evidence_source: Path,
-            working_dir: Path,
+            workspace: Path,
             should: list[dict],
     ) -> Result[ScorecardResults, list[dict[str, str]]]:
         if not should: raise ValueError("scorecard must not be empty")
 
         evidence_content = evidence_source.read_text()
         match _entries_from(
-            _failures_from(evidence_content, working_dir, should)
+            _failures_from(evidence_content, workspace, should)
         ):
             case []:
                 return Success(ScorecardResults(
