@@ -74,14 +74,6 @@ class TestClaudeCli:
                 cwd=ANY, capture_output=ANY, text=ANY,
             )
 
-        # noinspection PyArgumentList
-        # - because we're protecting against changes that make it optional.
-        def test_should_require_a_session_id(self, tmp_path, subprocess_that_succeeds):
-            with pytest.raises(TypeError):
-                ClaudeCli(runner=subprocess_that_succeeds)(
-                    "any prompt", workspace=tmp_path
-                )
-
         def test_should_pass_the_workspace_as_add_dir_and_cwd(self, tmp_path, subprocess_that_succeeds):
             ClaudeCli(runner=subprocess_that_succeeds)(
                 "any prompt",
@@ -95,15 +87,19 @@ class TestClaudeCli:
                 capture_output=ANY, text=ANY,
             )
 
+    class TestErrors:
         # noinspection PyArgumentList
         # - because we're protecting against changes that make it optional.
-        def test_should_require_a_workspace(self, subprocess_that_succeeds):
+        def test_should_require_a_workspace(self, dummy):
             with pytest.raises(TypeError):
-                ClaudeCli(runner=subprocess_that_succeeds)(
-                    "any prompt", session_id="xyz-789"
-                )
+                ClaudeCli(runner=dummy)("any prompt", session_id="xyz-789")
 
-    class TestErrors:
+        # noinspection PyArgumentList
+        # - because we're protecting against changes that make it optional.
+        def test_should_require_a_session_id(self, tmp_path, dummy):
+            with pytest.raises(TypeError):
+                ClaudeCli(runner=dummy)("any prompt", workspace=tmp_path)
+
         def test_should_raise_RuntimeError_when_subprocess_fails(self, tmp_path):
             failing = StubbedSubprocess(
                 returncode=1, stderr="something went wrong"
