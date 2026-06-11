@@ -102,7 +102,7 @@ def _returns_only_literals(source_path: Path) -> bool:
     return bool(returns) and all(_is_literal(r.value) for r in returns)
 
 
-def _is_literal(node: ast.expr) -> bool:
+def _is_literal(node: ast.expr | None) -> bool:
     if isinstance(node, ast.UnaryOp):
         node = node.operand
     return isinstance(node, ast.Constant)
