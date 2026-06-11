@@ -24,10 +24,10 @@ class TestClaudeCli:
             )
 
             subprocess.assert_called_once_with(
-                ["claude", "--permission-mode", "acceptEdits",
+                ["claude", "-p", "evaluate this",
+                 "--permission-mode", "acceptEdits",
                  "--session-id", "abc-123",
-                 "--add-dir", str(tmp_path),
-                 "-p", "evaluate this"],
+                 "--add-dir", str(tmp_path)],
                 cwd=tmp_path,
                 capture_output=True,
                 text=True,

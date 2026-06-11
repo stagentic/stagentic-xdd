@@ -41,8 +41,8 @@ def _command(
         workspace: Path,
         session_id: str
 ) -> list[str]:
-    cmd = ["claude", "--permission-mode", "acceptEdits"]
+    cmd = ["claude", "-p", prompt]
+    cmd += ["--permission-mode", "acceptEdits"]
     cmd += ["--session-id", session_id]
     cmd += ["--add-dir", str(workspace)]
-    cmd += ["-p", prompt]
     return cmd
