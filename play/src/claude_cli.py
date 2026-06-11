@@ -12,7 +12,12 @@ class ClaudeCli:
             workspace: Path,
             session_id: str,
     ) -> str:
-        result = _submit_to(self._runner, prompt, workspace, session_id)
+        result = _submit_to(
+            self._runner,
+            prompt,
+            workspace,
+            session_id
+        )
         if _is_not_successful(result):
             raise RuntimeError(result.stderr)
         return result.stdout
@@ -25,7 +30,11 @@ def _submit_to(
         session_id: str,
 ) -> subprocess.CompletedProcess:
     return runner(
-        _command(prompt, workspace, session_id),
+        _command(
+            prompt,
+            workspace,
+            session_id
+        ),
         cwd=workspace,
         capture_output=True,
         text=True
