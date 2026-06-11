@@ -24,7 +24,7 @@ class TestRedGreenCommit:
             inspector.evaluate(
                 evidence_source=transcript,
                 workspace=working_dir,
-                should=_have(
+                should=_have_completed(
                     task_name,
                     matching=[
                         "Production module exists at src/conversion.py with content",
@@ -46,7 +46,7 @@ def _set_opening_scene_for(task_name: str, working_dir: Path) -> None:
 
 # FULL SCORECARD MAPPING
 # Including optional programmatic Auditor lambdas (ignored by agentic Critic)
-def _have(task_name, *, matching):
+def _have_completed(task_name, *, matching):
     task_path = TASKS / task_name
     table = {
         "Production module exists at src/conversion.py with content": {
