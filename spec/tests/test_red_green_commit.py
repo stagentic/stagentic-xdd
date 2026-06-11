@@ -1,3 +1,4 @@
+import ast
 import re
 import shutil
 from pathlib import Path
@@ -25,6 +26,7 @@ class TestRedGreenCommit:
                     matching=[
                         "Production module exists at src/conversion.py with content",
                         f"Workspace matches the scene for {task_name} (src, tests)",
+                        "Production returns a literal value, and does not use a formula",
                         "Transcript shows the agent ran pytest",
                         "Transcript shows a FAILED pytest result",
                         "Test fails comparing a return value, not on a missing module or symbol",
@@ -54,6 +56,12 @@ def _have(task_name, *, matching):
                 not _tree_diff(task_path / "scene", target_dir)
             ),
             "failure": "workspace contents do not match the expected end-state",
+        },
+        "Production returns a literal value, and does not use a formula": {
+            "verify": lambda transcript, target_dir: _returns_only_literals(
+                target_dir / "src" / "conversion.py"
+            ),
+            "failure": "src/conversion.py uses a computed formula, not a literal value",
         },
         "Transcript shows the agent ran pytest": {
             "verify": lambda transcript, target_dir: bool(
@@ -86,6 +94,18 @@ def _have(task_name, *, matching):
         },
     }
     return [{"characteristic": name, **table[name]} for name in matching]
+
+
+def _returns_only_literals(source_path: Path) -> bool:
+    tree = ast.parse(source_path.read_text())
+    returns = [n for n in ast.walk(tree) if isinstance(n, ast.Return)]
+    return bool(returns) and all(_is_literal(r.value) for r in returns)
+
+
+def _is_literal(node: ast.expr) -> bool:
+    if isinstance(node, ast.UnaryOp):
+        node = node.operand
+    return isinstance(node, ast.Constant)
 
 
 def _tree_diff(expected_root, actual_root):
