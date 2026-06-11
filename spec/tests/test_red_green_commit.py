@@ -12,7 +12,7 @@ TASKS = Path(__file__).parent.parent / "tasks"
 class TestRedGreenCommit:
     def test_write_a_failing_test(self, tmp_path, inspector, agent):
         working_dir = tmp_path / "miles-to-km"
-        _opening_scene_for(Path("0-placeholder") / "scene", working_dir)
+        _set_opening_scene_for("0-placeholder", working_dir)
         task_name = "1-first-test-for-miles-to-km-converter"
 
         transcript = agent.perform(task=task_name, working_dir=working_dir).value
@@ -37,8 +37,8 @@ class TestRedGreenCommit:
         )
 
 
-def _opening_scene_for(scene: Path, working_dir: Path) -> None:
-    shutil.copytree(TASKS / scene, working_dir)
+def _set_opening_scene_for(task_name: str, working_dir: Path) -> None:
+    shutil.copytree(TASKS / task_name / "scene", working_dir)
 
 
 def _have(task_name, *, matching):
