@@ -18,8 +18,11 @@ class ClaudeCli:
             workspace,
             session_id
         )
-        if _is_not_successful(result):
-            raise RuntimeError(result.stderr)
+        _raise_if(
+            _is_not_successful(result),
+            raising_error=RuntimeError,
+            with_message=result.stderr,
+        )
         return result.stdout
 
 
@@ -55,3 +58,12 @@ def _command(
 
 def _is_not_successful(result: subprocess.CompletedProcess) -> bool:
     return result.returncode != 0
+
+
+def _raise_if(
+        condition: bool, *,
+        raising_error: type[Exception],
+        with_message: str,
+) -> None:
+    if condition:
+        raise raising_error(with_message)
