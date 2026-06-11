@@ -31,7 +31,7 @@ def _is_not_successful(result) -> bool:
     return result.returncode != 0
 
 
-def _command(prompt, workspace=None, session_id=None):
+def _command(prompt, workspace, session_id):
     cmd = ["claude", "--permission-mode", "acceptEdits"]
     if session_id is not None:
         cmd += ["--session-id", session_id]
