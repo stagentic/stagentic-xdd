@@ -9,7 +9,7 @@ class ClaudeCli:
 
     def __call__(
             self, prompt: str, *,
-            workspace: Path | None = None,
+            workspace: Path,
             session_id: str | None = None,
     ) -> str:
         result = _submit_to(self._runner, prompt, workspace, session_id)
@@ -21,7 +21,7 @@ class ClaudeCli:
 def _submit_to(
         runner: Callable,
         prompt: str,
-        workspace: Path | None,
+        workspace: Path,
         session_id: str | None,
 ) -> subprocess.CompletedProcess:
     return runner(
@@ -36,7 +36,11 @@ def _is_not_successful(result: subprocess.CompletedProcess) -> bool:
     return result.returncode != 0
 
 
-def _command(prompt: str, workspace: Path | None, session_id: str | None) -> list[str]:
+def _command(
+        prompt: str,
+        workspace: Path | None,
+        session_id: str | None
+) -> list[str]:
     cmd = ["claude", "--permission-mode", "acceptEdits"]
     if session_id is not None:
         cmd += ["--session-id", session_id]
