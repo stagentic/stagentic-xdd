@@ -38,13 +38,11 @@ def _is_not_successful(result: subprocess.CompletedProcess) -> bool:
 
 def _command(
         prompt: str,
-        workspace: Path | None,
-        session_id: str | None
+        workspace: Path,
+        session_id: str
 ) -> list[str]:
     cmd = ["claude", "--permission-mode", "acceptEdits"]
-    if session_id is not None:
-        cmd += ["--session-id", session_id]
-    if workspace is not None:
-        cmd += ["--add-dir", str(workspace)]
+    cmd += ["--session-id", session_id]
+    cmd += ["--add-dir", str(workspace)]
     cmd += ["-p", prompt]
     return cmd
