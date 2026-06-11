@@ -10,7 +10,7 @@ TASKS = Path(__file__).parent.parent / "tasks"
 
 
 class TestRedGreenCommit:
-    def test_write_a_failing_test(self, tmp_path, inspector, agent):
+    def test_write_a_failing_test(self, tmp_path, agent, inspector):
         working_dir = tmp_path / "miles-to-km"
         _set_opening_scene_for("0-placeholder", working_dir)
         task_name = "1-first-test-for-miles-to-km-converter"
