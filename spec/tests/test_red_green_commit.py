@@ -25,7 +25,7 @@ class TestRedGreenCommit:
                     task_name,
                     matching=[
                         "Production module exists at src/conversion.py with content",
-                        f"Workspace matches the scene for {task_name} (src, tests)",
+                        f"Workspace closely matches the scene structure for {task_name} (src, tests)",
                         "Production returns a literal value, and does not use a formula",
                         "Transcript shows the agent ran pytest",
                         "Transcript shows a FAILED pytest result",
@@ -51,7 +51,7 @@ def _have(task_name, *, matching):
             ),
             "failure": "src/conversion.py is missing or empty",
         },
-        f"Workspace matches the scene for {task_name} (src, tests)": {
+        f"Workspace closely matches the scene structure for {task_name} (src, tests)": {
             "verify": lambda transcript, target_dir: (
                 not _tree_diff(task_path / "scene", target_dir)
             ),
