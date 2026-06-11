@@ -14,9 +14,7 @@ class TestRedGreenCommit:
         _opening_scene_for(Path("0-placeholder") / "scene", working_dir)
         task_name = "1-first-test-for-miles-to-km-converter"
 
-        transcript = agent.perform(
-            task=task_name, working_dir=working_dir
-        ).value
+        transcript = agent.perform(task=task_name, working_dir=working_dir).value
 
         assert_that(
             inspector.evaluate(
@@ -24,7 +22,6 @@ class TestRedGreenCommit:
                 working_dir=working_dir,
                 should=_have(
                     task_name,
-                    working_dir,
                     matching=[
                         "Production module exists at src/conversion.py with content",
                         "Workspace state matches the expected end-state (src, tests, transcript)",
@@ -42,38 +39,47 @@ def _opening_scene_for(scene: Path, working_dir: Path) -> None:
     shutil.copytree(TASKS / scene, working_dir)
 
 
-def _have(task_name, working_dir, *, matching):
+def _have(task_name, *, matching):
     task_path = TASKS / task_name
     table = {
         "Production module exists at src/conversion.py with content": {
-            "verify": lambda transcript, working_dir: (
-                (working_dir / "src" / "conversion.py").is_file()
-                and (working_dir / "src" / "conversion.py").stat().st_size > 0
+            "verify": lambda transcript, target_dir: (
+                (target_dir / "src" / "conversion.py").is_file()
+                and (target_dir / "src" / "conversion.py").stat().st_size > 0
             ),
             "failure": "src/conversion.py is missing or empty",
         },
         "Workspace state matches the expected end-state (src, tests, transcript)": {
-            "verify": lambda transcript, working_dir: not _tree_diff(task_path / "scene", working_dir),
+            "verify": lambda transcript, target_dir: (
+                not _tree_diff(task_path / "scene", target_dir)
+            ),
             "failure": "workspace contents do not match the expected end-state",
         },
         "Transcript shows the agent ran pytest": {
-            "verify": lambda transcript, working_dir: bool(
-                re.search(r"\[TOOL\] \*\*Bash\*\*.*?pytest", transcript, re.DOTALL)
+            "verify": lambda transcript, target_dir: bool(
+                re.search(r"\[TOOL] \*\*Bash\*\*.*?pytest", transcript, re.DOTALL)
             ),
             "failure": "transcript shows no `[TOOL] **Bash**` running pytest",
         },
         "Transcript shows a FAILED pytest result": {
-            "verify": lambda transcript, working_dir: bool(
-                re.search(r"\[TOOL\] \*\*Bash\*\*.*?pytest.*?FAILED", transcript, re.DOTALL)
+            "verify": lambda transcript, target_dir: bool(
+                re.search(
+                    r"\[TOOL] \*\*Bash\*\*.*?pytest.*?FAILED", transcript, re.DOTALL
+                )
             ),
             "failure": "transcript shows no FAILED result from pytest",
         },
         "First test fails for the right reason": {
-            "verify": lambda transcript, working_dir: (
-                bool(re.search(r"FAILED.*?(assert|AssertionError)", transcript, re.DOTALL))
+            "verify": lambda transcript, target_dir: (
+                bool(
+                    re.search(
+                        r"FAILED.*?(assert|AssertionError)", transcript, re.DOTALL
+                    )
+                )
                 and not re.search(
                     r"(ImportError|NameError|ModuleNotFoundError|cannot import name)",
-                    transcript, re.DOTALL,
+                    transcript,
+                    re.DOTALL,
                 )
             ),
             "failure": "assertion not against a stub (type default or input echoed); got a missing-function error instead",
@@ -83,8 +89,12 @@ def _have(task_name, working_dir, *, matching):
 
 
 def _tree_diff(expected_root, actual_root):
-    expected = {p.relative_to(expected_root): p for p in expected_root.rglob("*") if p.is_file()}
-    actual = {p.relative_to(actual_root): p for p in actual_root.rglob("*") if p.is_file()}
+    expected = {
+        p.relative_to(expected_root): p for p in expected_root.rglob("*") if p.is_file()
+    }
+    actual = {
+        p.relative_to(actual_root): p for p in actual_root.rglob("*") if p.is_file()
+    }
     diffs = []
     for rel in sorted(set(expected) | set(actual), key=str):
         if rel not in expected:
