@@ -12,7 +12,7 @@ _ANOTHER_FAKE_SESSION_ID = "another-fake-sid"
 
 class TestClaudeSession:
     @patch("claude_session.uuid.uuid4", return_value=_FAKE_SESSION_ID)
-    def test_run_should_call_cli_and_transcriber_and_return_the_cli_result(self, _uuid):
+    def test_should_call_the_cli_and_transcriber_and_return_the_cli_result(self, _uuid):
         prompt = "my prompt"
         working_dir = Path("/some_work_dir")
         claude_home = Path("/some/claude_home")
@@ -48,7 +48,7 @@ class TestClaudeSession:
         assert result == cli_result
 
     class TestCallsClaudeCli:
-        def test_prompt_should_be_passed_to_cli(self, dummy):
+        def test_should_pass_the_prompt(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
@@ -64,7 +64,7 @@ class TestClaudeSession:
                 workspace=ANY, session_id=ANY,
             )
 
-        def test_working_dir_should_be_passed_to_cli(self, dummy):
+        def test_should_pass_the_working_dir(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
 
             ClaudeSession(
@@ -80,7 +80,7 @@ class TestClaudeSession:
                 prompt=ANY, session_id=ANY,
             )
 
-        def test_unique_session_id_should_be_passed_to_cli_on_each_run(self, dummy):
+        def test_should_pass_a_unique_session_id_on_each_run(self, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
             session = ClaudeSession(
                 claude=claude_cli_spy,
@@ -94,7 +94,7 @@ class TestClaudeSession:
             first, second = claude_cli_spy.call_args_list
             assert first.kwargs["session_id"] != second.kwargs["session_id"]
 
-        def test_result_from_cli_should_be_returned(self, dummy):
+        def test_should_return_the_result(self, dummy):
             claude_cli_stub = MagicMock(spec=ClaudeCli(), return_value="another cli result")
 
             result = ClaudeSession(
@@ -108,7 +108,7 @@ class TestClaudeSession:
 
     class TestCallsTranscriber:
         @patch("claude_session.uuid.uuid4", return_value=_ANOTHER_FAKE_SESSION_ID)
-        def test_jsonl_path_should_be_built_from_home_working_dir_and_session_id(self, _uuid, dummy):
+        def test_should_build_the_jsonl_path_from_home_working_dir_and_session_id(self, _uuid, dummy):
             transcriber_spy = MagicMock(spec=Transcriber())
             home = Path("/another/home")
             working_dir = Path("/another/dir")
@@ -129,7 +129,7 @@ class TestClaudeSession:
                 output_path=ANY,
             )
 
-        def test_transcriber_should_receive_the_transcript_path(self, dummy):
+        def test_should_pass_the_transcript_path(self, dummy):
             transcriber_spy = MagicMock(spec=Transcriber())
 
             ClaudeSession(
