@@ -18,8 +18,10 @@ the task list before reviewing any files. Number each lens in the task list.
 Then, once the task list is complete, for each lens, one at a time, review the
 file through that lens and:
 - Tell me the lens
-- If no issues seen through that lens, say no issues (no explanation needed)
-- If changes are required, show me the before and after of the change you propose.
+- If no issues seen through that lens, say no issues (no explanation
+  needed) and await the user's approval to proceed to the next lens.
+- If changes are required, show me the before and after of the change you
+  propose and await the user's approval to proceed.
 
 Review the file *only* when its lens is the active one — and read it fresh at
 that moment, along with any other file the lens needs (e.g. the production
