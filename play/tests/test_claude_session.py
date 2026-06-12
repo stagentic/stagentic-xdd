@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import ANY, MagicMock, call, patch
 
+from hamcrest import assert_that, equal_to
+
 from claude_cli import ClaudeCli
 from claude_jsonl_path import ClaudeJsonlPath
 from claude_session import ClaudeSession
@@ -45,7 +47,7 @@ class TestClaudeSession:
             jsonl_path=expected_jsonl_path,
             output_path=transcript_path,
         )
-        assert result == cli_result
+        assert_that(result, equal_to(cli_result))
 
     class TestCallsClaudeCli:
         def test_should_pass_the_prompt(self, dummy):
@@ -94,7 +96,7 @@ class TestClaudeSession:
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
 
-            assert claude_cli_spy.call_count == 2
+            assert_that(claude_cli_spy.call_count, equal_to(2))
             claude_cli_spy.assert_has_calls([
                 call(prompt=dummy, workspace=dummy, session_id=_FAKE_SESSION_ID),
                 call(prompt=dummy, workspace=dummy, session_id=_ANOTHER_FAKE_SESSION_ID),
@@ -110,7 +112,7 @@ class TestClaudeSession:
                 prompt=dummy, working_dir=dummy, transcript_path=dummy
             )
 
-            assert result == "another cli result"
+            assert_that(result, equal_to("another cli result"))
 
     class TestCallsTranscriber:
         @patch("claude_session.uuid.uuid4", return_value=_ANOTHER_FAKE_SESSION_ID)
