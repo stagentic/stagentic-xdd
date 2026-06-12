@@ -8,7 +8,7 @@ from transcriber import Transcriber
 
 class ClaudeSession:
     def __init__(
-            self,
+            self, *,
             claude: ClaudeCli,
             transcriber: Transcriber,
             home: Path
