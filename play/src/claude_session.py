@@ -22,7 +22,7 @@ class ClaudeSession:
             prompt: str,
             working_dir: Path,
             transcript_path: Path
-    ):
+    ) -> str:
         session_id = str(uuid.uuid4())
         result = self._call_claude_with(
             prompt=prompt,
