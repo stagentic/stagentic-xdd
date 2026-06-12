@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import ANY, MagicMock, patch
+from unittest.mock import ANY, MagicMock, call, patch
 
 from claude_cli import ClaudeCli
 from claude_jsonl_path import ClaudeJsonlPath
@@ -80,7 +80,11 @@ class TestClaudeSession:
                 prompt=ANY, session_id=ANY,
             )
 
-        def test_should_pass_a_unique_session_id_on_each_run(self, dummy):
+        @patch(
+            "claude_session.uuid.uuid4",
+            side_effect=[_FAKE_SESSION_ID, _ANOTHER_FAKE_SESSION_ID],
+        )
+        def test_should_pass_a_unique_session_id_on_each_run(self, _uuid, dummy):
             claude_cli_spy = MagicMock(spec=ClaudeCli())
             session = ClaudeSession(
                 claude=claude_cli_spy,
@@ -91,8 +95,10 @@ class TestClaudeSession:
             session.run(prompt=dummy, working_dir=dummy, transcript_path=dummy)
 
             assert claude_cli_spy.call_count == 2
-            first, second = claude_cli_spy.call_args_list
-            assert first.kwargs["session_id"] != second.kwargs["session_id"]
+            claude_cli_spy.assert_has_calls([
+                call(prompt=dummy, workspace=dummy, session_id=_FAKE_SESSION_ID),
+                call(prompt=dummy, workspace=dummy, session_id=_ANOTHER_FAKE_SESSION_ID),
+            ], any_order=False)
 
         def test_should_return_the_result(self, dummy):
             claude_cli_stub = MagicMock(spec=ClaudeCli(), return_value="another cli result")
