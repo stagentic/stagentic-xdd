@@ -23,7 +23,7 @@ class ClaudeSession:
             working_dir: Path,
             transcript_path: Path
     ) -> str:
-        session_id = str(uuid.uuid4())
+        session_id = _new_session_id()
         result = self._call_claude_with(
             prompt=prompt,
             workspace=working_dir,
@@ -34,6 +34,10 @@ class ClaudeSession:
             output_path=transcript_path
         )
         return result
+
+
+def _new_session_id() -> str:
+    return str(uuid.uuid4())
 
 
 def _jsonl_path_for(
