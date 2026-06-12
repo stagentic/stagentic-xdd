@@ -12,11 +12,30 @@ separate commits (see
 [`docs/working-practices.md`](docs/working-practices.md)).
 
 At the start of the review run the full baseline tests and then full mutation test.
-If clear, for a file under review, add all lenses in the correct order to the task list.
-For each, one at a time:
+If clear, for a file under review, add all lenses in the correct order to 
+the task list before reviewing any files. Number each lens in the task list.
+
+Then, once the task list is complete, for each lens, one at a time, review the
+file through that lens and:
 - Tell me the lens
 - If no issues seen through that lens, say no issues (no explanation needed)
-- If changes are required, show me the before and after of the change you propose.  
+- If changes are required, show me the before and after of the change you propose.
+
+Review the file *only* when its lens is the active one — and read it fresh at
+that moment, along with any other file the lens needs (e.g. the production
+source for the execution-flow lens). Do not read the whole file, nor any file
+a later lens will need, up front. Each lens is a fresh pass: look at the file
+through that lens alone, report, and only then move to the next.
+
+Reading fresh at each lens is correctness, not tidiness. A lens reviews the
+file's current state — which includes any change an earlier lens produced. A
+read taken before those changes is stale, so a lens reviewing against it is
+reviewing text that no longer exists. Re-read when the lens becomes active so
+every pass sees what is actually there.
+
+Reporting lens-by-lens in order is necessary but not sufficient — the
+examination itself must be lens-at-a-time, not a single up-front sweep
+re-narrated as separate lenses.
 
 ### Reviewing a test file
 
