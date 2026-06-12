@@ -106,7 +106,7 @@ don't bury NEXT.md.
 - [x] `result_matchers.py` (and `tests/test_result_matchers.py`)
 - [x] `fake_agent.py` (and `tests/test_fake_agent.py`)
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
-- [ ] `claude_session.py` (and `tests/test_claude_session.py`)
+- [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [ ] `auditor.py` (and `tests/test_auditor.py`)
 - [ ] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
   - Outstanding improvements tracked in
