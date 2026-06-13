@@ -127,16 +127,24 @@ class TestAuditor:
                 {"characteristic": "third characteristic", "failure": "third failure"},
             ])))
 
-        def test_should_return_failure_with_the_failed_entries(self, evidence_source, dummy_path):
+        def test_should_call_verify_and_return_a_failure_for_failed_characteristics(self, tmp_path):
+            evidence_text = "hello agent"
+            transcript = tmp_path / "transcript.md"
+            transcript.write_text(evidence_text)
+            working_dir = tmp_path / "workspace"
+            verify = MagicMock(return_value=False)
+
             result = Auditor().evaluate(
+                evidence_source=transcript,
+                workspace=working_dir,
                 should=[
                     {"characteristic": "my characteristic",
-                     "verify": lambda transcript, working_dir: False,
+                     "verify": verify,
                      "failure": "my failure message"},
                 ],
-                evidence_source=evidence_source, workspace=dummy_path,
             )
 
+            verify.assert_called_once_with(evidence_text, working_dir)
             assert_that(result, equal_to(Failure([
                 {"characteristic": "my characteristic", "failure": "my failure message"}
             ])))
