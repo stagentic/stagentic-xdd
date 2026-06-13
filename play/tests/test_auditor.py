@@ -2,6 +2,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
+from cases import case
 from hamcrest import assert_that, equal_to
 
 from auditor import Auditor
@@ -64,34 +65,23 @@ class TestAuditor:
             ])))
 
     class TestSucceeds:
-        def test_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
+        @pytest.mark.parametrize("characteristic, failure", [
+            case("alpha", characteristic="alpha", failure="alpha reason"),
+            case("beta", characteristic="beta", failure="beta reason"),
+        ])
+        def test_should_return_success_with_the_scorecard_when_all_pass(self, characteristic, failure, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
-                    {"characteristic": "alpha",
+                    {"characteristic": characteristic,
                      "verify": lambda transcript, working_dir: True,
-                     "failure": "alpha reason"},
+                     "failure": failure},
                 ],
                 evidence_source=evidence_source, workspace=dummy_path,
             )
 
             assert_that(result, equal_to(Success(ScorecardResults(
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-                results=[{"characteristic": "alpha", "status": "PASS"}],
-            ))))
-
-        def test_should_build_the_scorecard_from_the_should(self, evidence_source, dummy_path):
-            result = Auditor().evaluate(
-                should=[
-                    {"characteristic": "beta",
-                     "verify": lambda transcript, working_dir: True,
-                     "failure": "beta reason"},
-                ],
-                evidence_source=evidence_source, workspace=dummy_path,
-            )
-
-            assert_that(result, equal_to(Success(ScorecardResults(
-                should=[{"characteristic": "beta", "failure": "beta reason"}],
-                results=[{"characteristic": "beta", "status": "PASS"}],
+                should=[{"characteristic": characteristic, "failure": failure}],
+                results=[{"characteristic": characteristic, "status": "PASS"}],
             ))))
 
     class TestCallsVerify:
