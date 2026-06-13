@@ -79,7 +79,7 @@ class TestAuditor:
                 results=[{"characteristic": "alpha", "status": "PASS"}],
             ))))
 
-        def test_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
+        def test_should_build_the_scorecard_from_the_should(self, evidence_source, dummy_path):
             result = Auditor().evaluate(
                 should=[
                     {"characteristic": "beta",
@@ -94,8 +94,8 @@ class TestAuditor:
                 results=[{"characteristic": "beta", "status": "PASS"}],
             ))))
 
-    class TestVerifyLambdas:
-        def test_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
+    class TestCallsVerify:
+        def test_should_pass_evidence_text(self, tmp_path, dummy_path):
             evidence_text = "different transcript"
             transcript = tmp_path / "transcript.md"
             transcript.write_text(evidence_text)
@@ -113,7 +113,7 @@ class TestAuditor:
 
             verify.assert_called_once_with(evidence_text, ANY)
 
-        def test_should_pass_working_dir_to_verify(self, evidence_source):
+        def test_should_pass_working_dir(self, evidence_source):
             working_dir = Path("/some/other/dir")
             verify = MagicMock(return_value=True)
 
