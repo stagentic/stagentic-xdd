@@ -32,11 +32,13 @@ When a helper function calls another callable, its own parameter order matches t
 
 ## IDE warning suppression with an inline rationale comment
 
-When the design intent overrides an IDE warning (e.g. `Auditor.evaluate` reads as "should be static" but is kept as an instance method to match `Critic.evaluate`), suppress the warning inline with a comment explaining why.
+When design intent overrides an IDE warning the type system can't settle, suppress the warning inline with a comment explaining why — the suppression directive and the rationale together, so the next reader meets the silence and its reason at once.
 
-**Why:** silencing a warning without explanation leaves the next reader to re-derive the design intent. The comment (`# - to preserve consistency with Critic.evaluate`) records the rationale next to the suppression so a future reader sees both at once.
+**Why:** silencing a warning without explanation leaves the next reader to re-derive the design intent. A bare suppression says "ignore this" without recording what the design knows that the inspection doesn't.
 
-**Trigger to revisit:** if the symmetry argument no longer holds (e.g. `Critic` itself becomes static), revisit the suppression.
+**When the type system already settles it, no suppression belongs.** `Auditor.evaluate` reads as "could be static" in isolation, but implementing the `Inspector` protocol fixes its signature by contract, so PyCharm doesn't raise the warning — a suppression there would silence nothing.
+
+**Trigger to revisit:** when the reason no longer holds, drop the suppression — one that outlives its rationale hides a warning that may now be real.
 
 ## Private functions follow the order their calls appear
 
