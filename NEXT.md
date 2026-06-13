@@ -152,6 +152,27 @@ A cross-cutting improvement surfaced by the critic extraction — a
 - [ ] `archiver.py` (and `tests/test_archiver.py`)
 - [ ] `conftest.py`
 
+### `Auditor.evaluate` should derive per-row status, not hard-code PASS
+
+`Auditor.evaluate`'s success branch hard-codes `"status": "PASS"` for every
+result row. It can, because that branch is reached only when `_failures_from`
+returns empty — the all-pass case. The literal is a symptom: the Auditor
+reimplements pass/fail branching instead of delegating to
+`ScorecardResults.failures()` the way `Critic.evaluate` does. On success it
+hand-builds an all-PASS `results` list; on any failure it returns `Failure(...)`
+and bypasses `ScorecardResults` entirely.
+
+The symmetric fix mirrors `Critic.evaluate`: evaluate each row once into a real
+`PASS`/`FAIL` status, build `ScorecardResults(should=should, results=<those
+rows>)`, then `match scorecard.failures()`. Then the status is derived per row,
+never a literal, and both `evaluate` methods read alike.
+
+This is a **behavioural** change, not a refactor: it changes what
+`ScorecardResults.should` holds on the Auditor path (today
+`_entries_from(should)`; Critic stores the raw `should`) and the `Failure`
+payload shape, so it needs test updates. It is adjacent to the deferred
+`ScorecardEntry` work above — do it as its own red-green.
+
 ### Error handling (cross-cutting — final review)
 
 A final pass over error handling across the harness, after the per-file
