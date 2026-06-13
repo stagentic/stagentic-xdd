@@ -1,5 +1,6 @@
 import pytest
 from cases import case
+from hamcrest import assert_that, equal_to
 
 from scorecard_results import ScorecardResults
 
@@ -27,7 +28,7 @@ class TestScorecardResults:
                 should=should,
             )
 
-            assert scorecard == ScorecardResults(should=should, results=maybe_results)
+            assert_that(scorecard, equal_to(ScorecardResults(should=should, results=maybe_results)))
 
     class TestReportsFailures:
         @pytest.mark.parametrize("non_pass_status", [
@@ -40,7 +41,7 @@ class TestScorecardResults:
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
             )
 
-            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
+            assert_that(scorecard.failures(), equal_to([{"characteristic": "alpha", "failure": "alpha reason"}]))
 
         def test_should_exclude_a_characteristic_that_passed(self):
             scorecard = ScorecardResults.from_(
@@ -54,7 +55,7 @@ class TestScorecardResults:
                 ],
             )
 
-            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
+            assert_that(scorecard.failures(), equal_to([{"characteristic": "alpha", "failure": "alpha reason"}]))
 
         def test_should_list_every_characteristic_that_did_not_pass(self):
             scorecard = ScorecardResults.from_(
@@ -70,10 +71,10 @@ class TestScorecardResults:
                 ],
             )
 
-            assert scorecard.failures() == [
+            assert_that(scorecard.failures(), equal_to([
                 {"characteristic": "first", "failure": "first failure"},
                 {"characteristic": "third", "failure": "third failure"},
-            ]
+            ]))
 
         def test_should_be_empty_when_every_characteristic_passed(self):
             scorecard = ScorecardResults.from_(
@@ -87,7 +88,7 @@ class TestScorecardResults:
                 ],
             )
 
-            assert scorecard.failures() == []
+            assert_that(scorecard.failures(), equal_to([]))
 
     class TestRejectsInvalidResults:
         def test_should_raise_when_there_are_no_results(self):
@@ -100,7 +101,7 @@ class TestScorecardResults:
                     should=dummy_scorecard
                 )
 
-            assert str(excinfo.value) == "results must not be empty"
+            assert_that(str(excinfo.value), equal_to("results must not be empty"))
 
         @pytest.mark.parametrize("maybe_results, expected_message", [
             case(
@@ -150,7 +151,7 @@ class TestScorecardResults:
                     should=dummy_scorecard
                 )
 
-            assert str(excinfo.value) == expected_message
+            assert_that(str(excinfo.value), equal_to(expected_message))
 
     class TestRejectsIncoherentResults:
         @pytest.mark.parametrize("results, expected_message", [
@@ -189,7 +190,7 @@ class TestScorecardResults:
                     should=should,
                 )
 
-            assert str(excinfo.value) == expected_message
+            assert_that(str(excinfo.value), equal_to(expected_message))
 
         @pytest.mark.parametrize("should, expected_message", [
             case(
@@ -219,7 +220,7 @@ class TestScorecardResults:
                     maybe_results=results,
                 )
 
-            assert str(excinfo.value) == expected_message
+            assert_that(str(excinfo.value), equal_to(expected_message))
 
         @pytest.mark.parametrize("results, expected_message", [
             case(
@@ -249,7 +250,7 @@ class TestScorecardResults:
                     should=should,
                 )
 
-            assert str(excinfo.value) == expected_message
+            assert_that(str(excinfo.value), equal_to(expected_message))
 
         def test_should_report_every_problem_together(self):
             results = [
@@ -268,7 +269,7 @@ class TestScorecardResults:
                     should=should,
                 )
 
-            assert str(excinfo.value) == (
+            assert_that(str(excinfo.value), equal_to(
                 "duplicated characteristics:\n"
                 "- alpha: PASS\n"
                 "- alpha: FAIL\n"
@@ -276,7 +277,7 @@ class TestScorecardResults:
                 "unaccounted characteristics: missing\n"
                 "\n"
                 "unexpected characteristics: invented"
-            )
+            ))
 
 
 def characteristics_for_all(results):
