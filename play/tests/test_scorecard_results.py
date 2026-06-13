@@ -215,8 +215,8 @@ class TestScorecardResults:
 
             with pytest.raises(ValueError) as excinfo:
                 ScorecardResults.from_(
-                    maybe_results=results,
                     should=should,
+                    maybe_results=results,
                 )
 
             assert str(excinfo.value) == expected_message
