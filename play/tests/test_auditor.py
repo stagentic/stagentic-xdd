@@ -64,27 +64,6 @@ class TestAuditor:
             ])))
 
     class TestSucceeds:
-        def test_should_call_verify_with_evidence_text_and_working_dir(self, tmp_path):
-            evidence_text = "hello agent"
-            transcript = tmp_path / "transcript.md"
-            transcript.write_text(evidence_text)
-            working_dir = tmp_path / "workspace"
-            verify = MagicMock(return_value=True)
-
-            Auditor().evaluate(
-                evidence_source=transcript,
-                workspace=working_dir,
-                should=[
-                    {"characteristic": "captures input",
-                     "verify": verify,
-                     "failure": "n/a"},
-                ],
-            )
-
-            verify.assert_called_once_with(
-                evidence_text, working_dir
-            )
-
         def test_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
             evidence_text = "different transcript"
             transcript = tmp_path / "transcript.md"
