@@ -29,6 +29,66 @@ class TestScorecardResults:
 
             assert scorecard == ScorecardResults(should=should, results=maybe_results)
 
+    class TestReportsFailures:
+        @pytest.mark.parametrize("non_pass_status", [
+            case("fail", non_pass_status="FAIL"),
+            case("inconclusive", non_pass_status="INCONCLUSIVE"),
+        ])
+        def test_failures_lists_a_characteristic_that_did_not_pass(self, non_pass_status):
+            scorecard = ScorecardResults.from_(
+                maybe_results=[{"characteristic": "alpha", "status": non_pass_status}],
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+            )
+
+            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
+
+        def test_failures_excludes_a_characteristic_that_passed(self):
+            scorecard = ScorecardResults.from_(
+                maybe_results=[
+                    {"characteristic": "alpha", "status": "FAIL"},
+                    {"characteristic": "beta", "status": "PASS"},
+                ],
+                should=[
+                    {"characteristic": "alpha", "failure": "alpha reason"},
+                    {"characteristic": "beta", "failure": "beta reason"},
+                ],
+            )
+
+            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
+
+        def test_failures_lists_every_characteristic_that_did_not_pass(self):
+            scorecard = ScorecardResults.from_(
+                maybe_results=[
+                    {"characteristic": "first", "status": "FAIL"},
+                    {"characteristic": "middle", "status": "PASS"},
+                    {"characteristic": "third", "status": "FAIL"},
+                ],
+                should=[
+                    {"characteristic": "first", "failure": "first failure"},
+                    {"characteristic": "middle", "failure": "middle failure"},
+                    {"characteristic": "third", "failure": "third failure"},
+                ],
+            )
+
+            assert scorecard.failures() == [
+                {"characteristic": "first", "failure": "first failure"},
+                {"characteristic": "third", "failure": "third failure"},
+            ]
+
+        def test_failures_is_empty_when_every_characteristic_passed(self):
+            scorecard = ScorecardResults.from_(
+                maybe_results=[
+                    {"characteristic": "alpha", "status": "PASS"},
+                    {"characteristic": "beta", "status": "PASS"},
+                ],
+                should=[
+                    {"characteristic": "alpha", "failure": "alpha reason"},
+                    {"characteristic": "beta", "failure": "beta reason"},
+                ],
+            )
+
+            assert scorecard.failures() == []
+
     class TestRejectsInvalidResults:
         def test_from_raises_when_there_are_no_results(self):
             no_results = []
@@ -217,66 +277,6 @@ class TestScorecardResults:
                 "\n"
                 "unexpected characteristics: invented"
             )
-
-    class TestReportsFailures:
-        @pytest.mark.parametrize("non_pass_status", [
-            case("fail", non_pass_status="FAIL"),
-            case("inconclusive", non_pass_status="INCONCLUSIVE"),
-        ])
-        def test_failures_lists_a_characteristic_that_did_not_pass(self, non_pass_status):
-            scorecard = ScorecardResults.from_(
-                maybe_results=[{"characteristic": "alpha", "status": non_pass_status}],
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-            )
-
-            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
-
-        def test_failures_excludes_a_characteristic_that_passed(self):
-            scorecard = ScorecardResults.from_(
-                maybe_results=[
-                    {"characteristic": "alpha", "status": "FAIL"},
-                    {"characteristic": "beta", "status": "PASS"},
-                ],
-                should=[
-                    {"characteristic": "alpha", "failure": "alpha reason"},
-                    {"characteristic": "beta", "failure": "beta reason"},
-                ],
-            )
-
-            assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
-
-        def test_failures_lists_every_characteristic_that_did_not_pass(self):
-            scorecard = ScorecardResults.from_(
-                maybe_results=[
-                    {"characteristic": "first", "status": "FAIL"},
-                    {"characteristic": "middle", "status": "PASS"},
-                    {"characteristic": "third", "status": "FAIL"},
-                ],
-                should=[
-                    {"characteristic": "first", "failure": "first failure"},
-                    {"characteristic": "middle", "failure": "middle failure"},
-                    {"characteristic": "third", "failure": "third failure"},
-                ],
-            )
-
-            assert scorecard.failures() == [
-                {"characteristic": "first", "failure": "first failure"},
-                {"characteristic": "third", "failure": "third failure"},
-            ]
-
-        def test_failures_is_empty_when_every_characteristic_passed(self):
-            scorecard = ScorecardResults.from_(
-                maybe_results=[
-                    {"characteristic": "alpha", "status": "PASS"},
-                    {"characteristic": "beta", "status": "PASS"},
-                ],
-                should=[
-                    {"characteristic": "alpha", "failure": "alpha reason"},
-                    {"characteristic": "beta", "failure": "beta reason"},
-                ],
-            )
-
-            assert scorecard.failures() == []
 
 
 def characteristics_for_all(results):
