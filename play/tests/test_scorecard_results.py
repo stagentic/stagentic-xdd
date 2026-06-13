@@ -141,7 +141,7 @@ class TestScorecardResults:
                 ),
             ),
         ])
-        def test_should_name_the_invalid_result_and_the_key_it_lacks(self, maybe_results, expected_message):
+        def test_should_name_the_key_it_lacks(self, maybe_results, expected_message):
             dummy_scorecard = []
 
             with pytest.raises(ValueError) as excinfo:
@@ -251,7 +251,7 @@ class TestScorecardResults:
 
             assert str(excinfo.value) == expected_message
 
-        def test_should_report_every_coherence_problem_together(self):
+        def test_should_report_every_problem_together(self):
             results = [
                 {"characteristic": "alpha", "status": "PASS"},
                 {"characteristic": "alpha", "status": "FAIL"},
