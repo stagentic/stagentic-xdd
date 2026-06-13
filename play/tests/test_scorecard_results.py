@@ -5,7 +5,7 @@ from scorecard_results import ScorecardResults
 
 
 class TestScorecardResults:
-    class TestExposesResults:
+    class TestAcceptsValidResults:
         @pytest.mark.parametrize("maybe_results", [
             case(
                 "single-result",
@@ -19,7 +19,7 @@ class TestScorecardResults:
                 ],
             ),
         ])
-        def test_from_exposes_the_results(self, maybe_results):
+        def test_should_bind_them_to_the_scorecard(self, maybe_results):
             should = characteristics_for_all(maybe_results)
 
             scorecard = ScorecardResults.from_(
@@ -34,7 +34,7 @@ class TestScorecardResults:
             case("fail", non_pass_status="FAIL"),
             case("inconclusive", non_pass_status="INCONCLUSIVE"),
         ])
-        def test_failures_lists_a_characteristic_that_did_not_pass(self, non_pass_status):
+        def test_should_list_a_characteristic_that_did_not_pass(self, non_pass_status):
             scorecard = ScorecardResults.from_(
                 maybe_results=[{"characteristic": "alpha", "status": non_pass_status}],
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
@@ -42,7 +42,7 @@ class TestScorecardResults:
 
             assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
 
-        def test_failures_excludes_a_characteristic_that_passed(self):
+        def test_should_exclude_a_characteristic_that_passed(self):
             scorecard = ScorecardResults.from_(
                 maybe_results=[
                     {"characteristic": "alpha", "status": "FAIL"},
@@ -56,7 +56,7 @@ class TestScorecardResults:
 
             assert scorecard.failures() == [{"characteristic": "alpha", "failure": "alpha reason"}]
 
-        def test_failures_lists_every_characteristic_that_did_not_pass(self):
+        def test_should_list_every_characteristic_that_did_not_pass(self):
             scorecard = ScorecardResults.from_(
                 maybe_results=[
                     {"characteristic": "first", "status": "FAIL"},
@@ -75,7 +75,7 @@ class TestScorecardResults:
                 {"characteristic": "third", "failure": "third failure"},
             ]
 
-        def test_failures_is_empty_when_every_characteristic_passed(self):
+        def test_should_be_empty_when_every_characteristic_passed(self):
             scorecard = ScorecardResults.from_(
                 maybe_results=[
                     {"characteristic": "alpha", "status": "PASS"},
@@ -90,7 +90,7 @@ class TestScorecardResults:
             assert scorecard.failures() == []
 
     class TestRejectsInvalidResults:
-        def test_from_raises_when_there_are_no_results(self):
+        def test_should_raise_when_there_are_no_results(self):
             no_results = []
             dummy_scorecard = []
 
@@ -141,7 +141,7 @@ class TestScorecardResults:
                 ),
             ),
         ])
-        def test_from_names_the_invalid_result_and_the_key_it_lacks(self, maybe_results, expected_message):
+        def test_should_name_the_invalid_result_and_the_key_it_lacks(self, maybe_results, expected_message):
             dummy_scorecard = []
 
             with pytest.raises(ValueError) as excinfo:
@@ -152,7 +152,7 @@ class TestScorecardResults:
 
             assert str(excinfo.value) == expected_message
 
-    class TestRejectsIncoherentScorecards:
+    class TestRejectsIncoherentResults:
         @pytest.mark.parametrize("results, expected_message", [
             case(
                 "all-duplicated",
@@ -180,7 +180,7 @@ class TestScorecardResults:
                 ),
             ),
         ])
-        def test_from_lists_a_duplicated_characteristic(self, results, expected_message):
+        def test_should_list_a_duplicated_characteristic(self, results, expected_message):
             should = characteristics_for_all(results)
 
             with pytest.raises(ValueError) as excinfo:
@@ -210,7 +210,7 @@ class TestScorecardResults:
                 expected_message="unaccounted characteristics: second, third",
             ),
         ])
-        def test_from_lists_unaccounted_for_characteristics(self, should, expected_message):
+        def test_should_list_unaccounted_for_characteristics(self, should, expected_message):
             results = [{"characteristic": "first", "status": "PASS"}]
 
             with pytest.raises(ValueError) as excinfo:
@@ -240,7 +240,7 @@ class TestScorecardResults:
                 expected_message="unexpected characteristics: extra, other",
             ),
         ])
-        def test_from_lists_unexpected_characteristics(self, results, expected_message):
+        def test_should_list_unexpected_characteristics(self, results, expected_message):
             should = [{"characteristic": "first"}]
 
             with pytest.raises(ValueError) as excinfo:
@@ -251,7 +251,7 @@ class TestScorecardResults:
 
             assert str(excinfo.value) == expected_message
 
-        def test_from_reports_every_coherence_problem_together(self):
+        def test_should_report_every_coherence_problem_together(self):
             results = [
                 {"characteristic": "alpha", "status": "PASS"},
                 {"characteristic": "alpha", "status": "FAIL"},
