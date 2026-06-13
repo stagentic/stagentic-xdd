@@ -64,6 +64,37 @@ class TestAuditor:
             ])))
 
     class TestSucceeds:
+        def test_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
+                should=[
+                    {"characteristic": "alpha",
+                     "verify": lambda transcript, working_dir: True,
+                     "failure": "alpha reason"},
+                ],
+                evidence_source=evidence_source, workspace=dummy_path,
+            )
+
+            assert_that(result, equal_to(Success(ScorecardResults(
+                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
+                results=[{"characteristic": "alpha", "status": "PASS"}],
+            ))))
+
+        def test_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
+            result = Auditor().evaluate(
+                should=[
+                    {"characteristic": "beta",
+                     "verify": lambda transcript, working_dir: True,
+                     "failure": "beta reason"},
+                ],
+                evidence_source=evidence_source, workspace=dummy_path,
+            )
+
+            assert_that(result, equal_to(Success(ScorecardResults(
+                should=[{"characteristic": "beta", "failure": "beta reason"}],
+                results=[{"characteristic": "beta", "status": "PASS"}],
+            ))))
+
+    class TestVerifyLambdas:
         def test_should_pass_evidence_text_to_verify(self, tmp_path, dummy_path):
             evidence_text = "different transcript"
             transcript = tmp_path / "transcript.md"
@@ -97,36 +128,6 @@ class TestAuditor:
             )
 
             verify.assert_called_once_with(ANY, working_dir)
-
-        def test_should_return_success_with_the_scorecard_when_all_pass(self, evidence_source, dummy_path):
-            result = Auditor().evaluate(
-                should=[
-                    {"characteristic": "alpha",
-                     "verify": lambda transcript, working_dir: True,
-                     "failure": "alpha reason"},
-                ],
-                evidence_source=evidence_source, workspace=dummy_path,
-            )
-
-            assert_that(result, equal_to(Success(ScorecardResults(
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-                results=[{"characteristic": "alpha", "status": "PASS"}],
-            ))))
-
-        def test_should_build_the_passing_scorecard_from_the_should(self, evidence_source, dummy_path):
-            result = Auditor().evaluate(
-                should=[
-                    {"characteristic": "beta",
-                     "verify": lambda transcript, working_dir: True,
-                     "failure": "beta reason"},
-                ],
-                evidence_source=evidence_source, workspace=dummy_path,
-            )
-
-            assert_that(result, equal_to(Success(ScorecardResults(
-                should=[{"characteristic": "beta", "failure": "beta reason"}],
-                results=[{"characteristic": "beta", "status": "PASS"}],
-            ))))
 
     class TestErrors:
         def test_should_raise_when_the_scorecard_is_empty(self, dummy_path):
