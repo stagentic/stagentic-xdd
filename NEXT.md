@@ -131,6 +131,7 @@ don't bury NEXT.md.
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
 - [ ] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
+  - Test file reviewed against all 17 lenses; src review underway.
   - Outstanding improvements tracked in
     [`docs/architecture/improvements/scorecard_results.md`](docs/architecture/improvements/scorecard_results.md).
 - [ ] `transcriber.py` (and `tests/test_transcriber.py`)
