@@ -11,7 +11,7 @@ class ScorecardResults:
     results: list[dict]
 
     @classmethod
-    def from_(cls, maybe_results, should):
+    def from_(cls, *, maybe_results: list[dict], should: list[dict]):
         results = _results_unless(
             maybe_results,
             has_problem=_invalid,
