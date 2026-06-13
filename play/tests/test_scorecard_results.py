@@ -27,7 +27,7 @@ class TestScorecardResults:
                 should=should,
             )
 
-            assert scorecard.results == maybe_results
+            assert scorecard == ScorecardResults(should=should, results=maybe_results)
 
     class TestRejectsInvalidResults:
         def test_from_raises_when_there_are_no_results(self):
