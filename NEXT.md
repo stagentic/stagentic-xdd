@@ -129,6 +129,9 @@ don't bury NEXT.md.
 - [x] `claude_cli.py` (and `tests/test_claude_cli.py`, `tests/contract/test_claude_cli.py`)
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [ ] `auditor.py` (and `tests/test_auditor.py`)
+  - `tests/test_auditor.py` review complete (all 16 test-file lenses);
+    `src/auditor.py` review through the src-file lenses is the immediate
+    next step.
 - [ ] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
   - Outstanding improvements tracked in
     [`docs/architecture/improvements/scorecard_results.md`](docs/architecture/improvements/scorecard_results.md).
