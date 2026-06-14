@@ -16,10 +16,3 @@ class TestClaudeTranscriber:
         ClaudeTranscriber()(jsonl_path=SAMPLE_TRANSCRIPT, output_path=output_path)
 
         assert_that(output_path.read_text(), equal_to(expected))
-
-    def test_should_render_jsonl_to_markdown(self):
-        expected = (FIXTURES / "sample-transcript.md").read_text()
-
-        result = ClaudeTranscriber().render(SAMPLE_TRANSCRIPT)
-
-        assert_that(result, equal_to(expected))

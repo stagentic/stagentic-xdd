@@ -18,12 +18,13 @@ _RENDERERS = {
 
 class ClaudeTranscriber:
     def __call__(self, *, jsonl_path: Path, output_path: Path):
-        output_path.write_text(self.render(jsonl_path))
+        output_path.write_text(_render(jsonl_path))
 
-    def render(self, jsonl_path: Path):
-        return "".join(
-            map(_format, _blocks(jsonl_path))
-        )
+
+def _render(jsonl_path: Path):
+    return "".join(
+        map(_format, _blocks(jsonl_path))
+    )
 
 
 def _blocks(jsonl_path):
