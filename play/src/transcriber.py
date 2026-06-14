@@ -1,11 +1,10 @@
 import json
+import os
 import pathlib
 import re
 from collections import namedtuple
 from datetime import datetime
 from pathlib import Path
-
-from claude_jsonl_path import ClaudeJsonlPath
 
 Block = namedtuple("Block", ["timestamp", "kind", "content", "body"], defaults=[""])
 
@@ -19,10 +18,10 @@ _RENDERERS = {
 
 
 class Transcriber:
-    def __call__(self, *, jsonl_path: ClaudeJsonlPath, output_path: Path):
+    def __call__(self, *, jsonl_path: os.PathLike[str], output_path: Path):
         output_path.write_text(self.render(jsonl_path))
 
-    def render(self, jsonl_path: ClaudeJsonlPath):
+    def render(self, jsonl_path: os.PathLike[str]):
         return "".join(
             map(_format, _blocks(jsonl_path))
         )

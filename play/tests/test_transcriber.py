@@ -1,14 +1,11 @@
 from pathlib import Path
-from unittest.mock import MagicMock
 
 from hamcrest import assert_that, equal_to
 
-from claude_jsonl_path import ClaudeJsonlPath
 from transcriber import Transcriber
 
 FIXTURES = Path(__file__).parent / "fixtures"
-SAMPLE_TRANSCRIPT = MagicMock(spec=ClaudeJsonlPath)
-SAMPLE_TRANSCRIPT.__fspath__.return_value = str(FIXTURES / "sample-transcript.jsonl")
+SAMPLE_TRANSCRIPT = FIXTURES / "sample-transcript.jsonl"
 
 
 class TestTranscriber:
