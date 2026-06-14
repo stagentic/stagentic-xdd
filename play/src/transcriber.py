@@ -1,5 +1,4 @@
 import json
-import os
 import pathlib
 import re
 from collections import namedtuple
@@ -18,10 +17,10 @@ _RENDERERS = {
 
 
 class Transcriber:
-    def __call__(self, *, jsonl_path: os.PathLike[str], output_path: Path):
+    def __call__(self, *, jsonl_path: Path, output_path: Path):
         output_path.write_text(self.render(jsonl_path))
 
-    def render(self, jsonl_path: os.PathLike[str]):
+    def render(self, jsonl_path: Path):
         return "".join(
             map(_format, _blocks(jsonl_path))
         )
