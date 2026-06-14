@@ -130,7 +130,7 @@ don't bury NEXT.md.
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
 - [x] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
-- [ ] `transcriber.py` (and `tests/test_transcriber.py`)
+- [ ] `claude_transcriber.py` (and `tests/test_claude_transcriber.py`)
 - [ ] `claude_jsonl_path.py` (and `tests/test_claude_jsonl_path.py`)
 - [ ] `failure_message.py` (and `tests/test_failure_message.py`)
 - [ ] `raise_when.py` (and `tests/test_raise_when.py`)
@@ -192,7 +192,7 @@ This may become the standard for all files.
 
 ## 2. Write the xdd skill
 
-The `play/` harness is committed: `Agent`, `Transcriber`, and JSONL path
+The `play/` harness is committed: `Agent`, `ClaudeTranscriber`, and JSONL path
 computation are in `play/src/`. What remains on the harness side is wiring
 `spec/conftest.py` to expose `--agent=real` — this was built and validated
 locally but reverted pending the scenario passing.

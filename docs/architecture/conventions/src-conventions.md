@@ -6,7 +6,7 @@ Production code conventions for `play/src/` that should persist across refactors
 
 Public method signatures hint every parameter with a concrete type (`Path`, `str`, `list[dict]`, `ClaudeCli`). Helpers may follow the same rule when their signature reveals contract details, but the public surface always does.
 
-**Why:** a reader learns the contract from the signature without reading the body. `agent.py`'s `Agent.perform(self, *, task: str, working_dir: Path)` says everything about what `perform` consumes; `claude_session.py`'s constructor types its collaborators (`claude: ClaudeCli, transcriber: Transcriber, home: Path`) so the dependency shape is self-evident.
+**Why:** a reader learns the contract from the signature without reading the body. `agent.py`'s `Agent.perform(self, *, task: str, working_dir: Path)` says everything about what `perform` consumes; `claude_session.py`'s constructor types its collaborators (`claude: ClaudeCli, transcriber: ClaudeTranscriber, home: Path`) so the dependency shape is self-evident.
 
 **Avoid `Any`:** if you reach for `from typing import Any`, ask whether `dict`, `list`, or a concrete type would fit. The auditor's `should` is `list[dict]`, not `list[Any]` — the latter conveys nothing the bare container doesn't.
 
