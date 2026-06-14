@@ -52,8 +52,7 @@ Review the file through each lens below in turn and in the order below:
 - Whole-story tests
 - Test order follows the production code's execution flow
 - Tests can be grouped in classes that express key variations in behaviour
-- Test naming `test_should_<behaviour>`
-- Test names read in context of their holding class
+- Test naming `test_should_<behaviour>` and each reads in context of its holding class
 - MagicMock interrogation forms
 - Per-property test layout: relevant kwargs at the top
 - Explicit no-raise via `does_not_raise`
