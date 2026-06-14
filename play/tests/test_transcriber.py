@@ -1,6 +1,8 @@
 from pathlib import Path
 from unittest.mock import MagicMock
 
+from hamcrest import assert_that, equal_to
+
 from claude_jsonl_path import ClaudeJsonlPath
 from transcriber import Transcriber
 
@@ -16,11 +18,11 @@ class TestTranscriber:
 
         Transcriber()(jsonl_path=SAMPLE_TRANSCRIPT, output_path=output_path)
 
-        assert output_path.read_text() == expected
+        assert_that(output_path.read_text(), equal_to(expected))
 
     def test_should_render_jsonl_to_markdown(self):
         expected = (FIXTURES / "sample-transcript.md").read_text()
 
         result = Transcriber().render(SAMPLE_TRANSCRIPT)
 
-        assert result == expected
+        assert_that(result, equal_to(expected))
