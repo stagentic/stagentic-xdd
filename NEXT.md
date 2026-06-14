@@ -130,7 +130,10 @@ don't bury NEXT.md.
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
 - [x] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
-- [ ] `claude_transcriber.py` (and `tests/test_claude_transcriber.py`)
+- [ ] `claude_transcriber.py` (and `tests/test_claude_transcriber.py`) —
+  mutation coverage is below acceptable; the rendering helpers carry many
+  survivors. This must be addressed before any further work on
+  `ClaudeTranscriber` begins.
 - [ ] `claude_jsonl_path.py` (and `tests/test_claude_jsonl_path.py`)
 - [ ] `failure_message.py` (and `tests/test_failure_message.py`)
 - [ ] `raise_when.py` (and `tests/test_raise_when.py`)
