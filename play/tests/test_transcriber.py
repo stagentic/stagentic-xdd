@@ -6,7 +6,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 
 
 class TestTranscriber:
-    def test_callable_writes_rendered_content_to_output_path(self, tmp_path):
+    def test_should_write_rendered_content_to_the_output_path(self, tmp_path):
         jsonl_path = FIXTURES / "sample-transcript.jsonl"
         output_path = tmp_path / "transcript.md"
         expected = Transcriber().render(jsonl_path)
@@ -15,7 +15,7 @@ class TestTranscriber:
 
         assert output_path.read_text() == expected
 
-    def test_renders_jsonl_to_markdown(self):
+    def test_should_render_jsonl_to_markdown(self):
         jsonl_path = FIXTURES / "sample-transcript.jsonl"
         expected = (FIXTURES / "sample-transcript.md").read_text()
 
