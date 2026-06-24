@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
-from hamcrest import all_of, assert_that, contains_string, equal_to
+from hamcrest import all_of, assert_that, contains_string, equal_to, not_
 from matchers import matching
 
 from claude_session import ClaudeSession
@@ -137,6 +137,18 @@ class TestCritic:
                 prompt=matching(contains_string(
                     "- first thing\n- second thing"
                 )),
+                working_dir=ANY, transcript_path=ANY,
+            )
+
+        def test_should_omit_reference_block_when_no_reference_outcome(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes):
+            Critic(session=session_that_passes).evaluate(
+                reference_outcome=None,
+                evidence_source=evidence_source, workspace=working_dir,
+                should=one_characteristic_scorecard,
+            )
+
+            session_that_passes.run.assert_called_once_with(
+                prompt=matching(not_(contains_string("Reference outcome:"))),
                 working_dir=ANY, transcript_path=ANY,
             )
 

@@ -16,6 +16,7 @@ class Critic(Inspector):
             evidence_source: Path,
             workspace: Path,
             should: list[dict],
+            reference_outcome: Path | None = None,
     ) -> Result[ScorecardResults, list[dict[str, str]]]:
         if not should: raise ValueError("scorecard must not be empty")
 
