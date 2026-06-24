@@ -22,7 +22,7 @@ class TestCritic:
     def one_characteristic_scorecard(self): return [{"characteristic": "any", "failure": "n/a"}]
 
     @pytest.fixture
-    def reference_outcome(self): return Path("/workspace/reference-outcome")
+    def reference_scene(self): return Path("/workspace/reference-scene")
 
     @pytest.fixture
     def session_that_passes(self):
@@ -143,9 +143,9 @@ class TestCritic:
                 working_dir=ANY, transcript_path=ANY,
             )
 
-        def test_should_omit_reference_block_when_no_reference_outcome(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes):
+        def test_should_omit_reference_block_when_no_reference_scene(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes):
             Critic(session=session_that_passes).evaluate(
-                reference_outcome=None,
+                reference_scene=None,
                 evidence_source=evidence_source, workspace=working_dir,
                 should=one_characteristic_scorecard,
             )
@@ -158,18 +158,18 @@ class TestCritic:
                 working_dir=ANY, transcript_path=ANY,
             )
 
-        def test_should_present_reference_outcome_for_equivalence(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes, reference_outcome):
+        def test_should_present_reference_scene_for_equivalence(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes, reference_scene):
             Critic(session=session_that_passes).evaluate(
-                reference_outcome=reference_outcome,
+                reference_scene=reference_scene,
                 evidence_source=evidence_source, workspace=working_dir,
                 should=one_characteristic_scorecard,
             )
 
             session_that_passes.run.assert_called_once_with(
                 prompt=matching(all_of(
-                    contains_string(f"Reference outcome: {reference_outcome}\n"),
+                    contains_string(f"Reference scene: {reference_scene}\n"),
                     contains_string(
-                        "The reference outcome is the canonical end-state; "
+                        "The reference scene is the canonical end-state; "
                         "for characteristics about the workspace, judge by equivalence to it."
                     ),
                 )),
