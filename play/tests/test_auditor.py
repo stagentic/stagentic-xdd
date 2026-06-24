@@ -31,12 +31,16 @@ class TestAuditor:
             working_dir = tmp_path / "workspace"
             verify = MagicMock(return_value=False)
 
-            result = Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
-                                        evidence_source=transcript, should=[
+            result = Auditor().evaluate(
+                task_to_evaluate=task_to_evaluate,
+                workspace=working_dir,
+                evidence_source=transcript,
+                should=[
                     {"characteristic": "my characteristic",
                      "verify": verify,
                      "failure": "my failure message"},
-                ])
+                ],
+            )
 
             verify.assert_called_once_with(evidence_text, working_dir, task_to_evaluate / "scene")
             assert_that(result, equal_to(Failure([
@@ -44,8 +48,8 @@ class TestAuditor:
             ])))
 
         def test_should_return_only_the_failed_rows_as_entries(self, evidence_source, dummy_path, task_to_evaluate):
-            result = Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=dummy_path,
-                                        evidence_source=evidence_source, should=[
+            result = Auditor().evaluate(
+                should=[
                     {"characteristic": "first characteristic",
                      "verify": lambda transcript, working_dir, reference_scene: False,
                      "failure": "first failure"},
@@ -55,7 +59,9 @@ class TestAuditor:
                     {"characteristic": "third characteristic",
                      "verify": lambda transcript, working_dir, reference_scene: False,
                      "failure": "third failure"},
-                ])
+                ],
+                task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=evidence_source,
+            )
 
             assert_that(result, equal_to(Failure([
                 {"characteristic": "first characteristic", "failure": "first failure"},
@@ -68,12 +74,14 @@ class TestAuditor:
             case("beta", characteristic="beta", failure="beta reason"),
         ])
         def test_should_return_success_with_the_scorecard_when_all_pass(self, characteristic, failure, evidence_source, dummy_path, task_to_evaluate):
-            result = Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=dummy_path,
-                                        evidence_source=evidence_source, should=[
+            result = Auditor().evaluate(
+                should=[
                     {"characteristic": characteristic,
                      "verify": lambda transcript, working_dir, reference_scene: True,
                      "failure": failure},
-                ])
+                ],
+                task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=evidence_source,
+            )
 
             assert_that(result, equal_to(Success(ScorecardResults(
                 should=[{"characteristic": characteristic, "failure": failure}],
@@ -87,12 +95,15 @@ class TestAuditor:
             transcript.write_text(evidence_text)
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=transcript,
-                               should=[
-                                   {"characteristic": "captures input",
-                                    "verify": verify,
-                                    "failure": "n/a"},
-                               ])
+            Auditor().evaluate(
+                evidence_source=transcript,
+                task_to_evaluate=task_to_evaluate, workspace=dummy_path,
+                should=[
+                    {"characteristic": "captures input",
+                     "verify": verify,
+                     "failure": "n/a"},
+                ],
+            )
 
             verify.assert_called_once_with(evidence_text, ANY, ANY)
 
@@ -100,31 +111,39 @@ class TestAuditor:
             working_dir = Path("/some/other/dir")
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
-                               evidence_source=evidence_source, should=[
+            Auditor().evaluate(
+                workspace=working_dir,
+                task_to_evaluate=task_to_evaluate, evidence_source=evidence_source,
+                should=[
                     {"characteristic": "captures input",
                      "verify": verify,
                      "failure": "n/a"},
-                ])
+                ],
+            )
 
             verify.assert_called_once_with(ANY, working_dir, ANY)
 
         def test_should_pass_reference_scene(self, evidence_source, dummy_path, task_to_evaluate):
             verify = MagicMock(return_value=True)
 
-            Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=evidence_source,
-                               should=[
-                                   {"characteristic": "captures input",
-                                    "verify": verify,
-                                    "failure": "n/a"},
-                               ])
+            Auditor().evaluate(
+                task_to_evaluate=task_to_evaluate,
+                workspace=dummy_path, evidence_source=evidence_source,
+                should=[
+                    {"characteristic": "captures input",
+                     "verify": verify,
+                     "failure": "n/a"},
+                ],
+            )
 
             verify.assert_called_once_with(ANY, ANY, task_to_evaluate / "scene")
 
     class TestErrors:
         def test_should_raise_when_the_scorecard_is_empty(self, dummy_path, task_to_evaluate):
             with pytest.raises(ValueError) as excinfo:
-                Auditor().evaluate(task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=dummy_path,
-                                   should=[])
+                Auditor().evaluate(
+                    should=[],
+                    task_to_evaluate=task_to_evaluate, workspace=dummy_path, evidence_source=dummy_path,
+                )
 
             assert_that(str(excinfo.value), equal_to("scorecard must not be empty"))
