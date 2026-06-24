@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import ANY, MagicMock
 
 import pytest
-from hamcrest import all_of, assert_that, contains_string, equal_to, not_
+from hamcrest import all_of, assert_that, contains_string, equal_to
 from matchers import matching
 
 from claude_session import ClaudeSession
@@ -20,6 +20,9 @@ class TestCritic:
 
     @pytest.fixture
     def one_characteristic_scorecard(self): return [{"characteristic": "any", "failure": "n/a"}]
+
+    @pytest.fixture
+    def reference_outcome(self): return Path("/workspace/reference-outcome")
 
     @pytest.fixture
     def session_that_passes(self):
@@ -148,7 +151,28 @@ class TestCritic:
             )
 
             session_that_passes.run.assert_called_once_with(
-                prompt=matching(not_(contains_string("Reference outcome:"))),
+                prompt=matching(contains_string(
+                    f"Workspace: {working_dir}\n\n"
+                    "Evaluate each of the following characteristics against the transcript and workspace."
+                )),
+                working_dir=ANY, transcript_path=ANY,
+            )
+
+        def test_should_present_reference_outcome_for_equivalence(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes, reference_outcome):
+            Critic(session=session_that_passes).evaluate(
+                reference_outcome=reference_outcome,
+                evidence_source=evidence_source, workspace=working_dir,
+                should=one_characteristic_scorecard,
+            )
+
+            session_that_passes.run.assert_called_once_with(
+                prompt=matching(all_of(
+                    contains_string(f"Reference outcome: {reference_outcome}\n"),
+                    contains_string(
+                        "The reference outcome is the canonical end-state; "
+                        "for characteristics about the workspace, judge by equivalence to it."
+                    ),
+                )),
                 working_dir=ANY, transcript_path=ANY,
             )
 

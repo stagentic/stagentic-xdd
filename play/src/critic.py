@@ -22,7 +22,7 @@ class Critic(Inspector):
 
         agent_response = self._session.run(
             prompt=_prompt_for(
-                evidence_source, workspace, should
+                evidence_source, workspace, should, reference_outcome
             ),
             working_dir=workspace,
             transcript_path=workspace / "critique.md",
@@ -38,11 +38,18 @@ class Critic(Inspector):
                 return Failure(failures)
 
 
-def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict]) -> str:
+def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict], reference_outcome: Path | None) -> str:
     characteristics = "\n".join(f"- {row['characteristic']}" for row in should)
+    reference = ""
+    if reference_outcome:
+        reference = (
+            f"Reference outcome: {reference_outcome}\n"
+            f"The reference outcome is the canonical end-state; for characteristics about the workspace, judge by equivalence to it.\n\n"
+        )
     return (
         f"Transcript: {evidence_source}\n"
         f"Workspace: {working_dir}\n\n"
+        f"{reference}"
         f"Evaluate each of the following characteristics against the transcript and workspace.\n"
         f"Respond with only a JSON array where each element has 'characteristic' and 'status' (PASS or FAIL).\n\n"
         f"Characteristics:\n{characteristics}"
