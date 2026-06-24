@@ -11,14 +11,14 @@ class Critic(Inspector):
     def __init__(self, *, session: ClaudeSession):
         self._session = session
 
-    def evaluate(
-            self, *,
-            evidence_source: Path,
-            workspace: Path,
-            should: list[dict],
-            task_to_evaluate: Path,
+    def evaluate(self, *,
+        task_to_evaluate: Path,
+        workspace: Path,
+        evidence_source: Path,
+        should: list[dict],
     ) -> Result[ScorecardResults, list[dict[str, str]]]:
-        if not should: raise ValueError("scorecard must not be empty")
+        if not should:
+            raise ValueError("scorecard must not be empty")
 
         agent_response = self._session.run(
             prompt=_prompt_for(
@@ -38,7 +38,9 @@ class Critic(Inspector):
                 return Failure(failures)
 
 
-def _prompt_for(evidence_source: Path, working_dir: Path, should: list[dict], reference_scene: Path) -> str:
+def _prompt_for(
+    evidence_source: Path, working_dir: Path, should: list[dict], reference_scene: Path
+) -> str:
     characteristics = "\n".join(f"- {row['characteristic']}" for row in should)
     return (
         f"Transcript: {evidence_source}\n"

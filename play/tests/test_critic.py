@@ -35,12 +35,10 @@ class TestCritic:
             session_that_fails = MagicMock(spec=ClaudeSession)
             session_that_fails.run.return_value = '[{"characteristic": "alpha", "status": "FAIL"}]'
 
-            result = Critic(session=session_that_fails).evaluate(
-                evidence_source=evidence_source,
-                workspace=working_dir,
-                task_to_evaluate=task_to_evaluate,
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-            )
+            result = Critic(session=session_that_fails).evaluate(task_to_evaluate=task_to_evaluate,
+                                                                 workspace=working_dir, evidence_source=evidence_source,
+                                                                 should=[{"characteristic": "alpha",
+                                                                          "failure": "alpha reason"}])
 
             session_that_fails.run.assert_called_once_with(
                 prompt=matching(all_of(
@@ -62,15 +60,11 @@ class TestCritic:
                 ' {"characteristic": "beta", "status": "FAIL"}]'
             )
 
-            result = Critic(session=session).evaluate(
-                evidence_source=evidence_source,
-                workspace=working_dir,
-                task_to_evaluate=task_to_evaluate,
-                should=[
+            result = Critic(session=session).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                      evidence_source=evidence_source, should=[
                     {"characteristic": "alpha", "failure": "alpha reason"},
                     {"characteristic": "beta", "failure": "beta reason"},
-                ],
-            )
+                ])
 
             assert_that(result, equal_to(Failure(
                 [{"characteristic": "beta", "failure": "beta reason"}])
@@ -81,12 +75,9 @@ class TestCritic:
             session = MagicMock(spec=ClaudeSession)
             session.run.return_value = '[{"characteristic": "alpha", "status": "PASS"}]'
 
-            result = Critic(session=session).evaluate(
-                evidence_source=evidence_source,
-                workspace=working_dir,
-                task_to_evaluate=task_to_evaluate,
-                should=[{"characteristic": "alpha", "failure": "alpha reason"}],
-            )
+            result = Critic(session=session).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                      evidence_source=evidence_source,
+                                                      should=[{"characteristic": "alpha", "failure": "alpha reason"}])
 
             assert_that(result, equal_to(Success(ScorecardResults(
                 should=[{"characteristic": "alpha", "failure": "alpha reason"}],
@@ -97,11 +88,9 @@ class TestCritic:
         def test_should_include_distinct_evidence_source_in_prompt(self, working_dir, one_characteristic_scorecard, session_that_passes, task_to_evaluate):
             evidence_source = Path("/workspace/other-run/transcript.md")
 
-            Critic(session=session_that_passes).evaluate(
-                evidence_source=evidence_source,
-                workspace=working_dir, should=one_characteristic_scorecard,
-                task_to_evaluate=task_to_evaluate,
-            )
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source,
+                                                         should=one_characteristic_scorecard)
 
             session_that_passes.run.assert_called_once_with(
                 prompt=matching(contains_string(
@@ -113,11 +102,9 @@ class TestCritic:
         def test_should_embed_working_dir_in_prompt(self, evidence_source, one_characteristic_scorecard, session_that_passes, task_to_evaluate):
             working_dir = Path("/workspace/embedded-in-prompt")
 
-            Critic(session=session_that_passes).evaluate(
-                workspace=working_dir,
-                evidence_source=evidence_source, should=one_characteristic_scorecard,
-                task_to_evaluate=task_to_evaluate,
-            )
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source,
+                                                         should=one_characteristic_scorecard)
 
             session_that_passes.run.assert_called_once_with(
                 prompt=matching(contains_string(
@@ -133,14 +120,11 @@ class TestCritic:
                 ' {"characteristic": "second thing", "status": "PASS"}]'
             )
 
-            Critic(session=session_that_passes).evaluate(
-                should=[
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source, should=[
                     {"characteristic": "first thing", "failure": "n/a"},
                     {"characteristic": "second thing", "failure": "n/a"},
-                ],
-                evidence_source=evidence_source, workspace=working_dir,
-                task_to_evaluate=task_to_evaluate,
-            )
+                ])
 
             session_that_passes.run.assert_called_once_with(
                 prompt=matching(contains_string(
@@ -150,11 +134,9 @@ class TestCritic:
             )
 
         def test_should_present_reference_scene_for_equivalence(self, evidence_source, working_dir, one_characteristic_scorecard, session_that_passes, task_to_evaluate):
-            Critic(session=session_that_passes).evaluate(
-                task_to_evaluate=task_to_evaluate,
-                evidence_source=evidence_source, workspace=working_dir,
-                should=one_characteristic_scorecard,
-            )
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source,
+                                                         should=one_characteristic_scorecard)
 
             session_that_passes.run.assert_called_once_with(
                 prompt=matching(all_of(
@@ -171,11 +153,9 @@ class TestCritic:
         def test_should_pass_working_dir_to_session(self, evidence_source, one_characteristic_scorecard, session_that_passes, task_to_evaluate):
             working_dir = Path("/workspace/passed-to-session")
 
-            Critic(session=session_that_passes).evaluate(
-                workspace=working_dir,
-                evidence_source=evidence_source, should=one_characteristic_scorecard,
-                task_to_evaluate=task_to_evaluate,
-            )
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source,
+                                                         should=one_characteristic_scorecard)
 
             session_that_passes.run.assert_called_once_with(
                 working_dir=working_dir,
@@ -185,11 +165,9 @@ class TestCritic:
         def test_should_derive_critique_path_from_working_dir(self, evidence_source, one_characteristic_scorecard, session_that_passes, task_to_evaluate):
             working_dir = Path("/workspace/derives-critique-path")
 
-            Critic(session=session_that_passes).evaluate(
-                workspace=working_dir,
-                evidence_source=evidence_source, should=one_characteristic_scorecard,
-                task_to_evaluate=task_to_evaluate,
-            )
+            Critic(session=session_that_passes).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                                         evidence_source=evidence_source,
+                                                         should=one_characteristic_scorecard)
 
             session_that_passes.run.assert_called_once_with(
                 transcript_path=working_dir / "critique.md",
@@ -199,11 +177,8 @@ class TestCritic:
     class TestErrors:
         def test_should_raise_when_the_scorecard_is_empty(self, evidence_source, working_dir, dummy, task_to_evaluate):
             with pytest.raises(ValueError) as excinfo:
-                Critic(session=dummy).evaluate(
-                    should=[],
-                    evidence_source=evidence_source, workspace=working_dir,
-                    task_to_evaluate=task_to_evaluate,
-                )
+                Critic(session=dummy).evaluate(task_to_evaluate=task_to_evaluate, workspace=working_dir,
+                                               evidence_source=evidence_source, should=[])
 
             assert_that(str(excinfo.value), equal_to(
                 "scorecard must not be empty"
