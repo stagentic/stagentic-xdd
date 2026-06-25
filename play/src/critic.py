@@ -20,12 +20,14 @@ class Critic(Inspector):
         if not should:
             raise ValueError("scorecard must not be empty")
 
+        reference_scene = task_to_evaluate / "scene"
         agent_response = self._session.run(
             prompt=_prompt_for(
-                evidence_source, workspace, should, task_to_evaluate / "scene"
+                evidence_source, workspace, should, reference_scene
             ),
             working_dir=workspace,
             transcript_path=workspace / "critique.md",
+            additional_dirs=(reference_scene,),
         )
         scorecard = ScorecardResults.from_(
             maybe_results=candidate_scorecard_from(agent_response),
