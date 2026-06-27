@@ -1,6 +1,6 @@
 `[VERSIONS]` Used in this run:
 ```
-CLI: claude 2.1.150
+CLI: claude unknown
 ```
 `06:05:02Z` **[QUEUE OPERATION]** enqueue
 
