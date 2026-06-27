@@ -19,18 +19,13 @@ holds once the gate is satisfied.
 
 Do these in order:
 
-1. **Turn the outstanding red green.**
-   `spec/tests/test_archiver.py::TestArchiver::test_archive_returns_the_destination_it_wrote`
-   is a legitimate mid-red-green failure: `archive` returns `None`, the test
-   expects the destination it wrote. Finish the cycle. Version-independent — no
-   `claude` involved.
-2. **Implement ADR
+1. **Implement ADR
    [0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)
    — versions header.** `ClaudeTranscriber` emits the `[VERSIONS]` block (CLI +
    model from the stream-json init event) at the top of every transcript. TDD;
    the transcriber tests and the `varied-transcript` approval update.
-   Version-independent.
-3. **Implement ADR
+   Version-independent. **← immediate next step.**
+2. **Implement ADR
    [0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
    — trust the workspace.** `ClaudeCli` marks the per-run workspace trusted
    before launch. This addresses the 2.1.193+ gate, so do it **after ending this
