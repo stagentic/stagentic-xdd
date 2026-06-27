@@ -19,6 +19,17 @@ class TestArchiver:
         dest = artefacts_dir / "20260527-101638-test_foo"
         assert (dest / "transcript.md").read_text() == "some content"
 
+    def test_archive_returns_the_destination_it_wrote(self, tmp_path):
+        workspace = tmp_path / "workspace"
+        workspace.mkdir()
+        (workspace / "transcript.md").write_text("some content")
+        artefacts_dir = tmp_path / ".artefacts"
+        artefacts_dir.mkdir()
+
+        dest = archive(phase="call", tmp_path=workspace, test_name="test_foo", artefacts_dir=str(artefacts_dir), timestamp="20260527-101638")
+
+        assert dest == artefacts_dir / "20260527-101638-test_foo"
+
     def test_archive_does_nothing_outside_call_phase(self, tmp_path):
         workspace = tmp_path / "workspace"
         workspace.mkdir()
