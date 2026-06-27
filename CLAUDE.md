@@ -12,7 +12,7 @@ everyone gets wrong about TDD/BDD" argument.
 Read these thoroughly when relevant; don't rely on the one-line summary alone:
 
 - [`docs/architecture/decisions/`](docs/architecture/decisions/) — architectural directions. Accepted
-  ones must be adhered to; proposed ones are still under evaluation.
+  ones must be adhered to; proposed ones are still under evaluation — possibly by being implemented to assess them empirically.
 - [`NEXT.md`](NEXT.md) (repo root, if present) — the immediate next step,
   including known constraints. Read it at session start. If a user
   prompt is open-ended ("let's continue", "what next?"), use NEXT.md
@@ -35,6 +35,11 @@ Read these thoroughly when relevant; don't rely on the one-line summary alone:
 - [`docs/working-practices.md`](docs/working-practices.md) — workflow practices: lead with the
   proposed commit; separate behavioural from structural changes.
   Read it at session start, alongside NEXT.md.
+- [`docs/coaching/`](docs/coaching/) — agent-coaching records: per-misstep
+  BDD/TDD lessons captured while developing the xdd skill. The process is
+  defined in [ADR 0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-coaching-records.md);
+  [`TEMPLATE.md`](docs/coaching/TEMPLATE.md) is the record shape. When a
+  real-agent run reveals a misstep, record it per the ADR.
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.
