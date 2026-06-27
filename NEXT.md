@@ -4,14 +4,43 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Walk one cycle with the real agent, to a passing scenario we commit
+## 1. Unblock the real-agent path, then walk one cycle to a passing scenario
 
-The real-agent path is wired (`--agent=real` in `spec/conftest.py`, held) and
-runs end to end, producing a *correct* failure (every scorecard row judged
-soundly against the reference scene). Drive it to a passing scenario and commit:
+The real-agent path is wired (`--agent=real` in `spec/conftest.py`, held), but
+Claude Code **2.1.193** ignores a workspace's `permissions.allow` until the
+workspace is trusted (ADR
+[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)).
+The harness gives each run a fresh, never-trusted tmp workspace, so the real
+agent can't run `uv run pytest` — the scenario now fails on the permission gate,
+not on the agent's BDD/TDD behaviour. (Below 2.1.193 — e.g. 2.1.191 — the gate is
+absent and the allow-rule applies.) So the walkthrough's premise — a *correct*
+failure, every scorecard row judged soundly against the reference scene — only
+holds once the gate is satisfied.
 
-- Run the coaching process on that failure — capture the misstep as a coaching
-  record (ADR
+Do these in order:
+
+1. **Turn the outstanding red green.**
+   `spec/tests/test_archiver.py::TestArchiver::test_archive_returns_the_destination_it_wrote`
+   is a legitimate mid-red-green failure: `archive` returns `None`, the test
+   expects the destination it wrote. Finish the cycle. Version-independent — no
+   `claude` involved.
+2. **Implement ADR
+   [0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)
+   — versions header.** `ClaudeTranscriber` emits the `[VERSIONS]` block (CLI +
+   model from the stream-json init event) at the top of every transcript. TDD;
+   the transcriber tests and the `varied-transcript` approval update.
+   Version-independent.
+3. **Implement ADR
+   [0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
+   — trust the workspace.** `ClaudeCli` marks the per-run workspace trusted
+   before launch. This addresses the 2.1.193+ gate, so do it **after ending this
+   session and installing 2.1.195** (the gate isn't present below 2.1.193). TDD
+   against the integration suite.
+
+Then walk the cycle to a passing scenario and commit:
+
+- Run the coaching process on the (now agent-behaviour) failure — capture the
+  misstep as a coaching record (ADR
   [0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-coaching-records.md)).
   Preserve the run's artefacts (`--.artefacts-dir .artefacts`) so the critique —
   the misstep evidence the record needs — survives the tmp workspace.
