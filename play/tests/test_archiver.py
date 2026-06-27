@@ -1,4 +1,6 @@
 import re
+from datetime import UTC
+from unittest.mock import patch
 
 from archiver import archive, current_timestamp
 
@@ -6,6 +8,11 @@ from archiver import archive, current_timestamp
 class TestArchiver:
     def test_current_timestamp_format(self):
         assert re.fullmatch(r"\d{8}-\d{6}", current_timestamp())
+
+    def test_current_timestamp_is_in_utc(self):
+        with patch("archiver.datetime") as mock_datetime:
+            current_timestamp()
+        mock_datetime.now.assert_called_once_with(UTC)
 
     def test_archive_copies_workspace_to_timestamped_folder(self, tmp_path):
         workspace = tmp_path / "workspace"
