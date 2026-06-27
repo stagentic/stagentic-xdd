@@ -4,45 +4,44 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Unblock the real-agent path, then walk one cycle to a passing scenario
+## 1. Drive `test_red_green_commit` to a passing state with the real agent
 
-The real-agent path is wired (`--agent=real` in `spec/conftest.py`, held), but
-Claude Code **2.1.193** ignores a workspace's `permissions.allow` until the
-workspace is trusted (ADR
-[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)).
-The harness gives each run a fresh, never-trusted tmp workspace, so the real
-agent can't run `uv run pytest` — the scenario now fails on the permission gate,
-not on the agent's BDD/TDD behaviour. (Below 2.1.193 — e.g. 2.1.191 — the gate is
-absent and the allow-rule applies.) So the walkthrough's premise — a *correct*
-failure, every scorecard row judged soundly against the reference scene — only
-holds once the gate is satisfied.
+The real-agent path is wired (`--agent=real` in `spec/conftest.py`, held
+uncommitted). On the current CLI (**2.1.191**) the workspace-trust gate ADR
+[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
+addresses is **absent**, so a fresh tmp workspace's `permissions.allow` already
+applies — the real agent can run `uv run pytest`. The scenario's only missing
+piece is the **xdd skill** that steers the agent's Red-Green-Refactor behaviour;
+without it the run fails as a *correct* agent-behaviour failure.
 
-ADR [0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)
-— the versions header — is **done**: `ClaudeTranscriber` now emits the
-`[VERSIONS]` block (CLI + model) at the top of every transcript, sourced from
-the JSONL it reads (the top-level `version` field and the first assistant
-entry's `message.model`, each defaulting to `unknown`). The remaining ordered
-step:
+The target is the `test_write_a_failing_test` scorecard: a failing test that
+imports from `conversion`, a **literal-returning** stub `src/conversion.py` so
+the test fails at an **assertion** (not import), the agent running pytest, and a
+FAILED result.
 
-1. **Implement ADR
-   [0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
-   — trust the workspace.** `ClaudeCli` marks the per-run workspace trusted
-   before launch. This addresses the 2.1.193+ gate, so do it **after ending this
-   session and installing 2.1.195** (the gate isn't present below 2.1.193). TDD
-   against the integration suite. **← immediate next step.**
+Do these in order:
 
-Then walk the cycle to a passing scenario and commit:
+1. **Run the real-agent scenario, preserving artefacts** —
+   `uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts`
+   — to see the current correct failure and keep its critique.
+2. **Record the misstep as a coaching record** (ADR
+   [0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-coaching-records.md))
+   from the preserved critique.
+3. **Write the xdd skill (§4)** and iterate until the scenario passes: steer the
+   agent to replace the placeholder test with a failing test importing from
+   `conversion`, create the literal-returning stub `src/conversion.py`, run
+   `uv run pytest`, and confirm `FAILED`.
+4. **When green, commit the held items:** the real-agent wiring
+   (`spec/conftest.py`, `COMMANDS.md`), `TASK.md`, and
+   `0-placeholder/scene/.claude/settings.json` together; the coaching-process
+   docs (ADR 0015, `docs/coaching/`, and the ADR 0001/0004 + `CLAUDE.md`
+   updates) as their own commit.
 
-- Run the coaching process on the (now agent-behaviour) failure — capture the
-  misstep as a coaching record (ADR
-  [0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-coaching-records.md)).
-  Preserve the run's artefacts (`--.artefacts-dir .artefacts`) so the critique —
-  the misstep evidence the record needs — survives the tmp workspace.
-- Add the xdd skill (§4) that steers the agent until the scenario passes.
-- When green, commit the held items: the real-agent wiring (`spec/conftest.py`,
-  `COMMANDS.md`), `TASK.md`, and `0-placeholder/scene/.claude/settings.json`
-  together; the coaching-process docs (ADR 0015, `docs/coaching/`, and the ADR
-  0001/0004 + `CLAUDE.md` updates) as their own commit.
+**Deferred — versions / CLI upgrade.** ADR
+[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
+(trust the workspace) and the move to 2.1.195 aren't needed on 2.1.191 — the
+gate is absent. Pick them up after the scenario passes; the trust marking
+becomes necessary only on 2.1.193+.
 
 ## 2. Improvement plan working approach
 
