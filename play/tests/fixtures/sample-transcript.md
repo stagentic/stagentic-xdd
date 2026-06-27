@@ -1,3 +1,7 @@
+`[VERSIONS]` Used in this run:
+```
+CLI: claude 2.1.150
+```
 `06:05:02Z` **[QUEUE OPERATION]** enqueue
 
 Task: write a failing test for a miles-to-km converter

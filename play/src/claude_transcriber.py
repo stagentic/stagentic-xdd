@@ -22,7 +22,7 @@ class ClaudeTranscriber:
 
 
 def _render(jsonl_path: Path):
-    return "".join(
+    return "`[VERSIONS]` Used in this run:\n```\nCLI: claude 2.1.150\n```\n" + "".join(
         map(_format, _blocks(jsonl_path))
     )
 

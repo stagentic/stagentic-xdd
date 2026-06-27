@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from hamcrest import assert_that, equal_to
+from hamcrest import assert_that, equal_to, starts_with
 
 from claude_transcriber import ClaudeTranscriber
 
@@ -17,6 +17,16 @@ class TestClaudeTranscriber:
         ClaudeTranscriber()(jsonl_path=SAMPLE_TRANSCRIPT, output_path=output_path)
 
         assert_that(output_path.read_text(), equal_to(expected))
+
+    def test_should_prepend_the_cli_version_from_the_jsonl(self, tmp_path):
+        output_path = tmp_path / "transcript.md"
+
+        ClaudeTranscriber()(jsonl_path=SAMPLE_TRANSCRIPT, output_path=output_path)
+
+        assert_that(
+            output_path.read_text(),
+            starts_with("`[VERSIONS]` Used in this run:\n```\nCLI: claude 2.1.150\n```\n"),
+        )
 
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):
         output_path = tmp_path / "transcript.md"
