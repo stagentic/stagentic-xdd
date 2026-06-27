@@ -1,7 +1,7 @@
 `[VERSIONS]` Used in this run:
 ```
 CLI: claude unknown
-MODEL: claude-opus-4-7
+MODEL: unknown
 ```
 `06:05:02Z` **[QUEUE OPERATION]** enqueue
 

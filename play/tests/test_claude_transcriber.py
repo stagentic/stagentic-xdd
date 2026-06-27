@@ -51,6 +51,19 @@ class TestClaudeTranscriber:
             starts_with("`[VERSIONS]` Used in this run:\n```\nCLI: claude unknown\n"),
         )
 
+    def test_should_show_unknown_model_when_the_jsonl_has_none(self, tmp_path):
+        output_path = tmp_path / "transcript.md"
+
+        ClaudeTranscriber()(jsonl_path=VARIED_TRANSCRIPT, output_path=output_path)
+
+        assert_that(
+            output_path.read_text(),
+            starts_with(
+                "`[VERSIONS]` Used in this run:\n```\n"
+                "CLI: claude unknown\nMODEL: unknown\n```\n"
+            ),
+        )
+
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):
         output_path = tmp_path / "transcript.md"
         expected = (FIXTURES / "varied-transcript.md").read_text()
