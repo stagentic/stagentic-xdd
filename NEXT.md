@@ -17,20 +17,19 @@ absent and the allow-rule applies.) So the walkthrough's premise — a *correct*
 failure, every scorecard row judged soundly against the reference scene — only
 holds once the gate is satisfied.
 
-Do these in order:
+ADR [0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)
+— the versions header — is **done**: `ClaudeTranscriber` now emits the
+`[VERSIONS]` block (CLI + model) at the top of every transcript, sourced from
+the JSONL it reads (the top-level `version` field and the first assistant
+entry's `message.model`, each defaulting to `unknown`). The remaining ordered
+step:
 
 1. **Implement ADR
-   [0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)
-   — versions header.** `ClaudeTranscriber` emits the `[VERSIONS]` block (CLI +
-   model from the stream-json init event) at the top of every transcript. TDD;
-   the transcriber tests and the `varied-transcript` approval update.
-   Version-independent. **← immediate next step.**
-2. **Implement ADR
    [0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
    — trust the workspace.** `ClaudeCli` marks the per-run workspace trusted
    before launch. This addresses the 2.1.193+ gate, so do it **after ending this
    session and installing 2.1.195** (the gate isn't present below 2.1.193). TDD
-   against the integration suite.
+   against the integration suite. **← immediate next step.**
 
 Then walk the cycle to a passing scenario and commit:
 
