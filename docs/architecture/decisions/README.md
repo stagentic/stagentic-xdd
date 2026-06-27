@@ -38,4 +38,4 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 | [0014](0014-separate-claude-jsonl-translation-from-the-transcriber.md) | Separate Claude jsonl translation from the transcriber | Proposed |
 | [0015](0015-capture-xdd-skill-missteps-as-coaching-records.md) | Capture xdd-skill missteps as coaching records | Proposed |
 | [0016](0016-trust-the-agent-workspace-for-headless-runs.md) | Trust the agent workspace so settings.json permissions apply in headless runs | Proposed |
-| [0017](0017-record-cli-version-and-model-in-the-run-transcript.md) | Record the resolved CLI version and model in the run transcript | Proposed |
+| [0017](0017-record-cli-version-and-model-in-the-run-transcript.md) | Record the resolved CLI version and model in the run transcript | Accepted |

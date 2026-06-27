@@ -8,7 +8,7 @@ agent-directive: |
 
 # 0017 — Record the resolved CLI version and model in the run transcript
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
@@ -21,11 +21,11 @@ Two existing decisions make this gap sharper:
 - The CLI and model are **pinned, and upgrades are deliberate migrations** (ADR [0002](0002-pin-claude-code-cli-version.md), ADR [0003](0003-pin-model-versions.md)). Those decisions presume the pinned versions are what actually ran — but nothing in a run's artefacts records what ran, so a pin drift (or an in-session override) leaves no trace.
 - A **coaching record** is meant to tie a misstep to the model it appeared under (ADR [0015](0015-capture-xdd-skill-missteps-as-coaching-records.md)). A misstep comes from a non-deterministic run; if the version and model aren't captured at source, that provenance is reconstructed from memory, not lifted from evidence.
 
-The authoritative source for both values is the stream-json **init event** the CLI emits at the start of every invocation: it reports `claude_code_version` and `model` for the process that actually ran. This is more trustworthy than asking `claude --version` separately — a subprocess runs whatever binary is on disk at exec time, which need not match a version checked elsewhere. That exact mismatch was part of what made the regression above hard to reason about.
+The authoritative source for both values is the **session JSONL the transcriber already reads**: each entry the running process writes carries the CLI version as a top-level `version` field, and each assistant entry carries the `model` it ran under — both recorded by the process that actually ran. This is more trustworthy than asking `claude --version` separately — a subprocess runs whatever binary is on disk at exec time, which need not match a version checked elsewhere. That exact mismatch was part of what made the regression above hard to reason about.
 
 ## Decision
 
-`ClaudeTranscriber` emits a **versions header** as a block at the top of every transcript it produces, sourced from the stream-json init event — one value per line, so a diff isolates which value changed:
+`ClaudeTranscriber` emits a **versions header** as a block at the top of every transcript it produces, sourced from the session JSONL it already reads — the CLI version from the first entry carrying a top-level `version`, the model from the first assistant entry's `message.model`, each falling back to `unknown` when no entry supplies it — one value per line, so a diff isolates which value changed:
 
 ````
 `[VERSIONS]` Used in this run:
@@ -44,11 +44,12 @@ Drift is caught by the existing **approval test** over the transcript: the heade
 - A regression that turns on a version or model change is visible in the artefacts: the approval test fails on the shift, and comparing two runs' headers isolates the variable at a glance — collapsing the empirical bisection that this decision's context describes.
 - The header is deterministic given the pins (ADR [0002](0002-pin-claude-code-cli-version.md), ADR [0003](0003-pin-model-versions.md)), so it does not make approval tests flaky; it only moves when something it is meant to catch moves.
 - A coaching record (ADR [0015](0015-capture-xdd-skill-missteps-as-coaching-records.md)) can lift the model from the transcript verbatim rather than recall it.
+- When a JSONL supplies neither value, the line reads `unknown` rather than being omitted, keeping the block shape stable for the approval diff.
 - Adding the header changes the transcript's shape, so the transcript-shape tests — `ClaudeTranscriber`'s tests and the transcriber approval test (the `varied-transcript` case, cf. ADR [0014](0014-separate-claude-jsonl-translation-from-the-transcriber.md)) — update. The change lands TDD in `ClaudeTranscriber` as its own behavioural commit.
 
 ## Alternatives considered
 
 - **A separate `versions.json` per run dir:** rejected — an extra file, not co-located with the transcript the inspector reads and the coaching record cites, and it would not be covered by the transcript approval test that gives the drift tripwire for free.
 - **An explicit assert-against-pin check** (fail/warn when a run's version differs from the pin): rejected as redundant for the approval-tested scenario — the approval test already trips on any header change. Recording, not enforcing, is the goal here; enforcement is ADR [0002](0002-pin-claude-code-cli-version.md)/[0003](0003-pin-model-versions.md)'s concern.
-- **Capture in the archiver by re-reading the transcript:** rejected — the transcriber already has the init event in hand; routing the values out and back through the archiver is indirection for no gain.
-- **Read the version from `claude --version` rather than the init event:** rejected — that reports whatever binary a separate call resolves, not the one that produced this transcript; the init event is the process of record, and the difference is precisely what obscured the regression above.
+- **Capture in the archiver by re-reading the transcript:** rejected — the transcriber already reads the JSONL these values live in; routing them out and back through the archiver is indirection for no gain.
+- **Read the version from `claude --version` rather than the JSONL:** rejected — that reports whatever binary a separate call resolves, not the one that produced this transcript; the JSONL entries are written by the process that actually ran, so they are the process of record, and the difference is precisely what obscured the regression above.
