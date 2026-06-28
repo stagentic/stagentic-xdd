@@ -4,34 +4,43 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Productionise `--plugin-dir` — revert the spike, then TDD from scratch
+## 1. Capture a lesson per skill rule, then commit the xdd skill
 
-`test_red_green_commit::test_write_a_failing_test` passes with `--agent=real`
-and the xdd skill loaded — validated 20/20 consecutive real runs this session
-(model `claude-opus-4-8`, CLI 2.1.191). The scorecard in
-`spec/tests/test_red_green_commit.py` is the sole definition of the target.
+`--plugin-dir` is productionised and green. `ClaudeCli` carries an optional
+`plugin_dir` (red-green, focused + full mutation clean), and the real-agent
+inner-loop scenario passes with the xdd skill loaded through it — the scorecard
+in `spec/tests/test_red_green_commit.py` is the sole definition of the target.
+The skill (`xdd-plugin/`) and the real-agent wiring are written and held
+uncommitted, pending lesson provenance.
 
-The skill reaches the headless agent via `claude --plugin-dir`, from a plugin
-dir outside the tmp workspace so the workspace stays pristine. The play-level
-capability is spike code:
+### Establish each rule's provenance (ADR 0015)
 
-- `play/src/claude_cli.py` — `ClaudeCli` gained an **untested** `plugin_dirs`
-  kwarg, threaded through `_submit_to`/`_command` to emit `--plugin-dir` per dir.
+The skill's two rules ("write a failing test first", "fail for the right
+reason") were added empirically, not each derived from a captured lesson.
+Before committing the skill:
 
-**Next:** revert that `claude_cli.py` spike and TDD the `plugin_dirs` capability
-from scratch — red-green, focused + full mutation, full baseline — not retrofit
-tests onto the spike. Framing: play *supports* an optional plugin.
+1. Remove **both** rules from `xdd-plugin/skills/xdd/SKILL.md`.
+2. Run the real-agent scenario (preserving artefacts), repeating enough to
+   surface the natural misstep each rule corrects.
+3. Capture each misstep as a lesson (ADR 0015) from the preserved critique.
+4. Add the corresponding rule back — one at a time, re-running to confirm it
+   resolves that misstep — so each rule traces to its lesson.
 
-**Plugin specification stays in the `agent` fixture (`conftest.py`).** The test
-never constructs the agent — it comes from the fixture — and every real-agent
-scenario wants the skill, so there's no case for per-test plugin selection. The
-fixture passing one `XDD_PLUGIN` is the right design; keep it. (The spec
-*specifies* which plugin; play merely *supports* one.)
+Also capture the `claude_cli.py` plugin spike — reverted and re-driven from
+scratch via red-green — as a lesson (ADR 0015).
 
-**Commit the skill once `--plugin-dir` is done and green.** When the
-productionised `plugin_dirs` implementation is in and the real-agent scenario
-passes against it, commit `xdd-plugin/` (the plugin + skill) — and capture the
-spike as a lesson (ADR 0015). Until then it stays uncommitted.
+### Then commit
+
+Once each rule traces to a lesson, commit the held work together:
+
+- `xdd-plugin/` — the plugin + skill.
+- `spec/conftest.py` — exposes `--agent=real` and builds the real agent's
+  `ClaudeCli(plugin_dir=XDD_PLUGIN)`.
+- `spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md` — the scenario task.
+- `spec/tasks/0-placeholder/scene/.claude/settings.json` — allows
+  `Bash(uv run pytest*)` so the agent can run tests.
+
+Then add integration tests for the real-agent path one at a time (cf. `ea7b497`).
 
 **Deferred — versions / CLI upgrade.** ADR 0016 (trust the workspace) and the
 move to 2.1.195 aren't needed on 2.1.191 — the gate is absent; the trust marking
@@ -122,7 +131,7 @@ Review the file through each lens below in turn and in the order below:
 
 ## 3. Improvement plan
 
-> Paused — do §1 (productionise `--plugin-dir`) first.
+> Paused — do §1 (capture lessons, then commit the skill) first.
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
@@ -229,34 +238,6 @@ A candidate convention to start from — every public entry point to the
   found, network unavailable).
 
 This may become the standard for all files.
-
-## 4. xdd skill — written, pending commit
-
-### Capture a lesson per rule before committing the skill
-
-The skill's two rules ("write a failing test first", "fail for the right reason")
-were added empirically, not each derived from a captured lesson. Before committing
-the skill, establish that provenance (ADR 0015):
-
-1. Remove **both** rules from `xdd-plugin/skills/xdd/SKILL.md`.
-2. Run the real-agent scenario (preserving artefacts), repeating enough to surface
-   the natural misstep each rule corrects.
-3. Capture each misstep as a lesson (ADR 0015) from the preserved critique.
-4. Add the corresponding rule back — one at a time, re-running to confirm it
-   resolves that misstep — so each rule traces to its lesson.
-
-The skill (`xdd-plugin/`) is written and validated (§1). It and the real-agent
-wiring are held uncommitted:
-
-- `spec/conftest.py` — exposes `--agent=real` and passes `XDD_PLUGIN` to the real
-  agent's `ClaudeCli`.
-- `spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md` — the scenario task
-  (untracked).
-- `spec/tasks/0-placeholder/scene/.claude/settings.json` — allows
-  `Bash(uv run pytest*)` so the agent can run tests.
-
-These commit once `--plugin-dir` is productionised and green (§1); then add
-integration tests for the real-agent path one at a time (cf. `ea7b497`).
 
 ## Future options
 
