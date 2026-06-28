@@ -4,8 +4,9 @@ from pathlib import Path
 
 
 class ClaudeCli:
-    def __init__(self, runner: Callable = subprocess.run, *,
-                 plugin_dir: Path | None = None
+    def __init__(self,
+                 runner: Callable = subprocess.run,
+                 *, plugin_dir: Path | None = None
                  ):
         self._runner = runner
         self._plugin_dir = plugin_dir
