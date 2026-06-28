@@ -4,49 +4,76 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Capture a lesson per skill rule, then commit the xdd skill
+## 1. Capture the write-order lesson, then re-enable its characteristic
 
-`--plugin-dir` is productionised and green. `ClaudeCli` carries an optional
-`plugin_dir` (red-green, focused + full mutation clean), and the real-agent
-inner-loop scenario passes with the xdd skill loaded through it — the scorecard
-in `spec/tests/test_red_green_commit.py` is the sole definition of the target.
-The skill (`xdd-plugin/`) and the real-agent wiring are written and held
-uncommitted, pending lesson provenance.
+The corrective xdd skill, the real-agent inner-loop scenario, and the first
+lesson ("an honest red fails on the assertion, not the import") have landed. The
+skill carries one corrective rule — "failing for the right reason" — that traces
+to that lesson, and the scenario runs the real agent through the plugin green.
 
-### Establish each rule's provenance (ADR 0015)
+One scorecard characteristic is held out, commented in
+`spec/tests/test_red_green_commit.py`: **write-order** ("the failing test was
+written before the production code"). The agent trips it intermittently and the
+skill has no rule for it yet. Per ADR
+[0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md),
+derive that rule from a captured lesson:
 
-The skill's two rules ("write a failing test first", "fail for the right
-reason") were added empirically, not each derived from a captured lesson.
-Before committing the skill:
+1. Surface the write-order misstep from a real-agent run (preserving artefacts).
+2. Capture it as a lesson from the critique.
+3. Add the corrective rule to `xdd-plugin/skills/xdd/SKILL.md`, re-running to
+   confirm it resolves the misstep.
+4. Re-enable the write-order characteristic in the scorecard.
 
-1. Remove **both** rules from `xdd-plugin/skills/xdd/SKILL.md`.
-2. Run the real-agent scenario (preserving artefacts), repeating enough to
-   surface the natural misstep each rule corrects.
-3. Capture each misstep as a lesson (ADR 0015) from the preserved critique.
-4. Add the corresponding rule back — one at a time, re-running to confirm it
-   resolves that misstep — so each rule traces to its lesson.
+### Real-agent integration tests
 
-Also capture the `claude_cli.py` plugin spike — reverted and re-driven from
-scratch via red-green — as a lesson (ADR 0015).
-
-### Then commit
-
-Once each rule traces to a lesson, commit the held work together:
-
-- `xdd-plugin/` — the plugin + skill.
-- `spec/conftest.py` — exposes `--agent=real` and builds the real agent's
-  `ClaudeCli(plugin_dir=XDD_PLUGIN)`.
-- `spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md` — the scenario task.
-- `spec/tasks/0-placeholder/scene/.claude/settings.json` — allows
-  `Bash(uv run pytest*)` so the agent can run tests.
-
-Then add integration tests for the real-agent path one at a time (cf. `ea7b497`).
+The inner-loop scenario is the only real-agent coverage so far. Add integration
+tests for the real-agent path one at a time (cf. `ea7b497`).
 
 **Deferred — versions / CLI upgrade.** ADR 0016 (trust the workspace) and the
 move to 2.1.195 aren't needed on 2.1.191 — the gate is absent; the trust marking
 becomes necessary only on 2.1.193+.
 
-## 2. Improvement plan working approach
+## 2. Pin and record reasoning effort and the context window
+
+> Do §1 first — finish the held lesson/skill work and land a clean repo before
+> starting this.
+
+ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
+(Proposed): a run transcript records the CLI version and model (ADR
+[0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)),
+but not the **reasoning effort** or the **context window** a run used — both bear
+on a lesson's provenance (ADR
+[0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md)).
+What was learned while capturing the first lesson:
+
+- The harness runs resolve to `claude-opus-4-8[1m]` — the **1M context** variant
+  (Opus 4.8 maps to 1M by default). The header's source, `message.model`, records
+  the API id `claude-opus-4-8`, dropping the `[1m]`; the `[1m]` form is visible
+  only in the `system/init` event's `model`.
+- The harness passes no `--effort`, so runs use the CLI **default (high** for
+  Opus 4.8**)**. Effort is absent from both the session JSONL and the
+  `system/init` event, so it can only be recorded as the value the harness sets.
+
+Two pieces of work, each TDD in `play/`:
+
+1. **Pin effort.** Add a `--effort` flag to the harness's `claude -p` invocation
+   (`play/src/claude_cli.py`), pinned to **high** — the current Opus 4.8 default,
+   so this locks in the behaviour the first lessons were captured under rather
+   than changing it. Effort levels are **model-dependent** (Opus 4.8/4.7:
+   `low|medium|high|xhigh|max`; Opus 4.6, Sonnet 4.6: `low|medium|high|max`;
+   Haiku 4.5: no documented effort support), so the flag must be **gated on the
+   resolved model** — never pass `--effort` to a model that does not support it
+   (it would fail the run). `ClaudeCli` therefore needs to know which model it is
+   invoking, or which models support the chosen level.
+2. **Record effort + context.** Extend the versions header (ADR 0017) so the
+   transcript records the effort the harness set and the resolved context window
+   (the `[1m]` form from the `system/init` event, not the per-message
+   `message.model`).
+
+Then backfill the captured lessons' metadata from the recorded values rather than
+from this investigation.
+
+## 3. Improvement plan working approach
 
 One change at a time: apply it, run the test(s) the change's scope calls
 for, then propose a commit — behavioural and structural changes kept in
@@ -129,7 +156,7 @@ Review the file through each lens below in turn and in the order below:
 - Public methods take keyword-only args (`*` separator) (inferred)
 - Import grouping: stdlib / third-party / first-party (inferred, ruff-enforced)
 
-## 3. Improvement plan
+## 4. Improvement plan
 
 > Paused — do §1 (capture lessons, then commit the skill) first.
 
