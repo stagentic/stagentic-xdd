@@ -4,43 +4,37 @@
 > immediate next step and is rewritten as work lands; a commit that
 > points at NEXT.md rots the moment the file changes.
 
-## 1. Drive `test_red_green_commit` to a passing state with the real agent
+## 1. Productionise `--plugin-dir` — revert the spike, then TDD from scratch
 
-The real-agent path is wired (`--agent=real` in `spec/conftest.py`, held
-uncommitted). On the current CLI (**2.1.191**) the workspace-trust gate ADR
-[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
-addresses is **absent**, so a fresh tmp workspace's `permissions.allow` already
-applies — the real agent can run `uv run pytest`. The scenario's only missing
-piece is the **xdd skill** that steers the agent's Red-Green-Refactor behaviour;
-without it the run fails as a *correct* agent-behaviour failure.
+`test_red_green_commit::test_write_a_failing_test` passes with `--agent=real`
+and the xdd skill loaded — validated 20/20 consecutive real runs this session
+(model `claude-opus-4-8`, CLI 2.1.191). The scorecard in
+`spec/tests/test_red_green_commit.py` is the sole definition of the target.
 
-The target is the `test_write_a_failing_test` scorecard: a failing test that
-imports from `conversion`, a **literal-returning** stub `src/conversion.py` so
-the test fails at an **assertion** (not import), the agent running pytest, and a
-FAILED result.
+The skill reaches the headless agent via `claude --plugin-dir`, from a plugin
+dir outside the tmp workspace so the workspace stays pristine. The play-level
+capability is spike code:
 
-Do these in order:
+- `play/src/claude_cli.py` — `ClaudeCli` gained an **untested** `plugin_dirs`
+  kwarg, threaded through `_submit_to`/`_command` to emit `--plugin-dir` per dir.
 
-1. **Run the real-agent scenario, preserving artefacts** —
-   `uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts`
-   — to see the current correct failure and keep its critique.
-2. **Record the misstep as a coaching record** (ADR
-   [0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-coaching-records.md))
-   from the preserved critique.
-3. **Write the xdd skill (§4)** and iterate until the scenario passes: steer the
-   agent to replace the placeholder test with a failing test importing from
-   `conversion`, create the literal-returning stub `src/conversion.py`, run
-   `uv run pytest`, and confirm `FAILED`.
-4. **When green, commit the held items:** the real-agent wiring
-   (`spec/conftest.py`, `COMMANDS.md`), `TASK.md`, and
-   `0-placeholder/scene/.claude/settings.json` together; the coaching-process
-   docs (ADR 0015, `docs/coaching/`, and the ADR 0001/0004 + `CLAUDE.md`
-   updates) as their own commit.
+**Next:** revert that `claude_cli.py` spike and TDD the `plugin_dirs` capability
+from scratch — red-green, focused + full mutation, full baseline — not retrofit
+tests onto the spike. Framing: play *supports* an optional plugin.
 
-**Deferred — versions / CLI upgrade.** ADR
-[0016](docs/architecture/decisions/0016-trust-the-agent-workspace-for-headless-runs.md)
-(trust the workspace) and the move to 2.1.195 aren't needed on 2.1.191 — the
-gate is absent. Pick them up after the scenario passes; the trust marking
+**Plugin specification stays in the `agent` fixture (`conftest.py`).** The test
+never constructs the agent — it comes from the fixture — and every real-agent
+scenario wants the skill, so there's no case for per-test plugin selection. The
+fixture passing one `XDD_PLUGIN` is the right design; keep it. (The spec
+*specifies* which plugin; play merely *supports* one.)
+
+**Commit the skill once `--plugin-dir` is done and green.** When the
+productionised `plugin_dirs` implementation is in and the real-agent scenario
+passes against it, commit `xdd-plugin/` (the plugin + skill) — and capture the
+spike as a lesson (ADR 0015). Until then it stays uncommitted.
+
+**Deferred — versions / CLI upgrade.** ADR 0016 (trust the workspace) and the
+move to 2.1.195 aren't needed on 2.1.191 — the gate is absent; the trust marking
 becomes necessary only on 2.1.193+.
 
 ## 2. Improvement plan working approach
@@ -128,7 +122,7 @@ Review the file through each lens below in turn and in the order below:
 
 ## 3. Improvement plan
 
-> Paused — do the §1 walkthrough first.
+> Paused — do §1 (productionise `--plugin-dir`) first.
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
@@ -236,36 +230,20 @@ A candidate convention to start from — every public entry point to the
 
 This may become the standard for all files.
 
-## 4. Write the xdd skill
+## 4. xdd skill — written, pending commit
 
-The `play/` harness is committed: `Agent`, `ClaudeTranscriber`, and JSONL path
-computation are in `play/src/`. The `spec/conftest.py` wiring that exposes
-`--agent=real` is in place but held uncommitted until the scenario passes (§1).
+The skill (`xdd-plugin/`) is written and validated (§1). It and the real-agent
+wiring are held uncommitted:
 
-A first draft of the scenario's task,
-`spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md`, already exists in
-the working tree but is deliberately left **untracked**. It lands with the
-commit below (alongside `spec/conftest.py` and
-`0-placeholder/scene/.claude/settings.json`) once the scenario passes (§1) —
-not before.
+- `spec/conftest.py` — exposes `--agent=real` and passes `XDD_PLUGIN` to the real
+  agent's `ClaudeCli`.
+- `spec/tasks/1-first-test-for-miles-to-km-converter/TASK.md` — the scenario task
+  (untracked).
+- `spec/tasks/0-placeholder/scene/.claude/settings.json` — allows
+  `Bash(uv run pytest*)` so the agent can run tests.
 
-The real run (§1) is a correct failure — the agent lacks the guidance a skill
-would provide.
-
-The workspace already has `spec/tasks/0-placeholder/scene/.claude/settings.json`
-allowing `Bash(uv run pytest*)`, so the agent can run tests once the skill
-steers it correctly.
-
-The skill needs to guide the agent to:
-1. Replace the placeholder test with a failing test that imports from `conversion`.
-2. Create a stub `src/conversion.py` so the test fails at assertion (not import).
-3. Run `uv run pytest` and confirm the result is `FAILED`.
-
-Once `--agent=real` is green:
-- Add integration tests for the real-agent path one at a time.
-  *(cf. `ea7b497`)*
-- Commit `spec/conftest.py`, `TASK.md`, and
-  `0-placeholder/scene/.claude/settings.json` together.
+These commit once `--plugin-dir` is productionised and green (§1); then add
+integration tests for the real-agent path one at a time (cf. `ea7b497`).
 
 ## Future options
 
