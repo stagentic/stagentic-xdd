@@ -232,6 +232,19 @@ This may become the standard for all files.
 
 ## 4. xdd skill — written, pending commit
 
+### Capture a lesson per rule before committing the skill
+
+The skill's two rules ("write a failing test first", "fail for the right reason")
+were added empirically, not each derived from a captured lesson. Before committing
+the skill, establish that provenance (ADR 0015):
+
+1. Remove **both** rules from `xdd-plugin/skills/xdd/SKILL.md`.
+2. Run the real-agent scenario (preserving artefacts), repeating enough to surface
+   the natural misstep each rule corrects.
+3. Capture each misstep as a lesson (ADR 0015) from the preserved critique.
+4. Add the corresponding rule back — one at a time, re-running to confirm it
+   resolves that misstep — so each rule traces to its lesson.
+
 The skill (`xdd-plugin/`) is written and validated (§1). It and the real-agent
 wiring are held uncommitted:
 
