@@ -1,42 +1,28 @@
 # NEXT
 
-> Do not reference this file in commit messages. NEXT.md tracks the
-> immediate next step and is rewritten as work lands; a commit that
-> points at NEXT.md rots the moment the file changes.
+> Do not reference this file in commit messages except those about this file itself.
+> NEXT.md tracks the immediate next step and is rewritten as work lands (without 
+> any mention of what was just completed.
 
-## 1. Capture the write-order lesson, then re-enable its characteristic
+## 1. Green step of the red_green_commit scenario
 
-The corrective xdd skill, the real-agent inner-loop scenario, and the first
-lesson ("an honest red fails on the assertion, not the import") have landed. The
-skill carries one corrective rule — "failing for the right reason" — that traces
-to that lesson, and the scenario runs the real agent through the plugin green.
+The scenario covers only the red beat (`test_write_a_failing_test`). Add the
+green beat — a task whose scene is task 1's end-state (failing test + stub),
+with the agent driven to make the failing test pass and scored by the
+scorecard. Surface and correct any misstep per ADRs 0015/0018, as with red.
 
-One scorecard characteristic is held out, commented in
-`spec/tests/test_red_green_commit.py`: **write-order** ("the failing test was
-written before the production code"). The agent trips it intermittently and the
-skill has no rule for it yet. Per ADR
-[0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md),
-derive that rule from a captured lesson:
+## 2. Contract-test ClaudeCli's options
 
-1. Surface the write-order misstep from a real-agent run (preserving artefacts).
-2. Capture it as a lesson from the critique.
-3. Add the corrective rule to `xdd-plugin/skills/xdd/SKILL.md`, re-running to
-   confirm it resolves the misstep.
-4. Re-enable the write-order characteristic in the scorecard.
-
-### Real-agent integration tests
-
-The inner-loop scenario is the only real-agent coverage so far. Add integration
-tests for the real-agent path one at a time (cf. `ea7b497`).
+`ClaudeCli` passes `--permission-mode`, `--session-id`, `--add-dir`, and
+`--plugin-dir` to real claude, but only a bare prompt is contract-tested
+(`play/tests/contract/test_claude_cli.py`). Add one contract test per option,
+verifying it does what we expect against the real CLI, one at a time.
 
 **Deferred — versions / CLI upgrade.** ADR 0016 (trust the workspace) and the
 move to 2.1.195 aren't needed on 2.1.191 — the gate is absent; the trust marking
 becomes necessary only on 2.1.193+.
 
-## 2. Pin and record reasoning effort and the context window
-
-> Do §1 first — finish the held lesson/skill work and land a clean repo before
-> starting this.
+## 3. Pin and record reasoning effort and the context window
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
 (Proposed): a run transcript records the CLI version and model (ADR
@@ -73,7 +59,7 @@ Two pieces of work, each TDD in `play/`:
 Then backfill the captured lessons' metadata from the recorded values rather than
 from this investigation.
 
-## 3. Improvement plan working approach
+## 4. Improvement plan working approach
 
 One change at a time: apply it, run the test(s) the change's scope calls
 for, then propose a commit — behavioural and structural changes kept in
@@ -156,9 +142,9 @@ Review the file through each lens below in turn and in the order below:
 - Public methods take keyword-only args (`*` separator) (inferred)
 - Import grouping: stdlib / third-party / first-party (inferred, ruff-enforced)
 
-## 4. Improvement plan
+## 5. Improvement plan
 
-> Paused — do §1 (capture lessons, then commit the skill) first.
+> Paused — do §1 first.
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
