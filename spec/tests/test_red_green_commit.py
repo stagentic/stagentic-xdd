@@ -33,8 +33,7 @@ class TestRedGreenCommit:
                         "Transcript shows the agent ran pytest",
                         "Transcript shows a FAILED pytest result",
                         "Test fails comparing a return value, not on a missing module or symbol",
-                        # Pending its own lesson and corrective rule (write-order misstep):
-                        # "Transcript shows the failing test was written before the production code",
+                        "Transcript shows the failing test was written before the production code",
                     ],
                 ),
             ),
