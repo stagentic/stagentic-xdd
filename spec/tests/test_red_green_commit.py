@@ -27,6 +27,7 @@ class TestRedGreenCommit:
                 evidence_source=transcript,
                 should=_have_completed(
                     matching=[
+                        "Transcript shows the agent invoked the xdd skill",
                         "Production module exists at src/conversion.py with content",
                         "Workspace closely matches the Reference scene",
                         "Production returns a literal value, and does not use a formula",
@@ -102,6 +103,12 @@ def _have_completed(*, matching):
                 _test_written_before_production(transcript)
             ),
             "failure": "the production code was written before the failing test, not after it",
+        },
+        "Transcript shows the agent invoked the xdd skill": {
+            "verify": lambda transcript, target_dir, reference_scene: bool(
+                re.search(r"Launching skill: xdd", transcript)
+            ),
+            "failure": "transcript shows the xdd skill was not invoked",
         },
     }
     return [{"characteristic": name, **table[name]} for name in matching]
