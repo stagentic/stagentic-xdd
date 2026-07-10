@@ -12,6 +12,18 @@ SAMPLE_TRANSCRIPT = FIXTURES / "sample-transcript.jsonl"
 VARIED_TRANSCRIPT = FIXTURES / "varied-transcript.jsonl"
 
 
+def _jsonl_with_write(tmp_path, content):
+    jsonl_path = tmp_path / "session.jsonl"
+    jsonl_path.write_text(json.dumps({
+        "type": "assistant",
+        "message": {"content": [
+            {"type": "tool_use", "name": "Write",
+             "input": {"file_path": "/tmp/b.py", "content": content}},
+        ]},
+    }) + "\n")
+    return jsonl_path
+
+
 class TestClaudeTranscriber:
     def test_should_write_rendered_content_to_the_output_path(self, tmp_path):
         output_path = tmp_path / "transcript.md"
@@ -72,24 +84,14 @@ class TestClaudeTranscriber:
         case("another-snippet", content="x = 1"),
     ])
     def test_should_render_the_content_a_write_wrote(self, tmp_path, content):
-        jsonl_path = tmp_path / "session.jsonl"
-        jsonl_path.write_text(json.dumps({
-            "type": "assistant",
-            "message": {"content": [
-                {"type": "tool_use", "name": "Write",
-                 "input": {"file_path": "/tmp/b.py", "content": content}},
-            ]},
-        }) + "\n")
+        jsonl_path = _jsonl_with_write(tmp_path, content)
         output_path = tmp_path / "transcript.md"
 
         ClaudeTranscriber(render_write_body=True)(
             jsonl_path=jsonl_path, output_path=output_path
         )
 
-        assert_that(
-            output_path.read_text(),
-            contains_string(f"```\n{content}\n```"),
-        )
+        assert_that(output_path.read_text(), contains_string(f"```\n{content}\n```"))
 
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):
         output_path = tmp_path / "transcript.md"
