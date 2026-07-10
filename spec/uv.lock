@@ -139,6 +139,21 @@ wheels = [
 ]
 
 [[package]]
+name = "test-utilities"
+version = "0.0.0"
+source = { editable = "../test_utilities" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mutmut", specifier = ">=3.6" },
+    { name = "pyhamcrest", specifier = ">=2.1.0" },
+    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "ruff", specifier = ">=0.9" },
+]
+
+[[package]]
 name = "xdd-spec"
 version = "0.1.0"
 source = { virtual = "." }
@@ -150,6 +165,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "test-utilities" },
 ]
 
 [package.metadata]
@@ -161,4 +177,5 @@ dev = [
     { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-xdist", specifier = ">=3.8.0" },
     { name = "ruff", specifier = ">=0.9" },
+    { name = "test-utilities", editable = "../test_utilities" },
 ]
