@@ -1,6 +1,7 @@
+import json
 from pathlib import Path
 
-from hamcrest import assert_that, equal_to, starts_with
+from hamcrest import assert_that, contains_string, equal_to, starts_with
 
 from claude_transcriber import ClaudeTranscriber
 
@@ -62,6 +63,24 @@ class TestClaudeTranscriber:
                 "`[VERSIONS]` Used in this run:\n```\n"
                 "CLI: claude unknown\nMODEL: unknown\n```\n"
             ),
+        )
+
+    def test_should_render_the_content_a_write_wrote(self, tmp_path):
+        jsonl_path = tmp_path / "session.jsonl"
+        jsonl_path.write_text(json.dumps({
+            "type": "assistant",
+            "message": {"content": [
+                {"type": "tool_use", "name": "Write",
+                 "input": {"file_path": "/tmp/b.py", "content": "print('hi')"}},
+            ]},
+        }) + "\n")
+        output_path = tmp_path / "transcript.md"
+
+        ClaudeTranscriber(render_write_body=True)(jsonl_path=jsonl_path, output_path=output_path)
+
+        assert_that(
+            output_path.read_text(),
+            contains_string("```\nprint('hi')\n```"),
         )
 
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):
