@@ -13,3 +13,7 @@ class TestInspectorGuard:
     def test_should_allow_the_auditor_to_judge_the_fake_agent(self):
         with does_not_raise():
             _reject_incompatible_inspector(agent="fake", inspector="auditor")
+
+    def test_should_allow_the_critic_to_judge_the_real_agent(self):
+        with does_not_raise():
+            _reject_incompatible_inspector(agent="real", inspector="critic")

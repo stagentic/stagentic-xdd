@@ -65,7 +65,7 @@ def _inspector_for(*, agent: str, inspector: str | None) -> str:
 
 
 def _reject_incompatible_inspector(*, agent: str, inspector: str | None) -> None:
-    if agent == "real":
+    if agent == "real" and inspector == "auditor":
         raise pytest.UsageError(
             "the auditor can only evaluate deterministic results, so it cannot "
             "judge the real agent; use --inspector=critic (the default)"
