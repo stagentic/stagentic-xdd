@@ -88,7 +88,7 @@ class TestClaudeTranscriber:
         jsonl_path = _jsonl_with_write(tmp_path, content)
         output_path = tmp_path / "transcript.md"
 
-        ClaudeTranscriber(render_write_body=True)(
+        ClaudeTranscriber()(
             jsonl_path=jsonl_path, output_path=output_path
         )
 
@@ -100,7 +100,7 @@ class TestClaudeTranscriber:
         )
         output_path = tmp_path / "transcript.md"
 
-        ClaudeTranscriber(render_write_body=True)(
+        ClaudeTranscriber()(
             jsonl_path=jsonl_path, output_path=output_path
         )
 

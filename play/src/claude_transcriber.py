@@ -17,17 +17,14 @@ _RENDERERS = {
 
 
 class ClaudeTranscriber:
-    def __init__(self, *, render_write_body: bool = False):
-        self._render_write_body = render_write_body
-
     def __call__(self, *, jsonl_path: Path, output_path: Path):
-        output_path.write_text(_render(jsonl_path, self._render_write_body))
+        output_path.write_text(_render(jsonl_path))
 
 
-def _render(jsonl_path: Path, render_write_body) -> str:
+def _render(jsonl_path: Path) -> str:
     entries = _entries(jsonl_path)
     return f"`[VERSIONS]` Used in this run:\n```\nCLI: claude {_cli_version(entries)}\nMODEL: {_model(entries)}\n```\n" + "".join(
-        map(_format, _blocks(entries, render_write_body))
+        map(_format, _blocks(entries))
     )
 
 
@@ -51,22 +48,22 @@ def _model(entries):
     return "unknown"
 
 
-def _blocks(entries, render_write_body):
+def _blocks(entries):
     return (
         block
         for entry in entries
-        for block in _blocks_from(entry, render_write_body)
+        for block in _blocks_from(entry)
     )
 
 
-def _blocks_from(entry, render_write_body):
+def _blocks_from(entry):
     timestamp = _timestamp_for(entry)
     if "message" not in entry:
         block = _block_from_entry(entry, timestamp)
         return [block] if block else []
     content = entry["message"].get("content", [])
     if isinstance(content, list):
-        return (_block_from_item(item, timestamp, render_write_body) for item in content)
+        return (_block_from_item(item, timestamp) for item in content)
     kind = entry.get("type", "").upper().replace("_", " ").replace("-", " ")
     return [Block(timestamp, kind, _strip_headings(content).strip())] if kind else []
 
@@ -75,15 +72,14 @@ def _timestamp_for(entry) -> str:
     return _format_time(entry.get("timestamp", ""))
 
 
-def _block_from_item(item, timestamp, render_write_body):
+def _block_from_item(item, timestamp):
     kind = item.get("type", "").upper().replace("_", " ").replace("-", " ")
     match item.get("type"):
         case "tool_use":
             return _tool_use_block(
                 item,
                 timestamp,
-                kind,
-                render_write_body
+                kind
             )
         case _:
             return _plain_block(
@@ -93,7 +89,7 @@ def _block_from_item(item, timestamp, render_write_body):
             )
 
 
-def _tool_use_block(item, timestamp, kind, render_write_body):
+def _tool_use_block(item, timestamp, kind):
     name = item.get("name", "")
     tool_input = item.get("input", {})
     header = f"{name} `{_tool_key(name, tool_input)}`"
@@ -101,7 +97,7 @@ def _tool_use_block(item, timestamp, kind, render_write_body):
         timestamp,
         kind,
         header,
-        _write_body(name, tool_input, render_write_body)
+        _write_body(name, tool_input)
     )
 
 
@@ -153,8 +149,8 @@ def _tool_key(name, tool_input):
     return next(iter(tool_input.values()), "") if tool_input else ""
 
 
-def _write_body(name, tool_input, render_write_body):
-    if name == "Write" and render_write_body:
+def _write_body(name, tool_input):
+    if name == "Write":
         return _fenced(tool_input.get("content", ""))
     return ""
 
