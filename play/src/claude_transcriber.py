@@ -77,16 +77,35 @@ def _timestamp_for(entry) -> str:
 
 def _block_from_item(item, timestamp, render_write_body):
     kind = item.get("type", "").upper().replace("_", " ").replace("-", " ")
-    if item.get("type") == "tool_use":
-        name = item.get("name", "")
-        tool_input = item.get("input", {})
-        header = f"{name} `{_tool_key(name, tool_input)}`"
-        return Block(
-            timestamp,
-            kind,
-            header,
-            _write_body(name, tool_input, render_write_body)
-        )
+    match item.get("type"):
+        case "tool_use":
+            return _tool_use_block(
+                item,
+                timestamp,
+                kind,
+                render_write_body
+            )
+        case _:
+            return _plain_block(
+                item,
+                timestamp,
+                kind
+            )
+
+
+def _tool_use_block(item, timestamp, kind, render_write_body):
+    name = item.get("name", "")
+    tool_input = item.get("input", {})
+    header = f"{name} `{_tool_key(name, tool_input)}`"
+    return Block(
+        timestamp,
+        kind,
+        header,
+        _write_body(name, tool_input, render_write_body)
+    )
+
+
+def _plain_block(item, timestamp, kind):
     return Block(
         timestamp,
         kind,
