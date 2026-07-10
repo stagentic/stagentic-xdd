@@ -24,7 +24,7 @@ class ClaudeTranscriber:
         output_path.write_text(_render(jsonl_path, self._render_write_body))
 
 
-def _render(jsonl_path: Path, render_write_body):
+def _render(jsonl_path: Path, render_write_body) -> str:
     entries = _entries(jsonl_path)
     return f"`[VERSIONS]` Used in this run:\n```\nCLI: claude {_cli_version(entries)}\nMODEL: {_model(entries)}\n```\n" + "".join(
         map(_format, _blocks(entries, render_write_body))
@@ -82,8 +82,7 @@ def _block_from_item(item, timestamp, render_write_body):
         tool_input = item.get("input", {})
         header = f"{name} `{_tool_key(name, tool_input)}`"
         if name == "Write" and render_write_body:
-            content = tool_input.get("content", "")
-            return Block(timestamp, kind, header, f"```\n{content}\n```")
+            return Block(timestamp, kind, header, _fenced(tool_input.get("content", "")))
         return Block(timestamp, kind, header)
     return Block(timestamp, kind, item.get("text") or item.get("content") or "")
 
@@ -126,6 +125,10 @@ def _tool_key(name, tool_input):
     if field:
         return tool_input.get(field, "")
     return next(iter(tool_input.values()), "") if tool_input else ""
+
+
+def _fenced(content):
+    return f"```\n{content}\n```"
 
 
 def _strip_headings(text):
