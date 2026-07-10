@@ -45,4 +45,4 @@ Evidence (e.g. `0020-drive-skill-invocation-from-the-frontmatter-description/`).
 | [0017](0017-record-cli-version-and-model-in-the-run-transcript.md) | Record the resolved CLI version and model in the run transcript | Accepted |
 | [0018](0018-build-the-xdd-skill-as-a-corrective-skill.md) | Build the xdd skill as a Corrective Skill | Proposed |
 | [0019](0019-pin-and-record-reasoning-effort-and-context-window.md) | Pin and record reasoning effort and the context window | Proposed |
-| [0020](0020-drive-skill-invocation-from-the-frontmatter-description.md) | Drive skill invocation from the frontmatter description | Proposed |
+| [0020](0020-drive-skill-invocation-from-the-frontmatter-description.md) | Drive skill invocation from the frontmatter description | Accepted |

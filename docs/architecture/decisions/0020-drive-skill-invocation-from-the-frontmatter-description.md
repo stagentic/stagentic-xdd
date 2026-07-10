@@ -8,7 +8,7 @@ agent-directive: |
 
 # 0020 — Drive skill invocation from the frontmatter description
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
