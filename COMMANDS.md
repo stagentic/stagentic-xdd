@@ -80,14 +80,6 @@ uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts
 uv run --directory spec pytest tests --inspector=critic
 ```
 
-### `spec/` scenarios with real agent and auditor (require `claude` CLI)
-
-The real agent defaults to the critic; this opts back in to the auditor.
-
-```
-uv run --directory spec pytest tests --agent=real --inspector=auditor
-```
-
 ## Mutation testing
 
 Mutates the files in `source_paths` (`play/pyproject.toml`) against the fast

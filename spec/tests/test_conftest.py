@@ -1,9 +1,14 @@
+import subprocess
+import sys
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import pytest
 from cases import case
 
 from conftest import _reject_incompatible_inspector
+
+SPEC_DIR = Path(__file__).parent.parent
 
 
 class TestInspectorGuard:
@@ -31,3 +36,14 @@ class TestInspectorGuard:
     ):
         with expectation:
             _reject_incompatible_inspector(agent=agent, inspector=inspector)
+
+
+class TestInspectorGuardWiring:
+    def test_should_abort_a_real_agent_auditor_run(self):
+        result = subprocess.run(
+            [sys.executable, "-m", "pytest", "tests", "--co", "-n0",
+             "--agent=real", "--inspector=auditor"],
+            cwd=SPEC_DIR, capture_output=True, text=True, check=False,
+        )
+        assert result.returncode != 0
+        assert "deterministic" in result.stderr

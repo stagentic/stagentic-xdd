@@ -20,6 +20,13 @@ def pytest_addoption(parser):
     parser.addoption("--.artefacts-dir", default=None)
 
 
+def pytest_configure(config):
+    _reject_incompatible_inspector(
+        agent=config.getoption("--agent"),
+        inspector=config.getoption("--inspector"),
+    )
+
+
 def pytest_collection_modifyitems(config, items):
     if config.getoption("--agent") == "real":
         return
