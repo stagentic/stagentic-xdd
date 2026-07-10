@@ -79,11 +79,12 @@ def _block_from_item(item, timestamp, render_write_body):
     kind = item.get("type", "").upper().replace("_", " ").replace("-", " ")
     if item.get("type") == "tool_use":
         name = item.get("name", "")
-        key = _tool_key(name, item.get("input", {}))
+        tool_input = item.get("input", {})
+        header = f"{name} `{_tool_key(name, tool_input)}`"
         if name == "Write" and render_write_body:
-            content = item.get("input", {}).get("content", "")
-            return Block(timestamp, kind, f"{name} `{key}`", f"```\n{content}\n```")
-        return Block(timestamp, kind, f"{name} `{key}`")
+            content = tool_input.get("content", "")
+            return Block(timestamp, kind, header, f"```\n{content}\n```")
+        return Block(timestamp, kind, header)
     return Block(timestamp, kind, item.get("text") or item.get("content") or "")
 
 
