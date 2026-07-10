@@ -160,7 +160,8 @@ def _write_body(name, tool_input, render_write_body):
 
 
 def _fenced(content):
-    return f"```\n{content}\n```"
+    separator = "" if content.endswith("\n") else "\n"
+    return f"```\n{content}{separator}```"
 
 
 def _strip_headings(text):

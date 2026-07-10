@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from cases import case
@@ -92,6 +93,25 @@ class TestClaudeTranscriber:
         )
 
         assert_that(output_path.read_text(), contains_string(f"```\n{content}\n```"))
+
+    def test_should_render_multi_line_content(self, tmp_path):
+        jsonl_path = _jsonl_with_write(
+            tmp_path, "def is_even(n):\n    return n % 2 == 0\n"
+        )
+        output_path = tmp_path / "transcript.md"
+
+        ClaudeTranscriber(render_write_body=True)(
+            jsonl_path=jsonl_path, output_path=output_path
+        )
+
+        assert_that(
+            output_path.read_text(),
+            contains_string(dedent("""\
+                ```
+                def is_even(n):
+                    return n % 2 == 0
+                ```""")),
+        )
 
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):
         output_path = tmp_path / "transcript.md"
