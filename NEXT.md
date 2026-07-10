@@ -304,6 +304,14 @@ runs are clean). Fix: give the copytree `ignore_patterns('.venv', '__pycache__',
 '.pytest_cache')` (mirrors `_set_opening_scene_for`), TDD'd in `play/`. Relates to
 the transient-artefacts known constraint above.
 
+**Now on the default path (decided 2026-07-10).** `spec` runs parallel by default
+(`addopts = ["-n", "auto"]`, pytest-xdist), so this race is no longer confined to
+ad-hoc batch runs — it can surface on any routine spec run. Decision: **leave the
+priority where it is** and fix only when it actually bites, rather than
+pre-emptively. `-n auto` over the current small scenario set runs at low (~2-way)
+concurrency, where the race is unlikely; revisit if it starts flaking as the
+scenario count grows.
+
 ## Enforcing working-practices via hooks
 
 This began as a way to make the dev process less painful. It became more
