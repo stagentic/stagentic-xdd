@@ -81,10 +81,17 @@ def _block_from_item(item, timestamp, render_write_body):
         name = item.get("name", "")
         tool_input = item.get("input", {})
         header = f"{name} `{_tool_key(name, tool_input)}`"
-        if name == "Write" and render_write_body:
-            return Block(timestamp, kind, header, _fenced(tool_input.get("content", "")))
-        return Block(timestamp, kind, header)
-    return Block(timestamp, kind, item.get("text") or item.get("content") or "")
+        return Block(
+            timestamp,
+            kind,
+            header,
+            _write_body(name, tool_input, render_write_body)
+        )
+    return Block(
+        timestamp,
+        kind,
+        item.get("text") or item.get("content") or ""
+    )
 
 
 def _block_from_entry(entry, timestamp):
@@ -125,6 +132,12 @@ def _tool_key(name, tool_input):
     if field:
         return tool_input.get(field, "")
     return next(iter(tool_input.values()), "") if tool_input else ""
+
+
+def _write_body(name, tool_input, render_write_body):
+    if name == "Write" and render_write_body:
+        return _fenced(tool_input.get("content", ""))
+    return ""
 
 
 def _fenced(content):
