@@ -21,6 +21,10 @@ class TestInspectorGuard:
             "the-critic-may-judge-the-real-agent",
             agent="real", inspector="critic", expectation=does_not_raise(),
         ),
+        case(
+            "the-real-agent-defaults-to-the-critic",
+            agent="real", inspector=None, expectation=does_not_raise(),
+        ),
     ])
     def test_should_reject_only_the_auditor_judging_the_real_agent(
         self, agent, inspector, expectation
