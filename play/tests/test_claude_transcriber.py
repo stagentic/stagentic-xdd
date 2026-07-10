@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import pytest
+from cases import case
 from hamcrest import assert_that, contains_string, equal_to, starts_with
 
 from claude_transcriber import ClaudeTranscriber
@@ -66,14 +67,10 @@ class TestClaudeTranscriber:
             ),
         )
 
-    @pytest.mark.parametrize(
-        "content",
-        [
-            "print('hi')",
-            "x = 1"
-        ],
-        ids=["statement", "assignment"],
-    )
+    @pytest.mark.parametrize("content", [
+        case("one-snippet", content="print('hi')"),
+        case("another-snippet", content="x = 1"),
+    ])
     def test_should_render_the_content_a_write_wrote(self, tmp_path, content):
         jsonl_path = tmp_path / "session.jsonl"
         jsonl_path.write_text(json.dumps({
