@@ -85,7 +85,9 @@ class TestClaudeTranscriber:
         }) + "\n")
         output_path = tmp_path / "transcript.md"
 
-        ClaudeTranscriber(render_write_body=True)(jsonl_path=jsonl_path, output_path=output_path)
+        ClaudeTranscriber(render_write_body=True)(
+            jsonl_path=jsonl_path, output_path=output_path
+        )
 
         assert_that(
             output_path.read_text(),
