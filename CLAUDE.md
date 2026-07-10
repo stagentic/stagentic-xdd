@@ -108,6 +108,15 @@ auditor → critic and fake → real agent swaps. See
 [`docs/architecture/conventions/spec-conventions.md`](docs/architecture/conventions/spec-conventions.md) for spec
 conventions (`transcript`, `working_dir`, scene projects).
 
+### Run artefacts
+
+Scenario run artefacts go in `spec/.artefacts/` (gitignored via `**/.artefacts`).
+Pass `--.artefacts-dir` a path **relative** to the spec project — the
+[COMMANDS.md](COMMANDS.md) examples use `.artefacts`, which lands under `spec/`
+because `uv run --directory spec` runs there. Do **not** pass an absolute
+repo-root path (e.g. `/workspace/stagentic-xdd/.artefacts`) — it scatters
+artefacts at the repo root instead of `spec/.artefacts`.
+
 ## Relevant test suites
 
 ### Full baseline
