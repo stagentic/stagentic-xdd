@@ -411,3 +411,14 @@ outputs like `transcript.md`). Materialising a scene, deciding what carries
 into an opening scene, and the delta-from-scene idea above are framework work —
 they belong in `play/`, not in a spec test helper. Move scene management into
 `play/` so scenarios call it rather than reimplement it.
+
+## Lowest priority: review whether the fake agent and auditor belong in the spec
+
+The `FakeAgent` and `Auditor` were introduced to drive out the design of
+`play` — they're framework machinery, and probably aren't useful for
+validating the xdd skill itself (that's the real agent + critic's job). They
+likely belong as their own example scenarios under `play/tests/`, exercising
+`FakeAgent`/`Auditor` as framework features, which would let us remove them
+from the xdd spec scenarios. Review whether the spec should run only the real
+agent + critic, with the fake/auditor relocated to `play`'s own tests, their
+appropriate home.
