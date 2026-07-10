@@ -17,6 +17,10 @@ See [0000](0000-use-adrs-to-record-decisions.md) for more on ADRs, the rationale
 3. Set status to `Proposed`.
 4. Add a row in the index below.
 
+Supporting evidence or artefacts may live in a companion folder named after the
+ADR's slug — `NNNN-short-slug/` — beside the ADR file, linked from the ADR's
+Evidence (e.g. `0020-drive-skill-invocation-from-the-frontmatter-description/`).
+
 ## Index
 
 | # | Title | Status |

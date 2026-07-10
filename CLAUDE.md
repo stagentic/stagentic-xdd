@@ -76,7 +76,8 @@ The approach is explained in [ADR 0001](docs/architecture/decisions/0001-start-w
   Screenplay-style DSL on pytest + `claude -p`; do **not** treat it as a
   target architecture.
 - [`docs/architecture/decisions/`](docs/architecture/decisions/) — ADRs. Append-only, one decision per
-  numbered file. Start from [`TEMPLATE.md`](docs/architecture/decisions/TEMPLATE.md).
+  numbered file; a decision may add a companion folder named after its slug
+  (`NNNN-slug/`) for supporting evidence. Start from [`TEMPLATE.md`](docs/architecture/decisions/TEMPLATE.md).
 - [`docs/assets/`](docs/assets/) — diagrams referenced from [`README.md`](README.md).
 - `.claude/settings.json` — checked-in Claude Code config: shared
   permissions, pinned model env vars ([ADR 0003](docs/architecture/decisions/0003-pin-model-versions.md)), and
