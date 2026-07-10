@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from cases import case
+from hamcrest import assert_that, contains_string, equal_to
 
 from conftest import _reject_incompatible_inspector
 
@@ -45,5 +46,11 @@ class TestInspectorGuardWiring:
              "--agent=real", "--inspector=auditor"],
             cwd=SPEC_DIR, capture_output=True, text=True, check=False,
         )
-        assert result.returncode != 0
-        assert "deterministic" in result.stderr
+        assert_that(result.returncode, equal_to(pytest.ExitCode.USAGE_ERROR))
+        assert_that(
+            result.stderr,
+            contains_string(
+                "the auditor can only evaluate deterministic results, so it "
+                "cannot judge the real agent; use --inspector=critic (the default)"
+            ),
+        )
