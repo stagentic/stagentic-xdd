@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import pytest
 from hamcrest import assert_that, contains_string, equal_to, starts_with
 
 from claude_transcriber import ClaudeTranscriber
@@ -65,13 +66,21 @@ class TestClaudeTranscriber:
             ),
         )
 
-    def test_should_render_the_content_a_write_wrote(self, tmp_path):
+    @pytest.mark.parametrize(
+        "content",
+        [
+            "print('hi')",
+            "x = 1"
+        ],
+        ids=["statement", "assignment"],
+    )
+    def test_should_render_the_content_a_write_wrote(self, tmp_path, content):
         jsonl_path = tmp_path / "session.jsonl"
         jsonl_path.write_text(json.dumps({
             "type": "assistant",
             "message": {"content": [
                 {"type": "tool_use", "name": "Write",
-                 "input": {"file_path": "/tmp/b.py", "content": "print('hi')"}},
+                 "input": {"file_path": "/tmp/b.py", "content": content}},
             ]},
         }) + "\n")
         output_path = tmp_path / "transcript.md"
@@ -80,7 +89,7 @@ class TestClaudeTranscriber:
 
         assert_that(
             output_path.read_text(),
-            contains_string("```\nprint('hi')\n```"),
+            contains_string(f"```\n{content}\n```"),
         )
 
     def test_should_render_varied_entries_to_the_approved_master(self, tmp_path):

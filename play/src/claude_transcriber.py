@@ -81,7 +81,8 @@ def _block_from_item(item, timestamp, render_write_body):
         name = item.get("name", "")
         key = _tool_key(name, item.get("input", {}))
         if name == "Write" and render_write_body:
-            return Block(timestamp, kind, f"{name} `{key}`", "```\nprint('hi')\n```")
+            content = item.get("input", {}).get("content", "")
+            return Block(timestamp, kind, f"{name} `{key}`", f"```\n{content}\n```")
         return Block(timestamp, kind, f"{name} `{key}`")
     return Block(timestamp, kind, item.get("text") or item.get("content") or "")
 
