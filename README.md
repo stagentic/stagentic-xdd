@@ -1,4 +1,4 @@
-# stagentic:xdd
+# stagentic-xdd
 
 A planned Claude plugin for language-agnostic Behaviour-Driven Development (BDD) / Test-Driven Development (TDD).
 
