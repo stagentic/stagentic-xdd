@@ -87,6 +87,16 @@ Each behaviour is specified as a scenario, with fixture code forming the basis o
 
 A key problem this pattern solves is that agent behaviours are non-deterministic and cannot be asserted using traditional methods. Instead, a rubric, or scorecard, is used to evaluate non-deterministic agent behaviours.
 
+### Running the skill locally
+
+Launch Claude Code with the plugin loaded from this repo:
+
+```
+claude --plugin-dir xdd-plugin
+```
+
+The skill then appears as `stagentic-xdd:xdd`.
+
 See [`COMMANDS.md`](COMMANDS.md) for key development commands (test runners, linter).
 
 ## License
