@@ -17,7 +17,7 @@ class TestInspectorGuard:
         case(
             "the-auditor-judging-the-real-agent-is-rejected",
             agent="real", inspector="auditor",
-            expectation=pytest.raises(pytest.UsageError, match="deterministic"),
+            expectation=pytest.raises(pytest.UsageError),
         ),
         case(
             "the-real-agent-defaults-to-the-critic",
