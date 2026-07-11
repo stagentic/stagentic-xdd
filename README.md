@@ -59,7 +59,7 @@ Today, only Python is supported, because the code that facilitates the skill is 
 
 ## Prerequisites
 
-This project requires Claude Code CLI **2.1.150**. Auto-updates are disabled by `.claude/settings.json` — do not run `claude update` without first validating the suite against the candidate version.
+This project requires Claude Code CLI **2.1.191**. Auto-updates are disabled by `.claude/settings.json` — do not run `claude update` without first validating the suite against the candidate version.
 
 Check your current version:
 
@@ -70,13 +70,13 @@ claude --version
 If you already have Claude Code installed, switch to the required version:
 
 ```
-claude install 2.1.150
+claude install 2.1.191
 ```
 
 If you are installing Claude Code for the first time, install the required version directly via npm:
 
 ```
-npm install -g @anthropic-ai/claude-code@2.1.150
+npm install -g @anthropic-ai/claude-code@2.1.191
 ```
 
 ## Development
