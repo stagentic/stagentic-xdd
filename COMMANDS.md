@@ -74,6 +74,20 @@ uv run --directory spec pytest tests --agent=real
 uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts
 ```
 
+### 10× real-agent batch (interim — superseded by the N× gateway in NEXT.md)
+
+Runs the real-agent scenarios 10× at 10-way concurrency, staggering each launch by
+100ms — the shortest stagger that avoids the archive copytree race under parallel
+runs (100ms clean at 30 runs; 50ms flakes ~2/30). Keep it one line: a mid-command
+newline splits the loop body and runs `pytest` without its flags.
+
+```
+cd /workspace/stagentic-xdd && for r in $(seq 10); do uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts & sleep 0.1; done; wait
+```
+
+It launches the runs but does not tally results — read each run's outcome from its
+own output.
+
 ### `spec/` scenarios with critic (require `claude` CLI)
 
 ```
