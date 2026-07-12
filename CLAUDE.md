@@ -7,39 +7,37 @@ additional language adapters are deferred.
 See [`README.md`](README.md) for the framing and the link to the longer "what almost
 everyone gets wrong about TDD/BDD" argument.
 
-## Where to look first
+## What to read when
 
-Read these thoroughly when relevant; don't rely on the one-line summary alone:
+Each line pairs a trigger — a task you're about to do, or a point in time —
+with what to read *before* you act on it. When a trigger applies, open the
+resource first; the line is a pointer, not a substitute for it.
 
-- [`docs/architecture/decisions/`](docs/architecture/decisions/) — architectural directions. Accepted
-  ones must be adhered to; proposed ones are still under evaluation — possibly by being implemented to assess them empirically.
-- [`NEXT.md`](NEXT.md) (repo root, if present) — the immediate next step,
-  including known constraints. Read it at session start. If a user
-  prompt is open-ended ("let's continue", "what next?"), use NEXT.md
-  to orient and propose steps. If NEXT.md is missing, ask the user
-  what they want to work on.
-- [`COMMANDS.md`](COMMANDS.md) (repo root) — key developer commands (test runners, linter).
-- [`docs/architecture/conventions/`](docs/architecture/conventions/) — naming and design-intent
-  conventions that should persist across refactors. Consult when
-  touching the affected area:
-  - [`test-conventions.md`](docs/architecture/conventions/test-conventions.md) — test shape for `play/tests/`.
-  - [`src-conventions.md`](docs/architecture/conventions/src-conventions.md) — production code style for `play/src/`.
-  - [`spec-conventions.md`](docs/architecture/conventions/spec-conventions.md) — structures and naming intent for `spec/`.
-- [`docs/writing-style.md`](docs/writing-style.md) — prose conventions (label-agnostic
-  framing; quote actual stated reasons). Consult when writing
-  commits, ADRs, or doc bodies.
-- [`docs/commit-style.md`](docs/commit-style.md) — commit subject/body shape, conventional-commits
-  format, ADR-commit layering, commit-proposal format.
-- [`docs/document-style.md`](docs/document-style.md) — in-repo doc conventions (current-state framing,
-  environment-agnostic mechanisms).
-- [`docs/working-practices.md`](docs/working-practices.md) — workflow practices: lead with the
-  proposed commit; separate behavioural from structural changes.
-  Read it at session start, alongside NEXT.md.
-- [`docs/lessons/`](docs/lessons/) — lessons: per-misstep BDD/TDD lessons
-  captured while developing the xdd skill. The process is
-  defined in [ADR 0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md);
-  [`TEMPLATE.md`](docs/lessons/TEMPLATE.md) is the lesson shape. When a
-  real-agent run reveals a misstep, record it per the ADR.
+- When starting a session, or a prompt is open-ended ("let's continue",
+  "what next?"): read [`NEXT.md`](NEXT.md) and
+  [`docs/working-practices.md`](docs/working-practices.md) first. If NEXT.md is
+  missing, ask what to work on.
+- When making or acting on an architectural decision: read the relevant ADR in
+  [`docs/architecture/decisions/`](docs/architecture/decisions/) first. Accepted
+  ADRs must be adhered to; proposed ones are still under evaluation — possibly
+  being implemented to assess them empirically.
+- When you need a developer command (test runner, linter, mutation): read
+  [`COMMANDS.md`](COMMANDS.md) first.
+- When writing any prose — commit, ADR, or doc body: read
+  [`docs/writing-style.md`](docs/writing-style.md) first.
+- When proposing or writing a commit: read
+  [`docs/commit-style.md`](docs/commit-style.md) first.
+- When editing an in-repo doc (README, ADR, CLAUDE.md): read
+  [`docs/document-style.md`](docs/document-style.md) first.
+- When touching `play/tests/`: read
+  [`test-conventions.md`](docs/architecture/conventions/test-conventions.md) first.
+- When touching `play/src/`: read
+  [`src-conventions.md`](docs/architecture/conventions/src-conventions.md) first.
+- When touching `spec/`: read
+  [`spec-conventions.md`](docs/architecture/conventions/spec-conventions.md) first.
+- When a real-agent run reveals a misstep: read
+  [`docs/lessons/TEMPLATE.md`](docs/lessons/TEMPLATE.md) first and record the
+  lesson per [ADR 0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md).
 
 NEXT.md is not a backlog. When a step from it lands, propose updating
 it to reflect the new state — delete what's done, surface what's next.
