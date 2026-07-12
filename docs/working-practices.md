@@ -54,7 +54,7 @@ uncommitted until the work's final green, so you never commit a baseline that
 isn't yet clean. (A *shared test
 helper* can't be mutated from under `tests/`: mutmut's source roots are
 hardcoded, so a `tests/`-located file's mutants never map to a covering test.
-Home it in `test_utilities/src` instead, where it's a permanent mutation target
+Home it in `stagentic-test/src/stagentic/test` instead, where it's a permanent mutation target
 like any module — see ADR
 [0012](architecture/decisions/0012-adopt-path-source-packages-for-cross-project-code.md).)
 A green with no surviving mutants — or with no mutants at all, when the code is

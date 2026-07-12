@@ -67,8 +67,8 @@ The approach is explained in [ADR 0001](docs/architecture/decisions/0001-start-w
   `play/tests/test_doubles/`; contract tests (marked `contract`) live in
   `play/tests/contract/`; integration tests (marked `integration`) live in
   `play/tests/integration/`.
-- `test_utilities/` — pytest project peer to `play`/`spec` that homes shared
-  *test* helpers (currently `matchers`) in `src/`, with its own tests and a
+- `stagentic-test/` — pytest project peer to `play`/`spec` that homes shared
+  *test* helpers (currently `matchers`) in `src/stagentic/test/`, with its own tests and a
   permanent mutation gate. It is an installable package (hatchling) that `play`
   (and `spec`, when it needs them) consumes via an editable path source; there
   is no shared workspace. See [ADR 0012](docs/architecture/decisions/0012-adopt-path-source-packages-for-cross-project-code.md).
@@ -147,7 +147,7 @@ file as its notification lands.
 
 - [`play/` full suite](COMMANDS.md#play-full-suite-require-claude-cli)
 - [`play/` integration tests](COMMANDS.md#play-integration-tests-require-claude-cli) — hit real claude; called out explicitly
-- [`test_utilities/` tests](COMMANDS.md#test_utilities-tests) — fast; no claude CLI
+- [`stagentic-test/` tests](COMMANDS.md#stagentic-test-tests) — fast; no claude CLI
 - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
 - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
 - [`spec/` scenarios with real agent](COMMANDS.md#spec-scenarios-with-real-agent-require-claude-cli) — real agent, real critic
@@ -178,8 +178,8 @@ Then run the tests relevant to the change:
   test files, or test infrastructure: run spec configurations in parallel:
   - [`spec/` scenarios](COMMANDS.md#spec-scenarios) — fake agent, auditor (default)
   - [`spec/` scenarios with critic](COMMANDS.md#spec-scenarios-with-critic-require-claude-cli) — fake agent, real critic
-- **Change in `test_utilities/` beyond a single test file**: run the
-  [`test_utilities/` tests](COMMANDS.md#test_utilities-tests) (fast, no claude CLI).
+- **Change in `stagentic-test/` beyond a single test file**: run the
+  [`stagentic-test/` tests](COMMANDS.md#stagentic-test-tests) (fast, no claude CLI).
 - **Change in `play/` beyond a single test file** (or anything integrated):
   the [Full baseline](#full-baseline).
 - **Changed a src file in `source_paths`**: first run the focused mutation

@@ -8,7 +8,7 @@ agent-directive: |
 
 # 0021 — Adopt the `stagentic` namespace for shared cross-project code
 
-**Status:** Proposed
+**Status:** Accepted
 
 ## Context
 
@@ -77,10 +77,10 @@ unchanged.
 - Every import site moves in lockstep — `play` and `spec` tests, and the helpers'
   own tests — to `from stagentic.test.… import …`. A one-time mechanical
   migration, verified green by the existing suites.
-- `test-conventions.md`, which prescribes `from cases import case`, updates to
-  the namespaced import; ADR 0012 carries a note that 0021 supersedes its
-  flat-layout choice; ADR 0011's `from matchers import matching` example is
-  refreshed in the migration.
+- The current-state docs — `test-conventions.md` (import convention),
+  `COMMANDS.md` and `working-practices.md` (project paths), and ADR 0011's
+  `matching` example — update to the namespaced import and `stagentic-test`
+  paths. ADR 0012 carries a note that 0021 supersedes its flat-layout choice.
 - The focused mutmut filter gains the dotted prefix (e.g. `stagentic.test.cases`).
 - Naming trade-off accepted: by the `django.test` precedent, `stagentic.test`
   can read as "stagentic's own test suite" rather than "helpers for writing
