@@ -4,28 +4,7 @@
 > NEXT.md tracks the immediate next step and is rewritten as work lands (without 
 > any mention of what was just completed.
 
-## 1. Namespace test_utilities' modules to end top-level collisions
-
-`test_utilities` flattens `src/` to top-level modules (`cases`, `matchers`) via
-hatchling's `sources = ["src"]`, so consumers import `from cases import case` and
-`from matchers import matching`. Those names are generic and collide with real
-PyPI packages: declaring an unrelated PyPI `cases` shadows `test_utilities`'s
-module and breaks `from cases import case` outright — the importing suite errors
-on collection. The flat names also defeat tooling: an IDE can't map the bare
-`cases` module back to the `test_utilities` distribution, so it reports the import
-as an undeclared requirement (which then invites the wrong fix — declaring the
-colliding PyPI package).
-
-Namespace the modules under the package: `src/test_utilities/cases.py`, imported
-as `from test_utilities.cases import case`. Collision-proof, and the import names
-the providing distribution. Cross-cutting, so settle it as an ADR:
-
-- change `test_utilities` packaging to stop flattening `src/`;
-- update `play` and `spec` imports (`matchers`, `cases`);
-- update the test-conventions doc, which currently prescribes `from cases import
-  case`.
-
-## 2. Review the repo's TDD guidance and migrate to using xdd
+## 1. Review the repo's TDD guidance and migrate to using xdd
 
 The repo's TDD discipline lives as prose the agent applies by hand — the `/workspace`
 and repo `CLAUDE.md` "TDD working approach", `docs/working-practices.md`, and the
@@ -41,7 +20,7 @@ copy the agent reads but skips. Settle what the skill owns versus what stays a
 working-practice, and how loading xdd is made reliable (the SessionStart / green-nudge
 hooks below are the existing lever).
 
-## 3. Capture code-change diffs in the run transcript — Edit still to do
+## 2. Capture code-change diffs in the run transcript — Edit still to do
 
 The captured `transcript.md` (produced by `ClaudeTranscriber`) renders a tool use
 as only its `file_path`, so what the agent changed can be invisible to a reviewer
@@ -56,7 +35,7 @@ diff. The JSONL already carries the full tool input. TDD in `play`
 (`claude_transcriber.py`) — extend the current transcriber, rather than waiting on
 the ground-up rewrite in ADR 0014.
 
-## 4. N× batch gateway — run a scenario Nx and tally (belongs in play)
+## 3. N× batch gateway — run a scenario Nx and tally (belongs in play)
 
 Guidance experiments (baseline vs a `SKILL.md` change) are measured by running a
 scenario many times and tallying per-run outcomes. Until this lands, an interim
@@ -73,7 +52,7 @@ Per run, capture the pytest result plus the scenario's signals (skill loaded; th
 production shape). This makes experiments (baseline vs B, gateway variants)
 reproducible rather than one-off.
 
-## 5. Contract-test ClaudeCli's options
+## 4. Contract-test ClaudeCli's options
 
 `ClaudeCli` passes `--permission-mode`, `--session-id`, `--add-dir`, and
 `--plugin-dir` to real claude, but only a bare prompt is contract-tested
@@ -84,7 +63,7 @@ verifying it does what we expect against the real CLI, one at a time.
 move to 2.1.195 aren't needed on 2.1.191 — the gate is absent; the trust marking
 becomes necessary only on 2.1.193+.
 
-## 6. Pin and record reasoning effort and the context window
+## 5. Pin and record reasoning effort and the context window
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
 (Proposed): a run transcript records the CLI version and model (ADR
@@ -121,7 +100,7 @@ Two pieces of work, each TDD in `play/`:
 Then backfill the captured lessons' metadata from the recorded values rather than
 from this investigation.
 
-## 7. Improvement plan working approach
+## 6. Improvement plan working approach
 
 One change at a time: apply it, run the test(s) the change's scope calls
 for, then propose a commit — behavioural and structural changes kept in
@@ -204,7 +183,7 @@ Review the file through each lens below in turn and in the order below:
 - Public methods take keyword-only args (`*` separator) (inferred)
 - Import grouping: stdlib / third-party / first-party (inferred, ruff-enforced)
 
-## 8. Improvement plan
+## 7. Improvement plan
 
 We are working through each file in turn, bringing each up to the reference
 standard set by `critic.py` / `TestCritic` — matching the conventions inferred
