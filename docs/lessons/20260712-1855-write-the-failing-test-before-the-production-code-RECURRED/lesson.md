@@ -35,8 +35,8 @@ the misstep described in this lesson, and undo the honest-red regression.
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| baseline: [Always write the test first](SKILL-baseline.md) | 100 | 78 | 21 | 1 | 22 |
-| accepted: [motivated + read-first](motivated-read-first/SKILL.md) | 100 | 100 | 0 | 0 | 0 |
+| baseline: [Always write the test first](SKILL-snapshots/SKILL-baseline.md) | 100 | 78 | 21 | 1 | 22 |
+| accepted: [motivated + read-first](SKILL-snapshots/SKILL-refined-20260713-motivated-read-first.md) | 100 | 100 | 0 | 0 | 0 |
 
 These findings are elaborated below.
 
@@ -135,11 +135,11 @@ the red is not an assertion — present at ~1% in the baseline and amplified by 
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| + "Always write the test first" (recurrence baseline) ([snapshot](SKILL-baseline.md)) | 20 | 16 | 4 | 0 | 4 |
-| Refined: "must" wording ([grammar slip](SKILL-refined-20260712-grammar-slip.md)) | 20 | 18 | 2 | 0 | 2 |
-| Refined + grammar fix ([snapshot](SKILL-refined-20260712-grammar-fixed.md)) | 20 | 17 | 3 | 0 | 3 |
-| Refined: explicit sequence ([snapshot](SKILL-refined-20260712-explicit-order.md)) | 20 | 18 | 1 | 1 | 2 |
-| Refined: numbered steps ([snapshot](SKILL-refined-20260712-numbered-steps.md)) | 10 | 8 | 0 | 2 | 2 |
+| + "Always write the test first" (recurrence baseline) ([snapshot](SKILL-snapshots/SKILL-baseline.md)) | 20 | 16 | 4 | 0 | 4 |
+| Refined: "must" wording ([grammar slip](SKILL-snapshots/SKILL-refined-20260712-grammar-slip.md)) | 20 | 18 | 2 | 0 | 2 |
+| Refined + grammar fix ([snapshot](SKILL-snapshots/SKILL-refined-20260712-grammar-fixed.md)) | 20 | 17 | 3 | 0 | 3 |
+| Refined: explicit sequence ([snapshot](SKILL-snapshots/SKILL-refined-20260712-explicit-order.md)) | 20 | 18 | 1 | 1 | 2 |
+| Refined: numbered steps ([snapshot](SKILL-snapshots/SKILL-refined-20260712-numbered-steps.md)) | 10 | 8 | 0 | 2 | 2 |
 
 These are filter batches, not a ranking: at n = 10–20 the differences between
 close variants sit within sampling noise (χ² across the four refined variants: not
@@ -161,8 +161,8 @@ skill-load is not a source of variation.
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| baseline: [`Always write the test first`](SKILL-baseline.md) | 100 | 78 | 21 | 1 | 22 |
-| [numbered steps](SKILL-refined-20260712-numbered-steps.md) | 100 | 88 | 2 | 10 | 12 |
+| baseline: [`Always write the test first`](SKILL-snapshots/SKILL-baseline.md) | 100 | 78 | 21 | 1 | 22 |
+| [numbered steps](SKILL-snapshots/SKILL-refined-20260712-numbered-steps.md) | 100 | 88 | 2 | 10 | 12 |
 
 Fisher exact: write-order 21% → 2% (p = 2.5×10⁻⁵ — the numbered wording removes
 most of the misstep); honest-red 1% → 10% (p = 0.010 — amplifying honest-red in its place); full-pass 78% → 88% (p = 0.089, not
@@ -173,11 +173,11 @@ noise the n ≤ 20 batches suggested.
 
 Keeps the numbered sequence but makes step 2 explicit — write *just enough*
 production code to reach a right-reason (assertion) red
-([snapshot](SKILL-refined-20260712-numbered-with-stub.md)).
+([snapshot](SKILL-snapshots/SKILL-refined-20260712-numbered-with-stub.md)).
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| numbered steps + stub-to-red ([snapshot](SKILL-refined-20260712-numbered-with-stub.md)) | 100 | 93 | 7 | 0 | 7 |
+| numbered steps + stub-to-red ([snapshot](SKILL-snapshots/SKILL-refined-20260712-numbered-with-stub.md)) | 100 | 93 | 7 | 0 | 7 |
 
 vs baseline — write-order 21% → 7% (p = 0.0072); honest-red 1% → 0% (p = 1.0);
 full-pass 78% → 93% (p = 0.0043). The stub-to-red step removes the honest-red
@@ -187,11 +187,11 @@ Measured on its own, not alternated — a residual time/load confound remains.
 ### decide-then-write (n = 100)
 
 A three-step revision separating *deciding* the production change from *writing*
-it ([snapshot](SKILL-refined-20260713-decide-then-write.md)).
+it ([snapshot](SKILL-snapshots/SKILL-refined-20260713-decide-then-write.md)).
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| decide-then-write ([snapshot](SKILL-refined-20260713-decide-then-write.md)) | 100 | 87 | 13 | 0 | 13 |
+| decide-then-write ([snapshot](SKILL-snapshots/SKILL-refined-20260713-decide-then-write.md)) | 100 | 87 | 13 | 0 | 13 |
 
 It holds honest-red at zero, but does not establish a write-order reduction over
 baseline (write-order 21% → 13%, p = 0.19) — the extra "decide" step did not lower
@@ -204,11 +204,11 @@ principles under a *Model corrections* heading. Directional only (n = 10).
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| workflow loop + test-first correction ([snapshot](SKILL-refined-20260713-workflow-loop.md)) | 10 | 8 | 0 | 2 | 2 |
-| same, "before any production code change" ([snapshot](SKILL-refined-20260713-workflow-any-change.md)) | 10 | 9 | 0 | 1 | 1 |
-| workflow loop, test-first correction removed ([snapshot](SKILL-refined-20260713-workflow-only.md)) | 10 | 6 | 4 | 0 | 4 |
-| workflow + 3-step test-first, write→stub→run ([snapshot](SKILL-refined-20260713-workflow-stub-then-run.md)) — taken to 100 below | 10 | 10 | 0 | 0 | 0 |
-| same + branched step-4 eval, fail/pass ([snapshot](SKILL-refined-20260713-workflow-branched-eval.md)) | 10 | 9 | 0 | 1 | 1 |
+| workflow loop + test-first correction ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-loop.md)) | 10 | 8 | 0 | 2 | 2 |
+| same, "before any production code change" ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-any-change.md)) | 10 | 9 | 0 | 1 | 1 |
+| workflow loop, test-first correction removed ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-only.md)) | 10 | 6 | 4 | 0 | 4 |
+| workflow + 3-step test-first, write→stub→run ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run.md)) — taken to 100 below | 10 | 10 | 0 | 0 | 0 |
+| same + branched step-4 eval, fail/pass ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-branched-eval.md)) | 10 | 9 | 0 | 1 | 1 |
 
 Directional read: with the explicit test-first correction the workflow held
 write-order (0/10); removing it sent write-order to 4/10, worse than baseline — a
@@ -220,11 +220,11 @@ structure.
 A compose→evaluate→write Workflow with the test-first correction restated as a
 3-step sub-sequence — write the test (don't run it) → change production so it
 fails for the right reason → then run
-([snapshot](SKILL-refined-20260713-workflow-stub-then-run.md)).
+([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run.md)).
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| workflow + write→stub→run ([snapshot](SKILL-refined-20260713-workflow-stub-then-run.md)) | 100 | 97 | 0 | 3 | 3 |
+| workflow + write→stub→run ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run.md)) | 100 | 97 | 0 | 3 | 3 |
 
 vs baseline — write-order 21% → 0% (p = 3×10⁻⁷); honest-red 1% → 3% (p = 0.62, not
 a regression); full-pass 78% → 97% (p = 6×10⁻⁵). Write-order was zero in this run but flaked to
@@ -234,7 +234,7 @@ a regression); full-pass 78% → 97% (p = 6×10⁻⁵). Write-order was zero in 
 
 A run-driven variant — write the test, run it, then fix only the failure the run
 presented with the minimum change
-([snapshot](SKILL-refined-20260713-workflow-run-then-fix.md)). It runs before any
+([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-run-then-fix.md)). It runs before any
 stub, so the first run is usually an import error. Standalone: full-pass 90,
 write-order 2, honest-red 8 — it fixes write-order (p = 2.5×10⁻⁵ vs baseline) but
 regresses honest-red (8% vs 1%, p = 0.035): a trade.
@@ -243,8 +243,8 @@ Both were run **alternating**, 100 each, to cancel the time/load confound:
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| workflow + write→stub→run ([snapshot](SKILL-refined-20260713-workflow-stub-then-run.md)) | 100 | 93 | 2 | 5 | 7 |
-| workflow + run-then-fix ([snapshot](SKILL-refined-20260713-workflow-run-then-fix.md)) | 100 | 88 | 4 | 8 | 12 |
+| workflow + write→stub→run ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run.md)) | 100 | 93 | 2 | 5 | 7 |
+| workflow + run-then-fix ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-run-then-fix.md)) | 100 | 88 | 4 | 8 | 12 |
 
 No single-axis difference clears significance at n = 100, but pooling each
 wording's two 100-run measurements resolves it: write→stub→run 10/200 (5.0%) vs
@@ -262,7 +262,7 @@ chance of an agent meeting expectations — so we tested a moral imperative.
 Write-order is this lesson's focus; the best wording (write→stub→run) still flaked
 on it intermittently. The imperative was placed under the write-order directive,
 the flake being chased. Two lines were added
-([snapshot](SKILL-refined-20260713-workflow-stub-then-run-motivated.md)) — an
+([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run-motivated.md)) — an
 expert-role preamble prepended above `# Workflow`:
 
 ```markdown
@@ -277,8 +277,8 @@ Failing to adhere to this discipline sets a poor example for the developer that 
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| motivated write→stub→run ([snapshot](SKILL-refined-20260713-workflow-stub-then-run-motivated.md)) | 100 | 99 | 1 | 0 | 1 |
-| plain write→stub→run (pooled 200) ([snapshot](SKILL-refined-20260713-workflow-stub-then-run.md)) | 200 | 190 | 2 | 8 | 10 |
+| motivated write→stub→run ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run-motivated.md)) | 100 | 99 | 1 | 0 | 1 |
+| plain write→stub→run (pooled 200) ([snapshot](SKILL-snapshots/SKILL-refined-20260713-workflow-stub-then-run.md)) | 200 | 190 | 2 | 8 | 10 |
 
 **It came within one run of the bar (99/100)**, the lone failure a write-order *artefact*
 ([transcript](20260713-203156-test_write_a_failing_test-f6116e25/miles-to-km/transcript.md)):
@@ -292,11 +292,11 @@ adding a "read related test/code first" step.
 
 Adding a Workflow step 1, "Read any related test first and existing code mentioned
 by the task", on top of the motivated wording
-([snapshot](motivated-read-first/SKILL.md)).
+([snapshot](SKILL-snapshots/SKILL-refined-20260713-motivated-read-first.md)).
 
 | Wording | Runs | Full-pass | Write-order FAIL | Honest-red FAIL | Total fail |
 |---|---|---|---|---|---|
-| motivated + read-first ([snapshot](motivated-read-first/SKILL.md)) | 100 | 100 | 0 | 0 | 0 |
+| motivated + read-first ([snapshot](SKILL-snapshots/SKILL-refined-20260713-motivated-read-first.md)) | 100 | 100 | 0 | 0 | 0 |
 
 **100/100 full-pass — no characteristic failed in any of the 100 runs**: write-order
 (the focus) held at zero with no honest-red side effect, and every other scorecard
@@ -309,7 +309,7 @@ write-order failed once (1/200) but only due to a harness limitation: the agent 
 This is an effective 0/200 failure rate — achieved only by the "motivated" `SKILL.md` wordings.
 
 - **Winner:** the motivated write→stub→run workflow with the read-first step
-  ([snapshot](motivated-read-first/SKILL.md)) — the only wording to reach 0/100,
+  ([snapshot](SKILL-snapshots/SKILL-refined-20260713-motivated-read-first.md)) — the only wording to reach 0/100,
   clearing the acceptance bar with no honest-red side effect.
 
 ## Guidance change
