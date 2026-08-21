@@ -4,65 +4,42 @@
 > NEXT.md tracks the immediate next step and is rewritten as work lands (without 
 > any mention of what was just completed.
 
-## 1. Ablation test: does the skill's motivation still make a difference?
+## 1. Record the measure-then-reduce method as an ADR
 
-Motivation reaches the agent through three elements of
-[`SKILL.md`](xdd-plugin/skills/xdd/SKILL.md):
+The skill's wording is decided by measurement: a floor run establishes that
+failures show up at all, single-unit screens find what is needed alone, a greedy
+pass removes what is not, and the surviving file is confirmed at 100 runs per arm.
+Three experiments in
+[`docs/migrations/claude-opus-4-8-to-opus-5/`](docs/migrations/claude-opus-4-8-to-opus-5/README.md)
+were run that way, but nothing in the repo says this is how a wording decision is
+reached — only the results survive.
 
-1. **Identity**, under `# Your Purpose` — *"You are a test-driven development
-   (TDD) expert."*
-2. **Goal**, under the same heading — *"Your goal is to help developers write
-   high-quality, maintainable code by demonstrating an exemplar approach to
-   TDD."*
-3. **Consequence**, under `## Always Write the Test First` — *"Failing to adhere
-   to this discipline sets a poor example for the developer that set your goal
-   and lets everyone down."*
+Most of the mechanics are written down already: `scripts/compare-wordings.sh` and
+[COMMANDS.md](COMMANDS.md#compare-two-wordings) carry the paired waves, the arm
+swapping and the contaminated-window stop; the acceptance bar of under 1 failure
+in 100 is in the recurrence lesson. Three decisions are recorded nowhere else, and
+this is the only place they exist:
 
-All three come out together: the consequence refers back to the goal, so it does
-not stand on its own.
+- **A wave is a screen, not a confirmation.** Ten runs per arm earns the next ten
+  only if it comes through clean, escalating to 100 runs per arm — 200 critiques,
+  since each run covers both scenarios in `test_red_green_commit.py`.
+- **Why escalating is necessary.** A wording that has regressed to the old
+  baseline rate still comes through a clean ten about 10% of the time. One clean
+  wave is not an answer.
+- **The two arms stop for different reasons.** A control-arm failure invalidates
+  the window and the runs are discarded; a candidate-arm failure is the answer and
+  the run is over. `compare-wordings.sh` implements only the control-arm half
+  (`STOP_ON_A_FAIL`) — the candidate half is a tally by hand between waves.
 
-The motivation earned its place in [the recurrence
-lesson](docs/lessons/20260712-1855-write-the-failing-test-before-the-production-code-RECURRED/lesson.md),
-where adding it took the wording from a pooled 190/200 full-pass to 99/100.
-That was measured on claude-opus-4-8 under CLI 2.1.191; both have since moved.
-The committed wording holds at 100/100 on the current pair, but the skill has
-never been run without the motivation on it — so there is no evidence it is still
-paying for itself.
+The ADR should also say when a measurement is required — any edit to guidance the
+agent reads — and where the record lives: one folder per model or CLI move under
+`docs/migrations/`.
 
-Run it as an alternating A/B, escalating in waves of ten runs per arm:
+Item 5 below encodes the same methodology; that one is about implementing it in
+`play`, this one about recording the decision.
 
-1. **arm A, the control** — the committed `xdd-plugin/skills/xdd/SKILL.md`.
-2. **arm B, the candidate** — the same file with all three elements removed.
-
-Ten runs per arm is a screen, not a confirmation. The acceptance bar is under 1
-failure in 100, and a wording that has regressed to the old baseline rate still
-comes through a clean ten about 10% of the time. So a clean wave earns the next
-one, up to **100 runs per arm** — 200 critiques, since each run covers both
-scenarios in `test_red_green_commit.py`. A failure in either arm stops the run
-there: in arm A it marks a contaminated window, in arm B it already answers the
-question.
-
-`compare-wordings.sh` copies a snapshot over the target before each arm's wave and
-restores the original on any exit, so each arm needs a snapshot file. Both are in
-[`spec/experiments/20260802-motivation-ablation/`](spec/experiments/20260802-motivation-ablation),
-where the result is recorded too. Runs accumulate in the artefacts dir, so every
-wave points at the same one:
-
-```
-STOP_ON_A_FAIL=1 bash scripts/compare-wordings.sh .artefacts/<datetime>-motivation-ablation \
-  spec/experiments/20260802-motivation-ablation/SKILL-current.md current \
-  spec/experiments/20260802-motivation-ablation/SKILL-no-motivation.md no-motivation \
-  1 10
-```
-
-`STOP_ON_A_FAIL=1` gates arm A; tally between waves to catch an arm B failure.
-See [COMMANDS.md](COMMANDS.md#compare-two-wordings).
-
-**What each outcome opens.** A regressed arm B means the motivation is still
-earning its place, and separating the three elements — identity, goal,
-consequence — becomes the experiment worth running next. An arm B that stays
-clean to 100 means the motivation may no longer be earning its place on this
-model and CLI.
+When the ADR lands, add a trigger to the *What to read when* list in `CLAUDE.md`,
+covering both a wording change and a pin move, pointing at it.
 
 ## 2. Capture code-change diffs in the run transcript — Edit still to do
 
@@ -130,7 +107,7 @@ production shape). This makes experiments (baseline vs B, gateway variants)
 reproducible rather than one-off.
 
 The elimination methodology these encode — paired waves, a control arm, stopping
-on contamination — may warrant an ADR alongside the implementation.
+on contamination — is the subject of item 1.
 
 ## 6. Contract-test ClaudeCli's options
 
