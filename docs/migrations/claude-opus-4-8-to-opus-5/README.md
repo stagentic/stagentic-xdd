@@ -4,7 +4,8 @@ Each line in the xdd skill was driven in by a failure on a previous model.
 Which misunderstandings a model holds is a property of that model, so moving the
 pinned model version re-opens every wording decision the skill carries.
 
-These are the experiments that re-established the minimal XDD skill for claude-opus-5.
+These are the experiments that re-established the minimal XDD skill for
+claude-opus-5, and the ones that have gated edits to it since.
 
 | | |
 |---|---|
@@ -46,3 +47,12 @@ Three of seven lines result in the agent:
 The reduced file passes 400 of 400 critiques across 200 runs, matching the
 outgoing skill at the same sample size. The design of the search is in
 [its README](20260802-line-ablation/README.md).
+
+### 4. [Trailing hard break](20260821-trailing-hard-break/RESULT.md)
+
+The line ablation left unintentional trailing whitespace at the end of a line in
+the skill file.
+
+*Does the reduced skill still hold once the trailing whitespace is removed?*
+
+Yes. 400 of 400 critiques passed, across two windows nineteen hours apart.
