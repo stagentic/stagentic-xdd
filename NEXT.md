@@ -16,7 +16,7 @@ follows a change.
 | ADR | Covers | State |
 |---|---|---|
 | 0022 | Pin the Claude Code CLI version | Reviewed section by section. |
-| 0023 | Pin the model version used by spec runs | Rewritten. Header, Context and Decision reviewed; Consequences and Alternatives outstanding. |
+| 0023 | Pin the model version used by spec runs | Reviewed section by section. |
 | 0024 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
 | 0025 | Validate a version change with repeated suite runs | Drafted, not reviewed. Currently numbered 0024. |
 | 0026 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. Currently numbered 0025. |
@@ -29,8 +29,8 @@ updated in 0002, 0003, 0022, 0023 and the index. None of them is committed, so
 this costs one pass.
 
 0022, 0023, 0025 and 0026 commit together: each links to the others, and 0002 and
-0003 point forward to them. Reviewing 0023, 0025 and 0026 is what that waits on.
-0024 can follow separately, since nothing existing links to it.
+0003 point forward to them. Reviewing 0025 and 0026 is what that waits on. 0024
+can follow separately, since nothing existing links to it.
 
 ### 0024 — the model version for sessions in this repository
 
@@ -58,8 +58,8 @@ apply to sessions started in this repository.
 the model version as an argument, rather than inheriting it from the environment
 a spec run starts in. It decides `--model <version>`, that the agent and the
 critic are pinned separately, and that the versions are declared in
-`spec/models.toml` under `[agent] model` and `[critic] model`. What is left is
-building it:
+`spec/models.toml` under `[agent] model` and `[critic] model`, and that no
+environment variable overrides them. What is left is building it:
 
 - `conftest.py` reads `spec/models.toml` with `tomllib` and passes each role's
   version into its `ClaudeSession`.
