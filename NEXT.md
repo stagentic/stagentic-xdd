@@ -558,8 +558,55 @@ approval. The concern is the class, not the instance: a real scenario run almost
 certainly prints the same line, and would equally swallow a warning that mattered
 — a skipped MCP server, a demoted plugin, a settings file that failed validation.
 
+One such warning matters directly once 0023 lands. When `--model` names a version
+the account cannot use, Claude Code
+[substitutes the default at startup](https://code.claude.com/docs/en/model-config#setting-your-model)
+and says so on stderr. Discarding stderr means the run proceeds on a model nobody
+chose, silently.
+
 Archive both streams beside `transcript.md`, so a run's artefacts carry what the
 CLI reported as well as what the agent did. TDD in `play`.
+
+## 14. The versions header reports only the first model a run used
+
+`claude_transcriber.py` returns the first `message.model` it finds in the session
+JSONL and stops, so the `[VERSIONS]` header names one model even when a run used
+more than one. Two ways that happens:
+
+- **Safety-classifier fallback.** A flagged request re-runs on another model and
+  the session continues there —
+  [automatic model fallback](https://code.claude.com/docs/en/model-config#automatic-model-fallback)
+  sends a cybersecurity-flagged Opus 5 request to Opus 4.8. Remote for a
+  miles-to-km converter, but it would not show.
+- **Background work.** Claude Code runs conversation summarisation and similar on
+  the `haiku` alias —
+  [background token usage](https://code.claude.com/docs/en/costs#background-token-usage).
+  Spec-run session files carry `ai-title` entries, which record no model at all,
+  and `modelUsage` from `--output-format json` showed
+  `claude-haiku-4-5-20251001` beside the agent's model in three of four hand-built
+  calls. Spec runs never request that output format, so none of it is visible.
+
+ADR 0017 promises the transcript records what a run used. It records what the
+first assistant message used. Report every model a run touched, and consider
+whether the artefacts should capture `--output-format json` so background usage is
+visible at all.
+
+**Why it matters beyond provenance.** A run that switched model part-way through
+measures a blend of two models, so its result says nothing about the wording. That
+is the same class of problem as the contaminated window ADR 0025 handles, where a
+control-arm failure invalidates a wave and the runs are discarded. A switched run
+should be discarded the same way — but only detection makes that possible, since a
+switched run and a clean one currently produce identical artefacts.
+
+The two classifier paths differ on the pinned model. A cybersecurity-flagged
+request re-runs on Opus 4.8 and the session continues there, silently. A
+biology-flagged request is refused outright, because Opus 5 runs its own biology
+classifiers with no fallback model, so that one shows up as a refusal the critic
+grades as a failure. Neither is the wording's fault; only the first is invisible.
+
+No sign of either happening yet: six spec-run session files each used exactly one
+model, and the scenarios are about a miles-to-km converter. The risk grows if a
+scenario ever touches auth, crypto or input validation.
 
 ## Future options
 
