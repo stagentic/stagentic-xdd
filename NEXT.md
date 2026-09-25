@@ -10,25 +10,26 @@ Eight records cover pinning a version, changing it, reducing the skill afterward
 and where this is heading. Nothing above 0021 is committed, so numbering and
 titles are still free to change.
 
-They run in three groups: what is pinned, how a pinned version changes, and what
-follows a change.
+They are numbered as they were decided, not grouped by subject, and listed below
+in the order we expect to write them. 0022 to 0025 are the set under review; 0019
+exists and is blocked; the rest are unwritten.
 
 | ADR | Covers | State |
 |---|---|---|
 | 0022 | Pin the Claude Code CLI version | Reviewed section by section. |
 | 0023 | Pin the model version used by spec runs | Reviewed section by section. |
-| 0024 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
-| 0025 | Validate a version change with repeated suite runs | Drafted, not reviewed. |
-| 0026 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. |
+| 0024 | Validate a version change with repeated suite runs | Drafted, not reviewed. |
+| 0025 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. |
+| 0026 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
+| 0019 | Pin and record reasoning effort and the context window | Proposed. Needs the per-call seam 0023 introduces, so it cannot be acted on until 0023 is built. |
 | 0027 | Split testing across models and versions | Not written. See below. |
 | 0028 | Run the scenarios against a second vendor | Not written. See below. |
-| 0019 | Pin and record reasoning effort and the context window | Proposed. Same per-call seam as 0023, so it depends on 0023 or merges into it. |
 
-0022, 0023, 0025 and 0026 commit together: each links to the others, and 0002 and
-0003 point forward to them. Reviewing 0025 and 0026 is what that waits on. 0024
-can follow separately, since nothing existing links to it.
+0022 to 0025 commit together: each links to the others, and 0002 and 0003 point
+forward to them. Reviewing 0024 and 0025 is what that waits on. 0026 can follow
+separately, since nothing existing links to it.
 
-### 0024 — the model version for sessions in this repository
+### 0026 — the model version for sessions in this repository
 
 `.claude/settings.json` sets `ANTHROPIC_DEFAULT_OPUS_MODEL` and its siblings for
 every Claude Code session started here. ADR 0003 set them intending to control
@@ -63,7 +64,7 @@ environment variable overrides them. What is left is building it:
   It does not read the configuration file, so `play` stays extractable.
 
 The model entries in `.claude/settings.json` stay as configuration with no record
-behind them until 0024 is written.
+behind them until 0026 is written.
 
 ### 0027 — split testing, later
 
