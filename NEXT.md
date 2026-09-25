@@ -25,21 +25,15 @@ forward to all of them. Reviewing 0023, 0024 and 0025 is what that waits on.
 
 ### Building what 0023 decides
 
-0023 carries the measurements showing why the model version has to travel on each
-`claude -p` call rather than through the environment a run happens to inherit.
-Three things it leaves open:
+0023 carries the measurements showing why each `claude -p` call has to be given
+the model version as an argument, rather than inheriting it from the environment
+a spec run starts in. It decides `--model <version>`, and that the agent and the
+critic are pinned separately. What is left is building it:
 
-- **How the harness sets it.** `--model <version>` fixes which model runs as well
-  as its version; `ANTHROPIC_DEFAULT_<ALIAS>_MODEL` in the subprocess environment
-  fixes only the version behind an alias. Nobody has checked whether `claude -p`
-  accepts `--model` with a full version string. Verify that first.
-- **Where the version is read from** — a pytest option, a fixture,
-  `pyproject.toml`, or its own file. This is the part that later grows into lists
-  of versions.
-- **Whether to introduce a per-call seam now**, even though the agent and the
-  critic take the same value. `Agent` and `Critic` already hold separate
-  `ClaudeSession` objects, so the seam is cheap, and the repo's refactoring
-  discipline says introduce the concept before the swap.
+- The versions come from a config file in `spec/`, read by `conftest.py` and
+  passed into each `ClaudeSession`. The filename and format are open.
+- `ClaudeCli` gains a model parameter and puts `--model <version>` on the command.
+  It does not read the config file, so `play` stays extractable.
 
 The model entries in `.claude/settings.json` stay as configuration with no ADR
 behind them until 0026 is written.
@@ -53,6 +47,13 @@ the spec, then bumping the critic separately.
 One ordering point belongs there: bump the critic first, mutate `SKILL.md` to
 confirm the critic still catches a seeded fault, then bump the agent. Otherwise a
 critic that has stopped noticing problems makes a broken agent look fine.
+
+Trying a candidate version belongs there too, and the preferred way is a pytest
+option — `--agent-model` and `--critic-model`, defaulting to the config file 0023
+introduces. Two arms can then run at the same time on different versions, which
+swapping a file cannot do; that is why `compare-wordings.sh` alternates arms
+sequentially. It also leaves the version in the command that produced a batch of
+artefacts, and mutates nothing in the working tree.
 
 Item 5 below is the `play` implementation of the repeated-run mechanism these
 records rely on; this item is about recording the decisions.
