@@ -6,18 +6,19 @@
 
 ## 1. Finish the version-pinning ADRs
 
-Seven records cover pinning a version, changing it, and reducing the skill
-afterwards. None of 0022–0025 is committed, so numbering and titles are still free
-to change.
+Eight records cover pinning a version, changing it, reducing the skill afterwards,
+and where this is heading. None of 0022–0025 is committed, so numbering and titles
+are still free to change.
 
 | ADR | Covers | State |
 |---|---|---|
 | 0022 | Pin the Claude Code CLI version | Reviewed section by section. |
-| 0023 | Pin the model version used by spec runs | Rewritten, not reviewed. |
+| 0023 | Pin the model version used by spec runs | Rewritten. Header, Context and Decision reviewed; Consequences and Alternatives outstanding. |
 | 0024 | Validate a version change with repeated suite runs | Drafted, not reviewed. |
 | 0025 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. |
 | 0026 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. |
 | 0027 | Split testing across models and versions | Not written. See below. |
+| 0028 | Run the scenarios against a second vendor | Not written. See below. |
 | 0019 | Pin and record reasoning effort and the context window | Proposed. Same per-call seam as 0023, so it depends on 0023 or merges into it. |
 
 The first four commit together: each links to the others, and 0002 and 0003 point
@@ -25,15 +26,17 @@ forward to all of them. Reviewing 0023, 0024 and 0025 is what that waits on.
 
 ### Building what 0023 decides
 
-0023 carries the measurements showing why each `claude -p` call has to be given
+0023 records the measurements showing why each `claude -p` call has to be given
 the model version as an argument, rather than inheriting it from the environment
-a spec run starts in. It decides `--model <version>`, and that the agent and the
-critic are pinned separately. What is left is building it:
+a spec run starts in. It decides `--model <version>`, that the agent and the
+critic are pinned separately, and that the versions are declared in
+`spec/models.toml` under `[agent] model` and `[critic] model`. What is left is
+building it:
 
-- The versions come from a config file in `spec/`, read by `conftest.py` and
-  passed into each `ClaudeSession`. The filename and format are open.
-- `ClaudeCli` gains a model parameter and puts `--model <version>` on the command.
-  It does not read the config file, so `play` stays extractable.
+- `conftest.py` reads `spec/models.toml` with `tomllib` and passes each role's
+  version into its `ClaudeSession`.
+- `ClaudeCli` takes a model parameter and puts `--model <version>` on the command.
+  It does not read the configuration file, so `play` stays extractable.
 
 The model entries in `.claude/settings.json` stay as configuration with no ADR
 behind them until 0026 is written.
@@ -49,11 +52,25 @@ confirm the critic still catches a seeded fault, then bump the agent. Otherwise 
 critic that has stopped noticing problems makes a broken agent look fine.
 
 Trying a candidate version belongs there too, and the preferred way is a pytest
-option — `--agent-model` and `--critic-model`, defaulting to the config file 0023
-introduces. Two arms can then run at the same time on different versions, which
+option — `--agent-model` and `--critic-model`, defaulting to `spec/models.toml`.
+Two arms can then run at the same time on different versions, which
 swapping a file cannot do; that is why `compare-wordings.sh` alternates arms
 sequentially. It also leaves the version in the command that produced a batch of
 artefacts, and mutates nothing in the working tree.
+
+### 0028 — a second vendor, later still
+
+Running the same scenarios against another service — Codex alongside Claude. The
+seam already exists: `Agent` and `FakeAgent` share
+`perform(task=, working_dir=) -> Success`, and ADR 0009's `--agent` option selects
+between them, so a vendor implementation is a third one. `ClaudeSession`,
+`ClaudeCli` and `ClaudeTranscriber` sit below that as injected collaborators, and
+each would need a counterpart — the transcriber most of all, since it parses
+Claude's session JSONL.
+
+`spec/models.toml` keys on role rather than vendor, so a vendor entry slots in
+beside `model` when there is a second implementation to name. Adding one before
+then would be wiring with nothing behind it.
 
 Item 5 below is the `play` implementation of the repeated-run mechanism these
 records rely on; this item is about recording the decisions.
