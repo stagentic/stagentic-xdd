@@ -130,12 +130,19 @@ stops the run as a contaminated window; leave it unset when arm A is a baseline
 expected to fail sometimes. `NODE` and `TARGET` override the scenario and the file
 being swapped (default the xdd `SKILL.md`).
 
-#### One batch, or one tally
+#### Run one batch
 
-The primitive each runner is built from, and the reader:
+The primitive each runner is built from:
 
 ```
 bash scripts/run-batch.sh [pytest-node] [count] [artefacts-dir]
+```
+
+#### Read accumulated spec runs
+
+Tallies the runs in an artefacts directory:
+
+```
 bash scripts/tally.sh [characteristic] [artefacts-dir]
 ```
 
