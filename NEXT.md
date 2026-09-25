@@ -4,42 +4,61 @@
 > NEXT.md tracks the immediate next step and is rewritten as work lands (without 
 > any mention of what was just completed.
 
-## 1. Record the measure-then-reduce method as an ADR
+## 1. Finish the version-pinning ADRs
 
-The skill's wording is decided by measurement: a floor run establishes that
-failures show up at all, single-unit screens find what is needed alone, a greedy
-pass removes what is not, and the surviving file is confirmed at 100 runs per arm.
-Three experiments in
-[`docs/migrations/claude-opus-4-8-to-opus-5/`](docs/migrations/claude-opus-4-8-to-opus-5/README.md)
-were run that way, but nothing in the repo says this is how a wording decision is
-reached — only the results survive.
+Seven records cover pinning a version, changing it, and reducing the skill
+afterwards. None of 0022–0025 is committed, so numbering and titles are still free
+to change.
 
-Most of the mechanics are written down already: `scripts/compare-wordings.sh` and
-[COMMANDS.md](COMMANDS.md#compare-two-wordings) carry the paired waves, the arm
-swapping and the contaminated-window stop; the acceptance bar of under 1 failure
-in 100 is in the recurrence lesson. Three decisions are recorded nowhere else, and
-this is the only place they exist:
+| ADR | Covers | State |
+|---|---|---|
+| 0022 | Pin the Claude Code CLI version | Reviewed section by section. |
+| 0023 | Pin the model version used by spec runs | Rewritten, not reviewed. |
+| 0024 | Validate a version change with repeated suite runs | Drafted, not reviewed. |
+| 0025 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. |
+| 0026 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. |
+| 0027 | Split testing across models and versions | Not written. See below. |
+| 0019 | Pin and record reasoning effort and the context window | Proposed. Same per-call seam as 0023, so it depends on 0023 or merges into it. |
 
-- **A wave is a screen, not a confirmation.** Ten runs per arm earns the next ten
-  only if it comes through clean, escalating to 100 runs per arm — 200 critiques,
-  since each run covers both scenarios in `test_red_green_commit.py`.
-- **Why escalating is necessary.** A wording that has regressed to the old
-  baseline rate still comes through a clean ten about 10% of the time. One clean
-  wave is not an answer.
-- **The two arms stop for different reasons.** A control-arm failure invalidates
-  the window and the runs are discarded; a candidate-arm failure is the answer and
-  the run is over. `compare-wordings.sh` implements only the control-arm half
-  (`STOP_ON_A_FAIL`) — the candidate half is a tally by hand between waves.
+The first four commit together: each links to the others, and 0002 and 0003 point
+forward to all of them. Reviewing 0023, 0024 and 0025 is what that waits on.
 
-The ADR should also say when a measurement is required — any edit to guidance the
-agent reads — and where the record lives: one folder per model or CLI move under
-`docs/migrations/`.
+### Building what 0023 decides
 
-Item 5 below encodes the same methodology; that one is about implementing it in
-`play`, this one about recording the decision.
+0023 carries the measurements showing why the model version has to travel on each
+`claude -p` call rather than through the environment a run happens to inherit.
+Three things it leaves open:
 
-When the ADR lands, add a trigger to the *What to read when* list in `CLAUDE.md`,
-covering both a wording change and a pin move, pointing at it.
+- **How the harness sets it.** `--model <version>` fixes which model runs as well
+  as its version; `ANTHROPIC_DEFAULT_<ALIAS>_MODEL` in the subprocess environment
+  fixes only the version behind an alias. Nobody has checked whether `claude -p`
+  accepts `--model` with a full version string. Verify that first.
+- **Where the version is read from** — a pytest option, a fixture,
+  `pyproject.toml`, or its own file. This is the part that later grows into lists
+  of versions.
+- **Whether to introduce a per-call seam now**, even though the agent and the
+  critic take the same value. `Agent` and `Critic` already hold separate
+  `ClaudeSession` objects, so the seam is cheap, and the repo's refactoring
+  discipline says introduce the concept before the swap.
+
+The model entries in `.claude/settings.json` stay as configuration with no ADR
+behind them until 0026 is written.
+
+### 0027 — split testing, later
+
+Lists of versions rather than one, the agent and the critic configured separately,
+and comparative runs driven by a fixture. Adding a version to the agent, running
+the spec, then bumping the critic separately.
+
+One ordering point belongs there: bump the critic first, mutate `SKILL.md` to
+confirm the critic still catches a seeded fault, then bump the agent. Otherwise a
+critic that has stopped noticing problems makes a broken agent look fine.
+
+Item 5 below is the `play` implementation of the repeated-run mechanism these
+records rely on; this item is about recording the decisions.
+
+When these land, add a trigger to the *What to read when* list in `CLAUDE.md`
+covering both a wording change and a version change, pointing at 0024 and 0025.
 
 ## 2. Capture code-change diffs in the run transcript — Edit still to do
 
@@ -95,7 +114,7 @@ seam being designed rather than about call sites that no longer bind.
 Guidance experiments (baseline vs a `SKILL.md` change) are measured by running a
 scenario many times and tallying per-run outcomes. The shell scripts in
 [`scripts/`](scripts) get us by: `verify-runs.sh` for single-arm verification,
-`compare-wordings.sh` for an alternating A/B, `tally.sh` to read a run set. They
+`compare-wordings.sh` for an alternating A/B, `tally.sh` to read accumulated spec runs. They
 launch at full concurrency with no stagger, and a wave count has to be chosen by
 hand against the session usage limit.
 
@@ -138,13 +157,17 @@ it deliberately — that is §8.
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
 (Proposed) was written when neither value could be read back from a run. That no
-longer holds for effort, so the ADR needs revising before it is acted on. What a
+longer holds for either, so the ADR needs revising before it is acted on. What a
 run on 2.1.220 shows:
 
 - **Effort is readable back** — §7 covers capturing it. What is left here is
   *setting* it, rather than taking whatever the CLI defaults to.
-- **The context window is not.** Both the session JSONL and the `system/init`
-  event report a bare `claude-opus-5`, with no `[1m]` variant.
+- **The context window is readable back too** — new behaviour, observed on
+  2.1.220. `claude -p --output-format json` reports it under `modelUsage`, keyed
+  by the resolved model: `"claude-opus-5[1m]": {"contextWindow": 1000000,
+  "canonicalModel": "claude-opus-5"}`. The session JSONL and the `system/init`
+  event still report a bare `claude-opus-5` with no `[1m]` variant, which is
+  where the earlier finding came from.
 - The harness passes no `--effort`, so runs take the CLI default — measured as
   `high` on the pinned model.
 
@@ -158,7 +181,9 @@ Two pieces of work, each TDD in `play/`:
    model** — passing `--effort` to a model that does not support it fails the run.
    `ClaudeCli` therefore needs to know which model it is invoking.
 2. **Record the context window.** Extend the versions header (ADR 0017) with the
-   window the harness asked for, since no run reports it back.
+   window the harness asked for, since no run reports it back. **Revisit:** the
+   bullet above shows a run does report it, so reading it back may be the better
+   source — and would record what the run used rather than what was requested.
 
 Then backfill the captured lessons' metadata from the recorded values rather than
 from this investigation.
@@ -462,6 +487,33 @@ fresh measurement. Every other doc is human-facing, where case is unmeasured.
 - Document that split in [`document-style.md`](docs/document-style.md).
 - Harmonise the repo to one case — a wide diff, no evidence either way.
 - Change `SKILL.md` to sentence case, and re-measure.
+
+## 13. Capture the CLI's stdout and stderr in the run artefacts
+
+Nothing records what the `claude` process itself printed. `ClaudeCli` already
+captures both streams (`capture_output=True`), but uses `result.stderr` only in
+the failure path — on a successful run both are discarded. `transcript.md` is
+built by `ClaudeTranscriber` from the session JSONL, which never carries them. So
+a run that passes leaves no record of anything the CLI said about it.
+
+Observed on 2.1.220: a hand-built run mirroring a scenario (scene copied to a
+temp dir, cwd there, `--settings <copy>/.claude/settings.json`, `--add-dir`)
+printed to stderr:
+
+```
+Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace
+has not been trusted.
+```
+
+That one is benign — the handed-over settings still apply, which is ADR
+[0016](docs/architecture/decisions/0016-hand-the-agent-its-permissions-as-a-launch-argument.md)'s
+whole point, and a real run in the same session ran `uv run pytest` without an
+approval. The concern is the class, not the instance: a real scenario run almost
+certainly prints the same line, and would equally swallow a warning that mattered
+— a skipped MCP server, a demoted plugin, a settings file that failed validation.
+
+Archive both streams beside `transcript.md`, so a run's artefacts carry what the
+CLI reported as well as what the agent did. TDD in `play`.
 
 ## Future options
 
