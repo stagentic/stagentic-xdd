@@ -30,6 +30,14 @@ The same goes for shorthand nouns. Coining "the pin" for "the pinned version" sa
 
 **Symptom to watch for:** re-reading your own sentence to work out what a pronoun refers to. If you have to, the reader will fail.
 
+## Name the mechanism, not a metaphor for it
+
+"The version travels on each call", "those settings reach a run", "the environment carries it", "those entries feed spec runs" — each substitutes motion for whatever actually happens, leaving the reader to guess whether something is passed, read, inherited, or copied.
+
+Say the mechanism. The harness passes it as an argument. Claude Code reads the file. The process inherits the environment it started in.
+
+**Symptom to watch for:** a verb of motion or transfer where nothing moves — travels, carries, reaches, flows, feeds, lands, sits.
+
 ## Simplify the claim, don't change it
 
 When a sentence is too abstract, say the same thing in plainer words. Do not say a different, easier thing.
