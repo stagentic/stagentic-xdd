@@ -18,15 +18,11 @@ follows a change.
 | 0022 | Pin the Claude Code CLI version | Reviewed section by section. |
 | 0023 | Pin the model version used by spec runs | Reviewed section by section. |
 | 0024 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
-| 0025 | Validate a version change with repeated suite runs | Drafted, not reviewed. Currently numbered 0024. |
-| 0026 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. Currently numbered 0025. |
+| 0025 | Validate a version change with repeated suite runs | Drafted, not reviewed. |
+| 0026 | Distil the skill to its minimum on a model change | Drafted, not reviewed. Holds the measure-then-reduce method. |
 | 0027 | Split testing across models and versions | Not written. See below. |
 | 0028 | Run the scenarios against a second vendor | Not written. See below. |
 | 0019 | Pin and record reasoning effort and the context window | Proposed. Same per-call seam as 0023, so it depends on 0023 or merges into it. |
-
-The two drafted records need renaming to 0025 and 0026, with cross-references
-updated in 0002, 0003, 0022, 0023 and the index. None of them is committed, so
-this costs one pass.
 
 0022, 0023, 0025 and 0026 commit together: each links to the others, and 0002 and
 0003 point forward to them. Reviewing 0025 and 0026 is what that waits on. 0024
