@@ -124,11 +124,86 @@ Two corrections to §1 follow. Its "Move whole, leaving a Deprecated tombstone" 
 `Superseded`. Its rule to name "the title rather than a play number" becomes number
 *and* title, since the objection was to the broken hyperlink rather than to the number.
 
-### 0.3 Whether forking 0011 for play makes sense
+### 0.3 Whether forking 0011 for play makes sense — supersede it here first
 
 0011's decision names `stagentic-test` (`src/stagentic/test/matchers.py`) as the home of
 the `matching` alias — a project that does not travel with play. The same problem §1
 dismisses for 0012.
+
+**Where the alias comes from is the smaller half.** `stagentic-test` becomes its own
+library, so an extracted play depends on it as a published package rather than a sibling
+directory. play's tests already import three helpers from it — `matching`, `does_not`
+and `case` — across nine files, so play's record covers all three. Nothing records
+`case` today. §1 dismisses a play counterpart for 0012 because path sources are a
+monorepo matter, which is right about the mechanism and wrong about the dependency:
+play's dependency on `stagentic-test` survives extraction. That belongs in play's record
+rather than a fork of 0012.
+
+**The larger half: 0011 says more PyHamcrest than we now believe.** Matchers are
+excellent for custom and composed checks. For plain equality in a unit test they cost
+words and lose information. 46 of play's roughly 75 `assert_that` calls are `equal_to`,
+which is plain equality written long.
+
+Measured, not assumed — the failure output for each form was compared on the same
+values:
+
+- **Equality on a composite or long value.** pytest localises the difference: the
+  differing character in a string, the differing key in a dict, the index in a list, the
+  line in a multi-line string. Hamcrest prints both values whole and leaves the reader
+  to find it. On a multi-line string it escapes the newlines onto one line, which is the
+  worst of the four.
+- **Scalar comparisons** (`>`, `<`, `>=`, `<=`). Equivalent. pytest is terser; Hamcrest
+  is prose.
+- **Membership.** `in` is a tie — a failed `in` has nothing to diff, so both print the
+  two operands escaped. `not in` favours pytest, which unescapes the text and says
+  `'X' is contained here:` above the real lines.
+- **Predicates needing a call** (`startswith`, `re.match`). Hamcrest wins outright.
+  pytest prints `assert False` or `assert None` plus the function's repr, because its
+  rewriting can take apart operators and not calls.
+- **A slot inside `assert_called_once_with`.** No plain equivalent. Dropping `matching`
+  means `prompt=ANY` plus a `call_args` pull, which is what the convention exists to
+  avoid.
+- **A domain concept.** `is_a_success()` names the intent and formats the failures;
+  `isinstance(result, Success)` does neither.
+
+**The rule that falls out: use plain `assert` unless one of three things is true.**
+
+1. The check needs a function call rather than an operator — prefix, suffix, regex,
+   length. Use the matcher.
+2. The check sits in a mock call slot. Use `matching(...)`.
+3. The check is a domain concept worth naming. Use a custom matcher.
+
+Two supporting rules. **Actual on the left, expected on the right** — pytest marks the
+right operand `-` and the left `+`, so this order makes the output read from expected to
+actual. **Never a parenthesised comparison** — `assert (a == b, "x")` is a non-empty
+tuple and always passes. Wrap a long assertion inside the expression's own brackets
+instead. `ruff check` catches that one as `F631`, so it cannot reach a commit.
+
+Two costs to accept. The change is a sweep of roughly 46 call sites across 13 files,
+behaviour-preserving, so it lands as structural commits. And pytest's notation has to be
+documented — `-` expected, `+` actual, `^` the differing character — or we trade a
+self-explanatory message for a better one a reader cannot parse.
+
+One site argues the other way: `spec/tests/test_conftest.py:53` matches a long
+implicitly-concatenated string, which reads better as a matcher argument than as the
+left operand of `in`.
+
+**So the order of work is: supersede 0011 with a new record here, then fork that one
+for play.** ADRs are append-only, so the narrower rule lands as a new root-level record
+rather than an edit to 0011. 0011 is repo-wide — it says "starting with `play`", and
+spec and stagentic-test follow it too — so play cannot decide this alone.
+
+**What forking means here.** play writes its own ADR, under its own number in play's
+sequence, saying the same thing for play. It is rewritten rather than copied, so it
+reads correctly with play as its own repository. Neither record links to the other, and
+after the split either may change without the other following. The root record stays in
+force, because spec and stagentic-test still follow it — so unlike a moved record there
+is no tombstone, and the decision is simply recorded twice.
+
+`test-conventions.md` carries the same split today and never says which rule wins where:
+it has both "Assertions use PyHamcrest matchers" and "Pin exact composed output once via
+`==`". The new record settles that too, and the conventions file moves to `play/docs/`
+at step 3, so it wants settling before the move.
 
 ### 0.4 Which numbers the new xdd records take
 
