@@ -87,11 +87,42 @@ already one of the passing pair.
 Nothing is sunk in the method this would replace: no `SKILL-inverted.md` exists
 anywhere in the repo.
 
-### 0.2 What status marks a relocated ADR
+### 0.2 What status marks a relocated ADR — settled
 
-0013, 0016 and 0017 are **Accepted** and still in force in `play/src`. ADR 0000 defines
-`Deprecated` as a reasoning-trail status, so marking them that way tells a reader the
-decision was withdrawn. Needs a different status, or wording that names the relocation.
+0013, 0016 and 0017 are **Accepted** and still in force in `play/src`. ADR 0000 lists
+`Deprecated` among the statuses without defining it, and marking them that way tells a
+reader the decision was withdrawn. None of the five existing statuses says "still in
+force, recorded elsewhere now".
+
+**Decided: `Superseded`, by a new record in this sequence that holds the list of what
+moved.** No new status word, and every tombstone then points at a record in its own
+repo, so the link survives play's extraction.
+
+- **The list record.** A new root-level ADR records the decision to split the sequences
+  and lists the records that have moved. It stays **Proposed** until every relevant
+  decision is reflected in `play/docs/architecture/decisions/`, and is Accepted once
+  they are. It gains a line as each move lands, so it is written before the moves —
+  step 1's work, and one of the new records §0.4 covers.
+- **What a tombstone says.** `Superseded`, naming play's record by **number and title**,
+  in prose with no hyperlink — a hyperlink breaks the day play leaves the repo, and the
+  title still identifies the record if play's number ever drifts. Each tombstone also
+  says the decision itself is unchanged, or a reader goes hunting for what changed.
+- **What the index says.** The row names only the root record that supersedes it —
+  "Superseded by ADR 00NN". No play links in the index either.
+- **0008 and 0014 are Proposed, not Accepted.** They are marked `Superseded` too.
+  Superseding a record that was never accepted reads oddly, but two treatments of one
+  event reads worse.
+- **A moved record is rewritten, not copied.** Read it as if `play` were its own
+  repository and edit whatever stops making sense there: citations to root-level
+  records inlined as prose, references to `spec` or `stagentic-test` reworded or
+  dropped, `../` paths removed. §0.6 counts thirteen such citation sites across eight
+  root records.
+- **play's numbering.** 0000 is play's own ADR-about-ADRs. The moved records take the
+  numbers after it, in the order §1's table sets out.
+
+Two corrections to §1 follow. Its "Move whole, leaving a Deprecated tombstone" becomes
+`Superseded`. Its rule to name "the title rather than a play number" becomes number
+*and* title, since the objection was to the broken hyperlink rather than to the number.
 
 ### 0.3 Whether forking 0011 for play makes sense
 
