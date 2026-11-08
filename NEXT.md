@@ -219,26 +219,66 @@ None of those four numbers comes free either. 0022 and 0025 stay at repo level. 
 0024 each split in two, and the repo-level half stays here. Only the play halves cost
 nothing here, because we write them straight into play's sequence.
 
-**Decided: the three new records take 0026 to 0028, and §2's three unwritten items move
-up to 0029 to 0031.** The three are decided and we need them first. A record nobody has
-written should not hold a number the next piece of work needs.
+**Decided: the new records take the next numbers, and §2's three unwritten items move up
+behind them.** They are decided and we need them first. A record nobody has written
+should not hold a number the next piece of work needs.
 
 | number | record |
 |---|---|
 | 0026 | the list of records moved to play (§0.2) |
 | 0027 | the assertion policy, superseding 0011 (§0.3) |
-| 0028 | the repo-level half of 0019 (step 9) |
-| 0029 | the model version for Claude Code sessions in this repository |
-| 0030 | split testing across models and versions |
-| 0031 | running the scenarios against a second vendor |
+| 0028 | the model version for Claude Code sessions in this repository |
+| 0029 | split testing across models and versions |
+| 0030 | running the scenarios against a second vendor |
+
+0019 adds nothing here — §0.5 rejects it at repo level, so step 9 mints no repo number.
 
 We write 0026 at step 1, because every superseded record points at it. 0027 comes before
 step 3, which moves `test-conventions.md` into `play/docs/`.
 
-### 0.5 Whether 0019 is revised before it moves
+### 0.5 Whether 0019 is revised before it moves — settled: it is rejected here
 
-§9 records that 0019's factual premise is stale — effort and the context window are both
-readable back on 2.1.220. Moving it as written carries the staleness into play.
+**Decided: 0019 is Rejected at repo level, and its content is copied into a new play
+record.** It does not split, and nothing of it stays here as a decision.
+
+**Why rejected rather than superseded.** 0019 is Proposed and was never implemented.
+Superseded is for a record still in force whose home moved (§0.2). Rejected is for a
+proposal we are not taking, which is what this is: nothing in it applies to xdd.
+
+**Nothing in it is xdd's.** Its Decision section holds two items, both play's — that
+`play/src/claude_cli.py` passes `--effort high`, gated on the resolved model, and that
+the run transcript records effort and the context window alongside ADR 0017's header,
+which is `ClaudeTranscriber`'s. The one xdd thread is lesson provenance, and that
+appears in Consequences as an effect, not in the Decision. ADR 0015 already owns it.
+
+**Correct 0019 first, then reject it, then copy.** It is Proposed, so its content can
+still be edited — a draft nobody acted on has no reasoning trail to protect. Fixing it
+before rejecting it leaves an accurate record here, and makes play's record a copy
+rather than a rewrite.
+
+What needs correcting: 0019 argues that neither value can be read back from a run, so
+the harness has to record what it asked for. On CLI 2.1.220 both can be read back.
+
+- **Effort.** Every assistant event in the session JSONL carries a top-level `effort`
+  field, since 2.1.212.
+- **The context window.** `claude -p --output-format json` reports it under
+  `modelUsage`, as `"claude-opus-5[1m]": {"contextWindow": 1000000}`.
+
+That changes the decision, not just the wording: the record should say what the run
+actually used, rather than what the harness asked for. One of 0019's claims also broke
+outright — it says the `[1m]` form shows up in the `system/init` event, and on 2.1.220
+that event reports a bare `claude-opus-5`. The record is written about Opus 4.8 too,
+which is no longer the pinned model.
+
+**What survives the correction.** The harness passes no `--effort`, so a run inherits
+whatever the CLI defaults to, and that default can shift between versions. Pinning it is
+still worth doing, gated on the resolved model because the levels vary by model.
+
+**Knock-ons.** Step 9 becomes three acts — correct 0019, reject it, copy it into play —
+rather than a split. No repo-level record comes out of it, so 0028 is free and §0.4's
+numbering shifts: §2's three unwritten items become 0028, 0029 and 0030. 0019 belongs in
+0026's list of records whose content moved to play, marked Rejected rather than
+Superseded.
 
 ### 0.6 Corrections to §1, understood but not yet applied
 
@@ -364,8 +404,10 @@ three, so repo-level references stay bare ("ADR 0018") and play's need qualifyin
 
 - **Move whole**, leaving a Deprecated tombstone in place so the sequence has no gaps:
   0013, 0014, 0016, 0017. And 0008, once §3's scene concession is relocated into 0007.
-- **Split**, superseded by an xdd record here and a new record in play: 0019, 0022,
-  0023, 0024.
+- **Split**, superseded by an xdd record here and a new record in play: 0022, 0023,
+  0024.
+- **Correct, reject here, copy into play**: 0019. It is Proposed and unimplemented, and
+  nothing in it applies to xdd — see §0.5.
 - **Need a play counterpart**, so play can stand alone: 0000 (its own ADR convention),
   0005 and 0006 (installing and tracking a CLI), 0010, 0011 (practices play follows),
   0021 (the namespace). 0012 does not — path-source packages describe this monorepo
@@ -426,7 +468,8 @@ move in one large commit.
 - [ ] **6.** play 0003 ← 0016. Inline its mention of 0009.
 - [ ] **7.** play 0004 ← 0014.
 - [ ] **8.** play 0005 ← 0017.
-- [ ] **9.** Split 0019 — supersede it with an xdd record and a play record.
+- [ ] **9.** Correct 0019 for what a run on 2.1.220 reports back, reject it here, then
+  copy its content into play's record.
 - [ ] **10.** Rewrite 0022, 0023, 0024 in split form. Each produces an xdd record here
   and a play record — these are where play gets its version story, not separate new
   decisions:
@@ -515,9 +558,9 @@ and where this is heading. Nothing above 0021 is committed, so numbering and
 titles are still free to change.
 
 They are numbered as they were decided, not grouped by subject, and listed below
-in the order we expect to write them. 0022 to 0025 are the set under review; 0019
-exists and is blocked; the rest are unwritten. 0026 to 0028 are §1's records, listed
-in §0.4.
+in the order we expect to write them. 0022 to 0025 are the set under review; the rest
+are unwritten. 0026 and 0027 are §1's records, listed in §0.4. 0019 has left this list —
+§0.5 rejects it here and moves its content to play.
 
 | ADR | Covers | State |
 |---|---|---|
@@ -525,15 +568,14 @@ in §0.4.
 | 0023 | Pin the model version used by spec runs | Reviewed section by section. |
 | 0024 | Validate a version change with repeated suite runs; migrate one version at a time | Reviewed whole-document. Shrinks under §1. |
 | 0025 | Distil the skill to its minimum on a model change | Drafted, reviewed in a loop. Holds the measure-then-reduce method. |
-| 0029 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
-| 0019 | Pin and record reasoning effort and the context window | Proposed. Needs the per-call seam 0023 introduces, so it cannot be acted on until 0023 is built. |
-| 0030 | Split testing across models and versions | Not written. See below. |
-| 0031 | Run the scenarios against a second vendor | Not written. See below. |
+| 0028 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
+| 0029 | Split testing across models and versions | Not written. See below. |
+| 0030 | Run the scenarios against a second vendor | Not written. See below. |
 
 0022 to 0025 commit together: each links to the others, and 0002 and 0003 point
-forward to them. 0029 can follow separately, since nothing existing links to it.
+forward to them. 0028 can follow separately, since nothing existing links to it.
 
-### 0029 — the model version for sessions in this repository
+### 0028 — the model version for sessions in this repository
 
 `.claude/settings.json` sets `ANTHROPIC_DEFAULT_OPUS_MODEL` and its siblings for
 every Claude Code session started here. ADR 0003 set them intending to control
@@ -568,9 +610,9 @@ environment variable overrides them. What is left is building it:
   It does not read the configuration file, so `play` stays extractable.
 
 The model entries in `.claude/settings.json` stay as configuration with no record
-behind them until 0029 is written.
+behind them until 0028 is written.
 
-### 0030 — split testing, later
+### 0029 — split testing, later
 
 Lists of versions rather than one, the agent and the critic configured separately,
 and comparative runs driven by a fixture. Adding a version to the agent, running
@@ -586,7 +628,7 @@ swapping a file cannot do; that is why `compare-wordings.sh` alternates arms
 sequentially. It also leaves the version in the command that produced a batch of
 artefacts, and mutates nothing in the working tree.
 
-### 0031 — a second vendor, later still
+### 0030 — a second vendor, later still
 
 Running the same scenarios against another service — Codex alongside Claude. The
 seam already exists: `Agent` and `FakeAgent` share
