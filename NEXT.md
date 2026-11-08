@@ -205,11 +205,35 @@ it has both "Assertions use PyHamcrest matchers" and "Pin exact composed output 
 `==`". The new record settles that too, and the conventions file moves to `play/docs/`
 at step 3, so it wants settling before the move.
 
-### 0.4 Which numbers the new xdd records take
+### 0.4 Which numbers the new records take — settled
 
-§1 steps 9 and 10 mint new xdd records at repo level. §2 already reserves 0026 (the
-sessions-model pin), 0027 (split testing) and 0028 (a second vendor). Nothing says which
-numbers the split halves get.
+§1 steps 9 and 10 add new records at repo level. §2 had pencilled in 0026 for the
+sessions-model pin, 0027 for split testing and 0028 for a second vendor. None of those
+three is written yet.
+
+**Step 10 needs no new numbers.** 0022 to 0025 are not committed, so we can rewrite them
+in split form and keep their numbers. ADR 0000 numbers a record when it is decided, and
+these four were decided before anything in §0.
+
+None of those four numbers comes free either. 0022 and 0025 stay at repo level. 0023 and
+0024 each split in two, and the repo-level half stays here. Only the play halves cost
+nothing here, because we write them straight into play's sequence.
+
+**Decided: the three new records take 0026 to 0028, and §2's three unwritten items move
+up to 0029 to 0031.** The three are decided and we need them first. A record nobody has
+written should not hold a number the next piece of work needs.
+
+| number | record |
+|---|---|
+| 0026 | the list of records moved to play (§0.2) |
+| 0027 | the assertion policy, superseding 0011 (§0.3) |
+| 0028 | the repo-level half of 0019 (step 9) |
+| 0029 | the model version for Claude Code sessions in this repository |
+| 0030 | split testing across models and versions |
+| 0031 | running the scenarios against a second vendor |
+
+We write 0026 at step 1, because every superseded record points at it. 0027 comes before
+step 3, which moves `test-conventions.md` into `play/docs/`.
 
 ### 0.5 Whether 0019 is revised before it moves
 
@@ -492,7 +516,8 @@ titles are still free to change.
 
 They are numbered as they were decided, not grouped by subject, and listed below
 in the order we expect to write them. 0022 to 0025 are the set under review; 0019
-exists and is blocked; the rest are unwritten.
+exists and is blocked; the rest are unwritten. 0026 to 0028 are §1's records, listed
+in §0.4.
 
 | ADR | Covers | State |
 |---|---|---|
@@ -500,15 +525,15 @@ exists and is blocked; the rest are unwritten.
 | 0023 | Pin the model version used by spec runs | Reviewed section by section. |
 | 0024 | Validate a version change with repeated suite runs; migrate one version at a time | Reviewed whole-document. Shrinks under §1. |
 | 0025 | Distil the skill to its minimum on a model change | Drafted, reviewed in a loop. Holds the measure-then-reduce method. |
-| 0026 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
+| 0029 | Pin the model version for Claude Code sessions in this repository | Not written. A fresh decision, not a supersession. See below. |
 | 0019 | Pin and record reasoning effort and the context window | Proposed. Needs the per-call seam 0023 introduces, so it cannot be acted on until 0023 is built. |
-| 0027 | Split testing across models and versions | Not written. See below. |
-| 0028 | Run the scenarios against a second vendor | Not written. See below. |
+| 0030 | Split testing across models and versions | Not written. See below. |
+| 0031 | Run the scenarios against a second vendor | Not written. See below. |
 
 0022 to 0025 commit together: each links to the others, and 0002 and 0003 point
-forward to them. 0026 can follow separately, since nothing existing links to it.
+forward to them. 0029 can follow separately, since nothing existing links to it.
 
-### 0026 — the model version for sessions in this repository
+### 0029 — the model version for sessions in this repository
 
 `.claude/settings.json` sets `ANTHROPIC_DEFAULT_OPUS_MODEL` and its siblings for
 every Claude Code session started here. ADR 0003 set them intending to control
@@ -543,9 +568,9 @@ environment variable overrides them. What is left is building it:
   It does not read the configuration file, so `play` stays extractable.
 
 The model entries in `.claude/settings.json` stay as configuration with no record
-behind them until 0026 is written.
+behind them until 0029 is written.
 
-### 0027 — split testing, later
+### 0030 — split testing, later
 
 Lists of versions rather than one, the agent and the critic configured separately,
 and comparative runs driven by a fixture. Adding a version to the agent, running
@@ -561,7 +586,7 @@ swapping a file cannot do; that is why `compare-wordings.sh` alternates arms
 sequentially. It also leaves the version in the command that produced a batch of
 artefacts, and mutates nothing in the working tree.
 
-### 0028 — a second vendor, later still
+### 0031 — a second vendor, later still
 
 Running the same scenarios against another service — Codex alongside Claude. The
 seam already exists: `Agent` and `FakeAgent` share
