@@ -329,12 +329,10 @@ split group with 0022, 0023 and 0024.
   `path = "../stagentic-test"`.
 - **Two more files belong in "Beyond the ADRs":** `docs/architecture/improvements/`
   (both files are about `play/src`), and `test-conventions.md:148`'s bare "ADR 0011" —
-  step 3 moves that file and would create the violation step 12 exists to catch. That
+  step 3 moves that file and would create the violation step 11 exists to catch. That
   reference now points at the assertion policy record rather than 0011 (§0.3).
-- **Step 11 depends on work no step performs.** It needs play's model declaration from
-  step 10, but step 10 only writes ADRs. Building it — `tomllib` read, `ClaudeCli`
-  taking a model parameter — is §2's "Building what 0023 decides", not one of the twelve
-  steps.
+- **Nothing here is code.** The restructure moves documents only. The critic contract
+  test was step 11 and has left the plan — it and the rest of the deferred code are §16.
 - **"The commands split with them" is wrong for `scripts/`.** All five drive
   `uv run --directory spec`, and 0024/0025 link five COMMANDS.md anchors for them. Those
   stay at repo level; only §6's underlying N× mechanism is play's.
@@ -359,7 +357,8 @@ version-validation story, and the ordering falls out of the dependency chain
 `stagentic-test` → `play` → `spec`/xdd: a `play` validated on the new version has to
 come first, because xdd's scenarios are graded by play's critic.
 
-Three things follow, none started:
+Three things follow, none started. The first two are code, so they are §16's; this plan
+only writes the records that call for them.
 
 - **A critic contract test.** `FakeAgent` with a canned failing transcript and the
   real critic, marked `contract`, in `play/tests/contract/`. It answers "can this
@@ -372,11 +371,10 @@ Three things follow, none started:
   tests**, rather than reading `spec/models.toml` — that would invert the dependency
   and break the moment `play` is installed standalone. Cost accepted: nothing reports
   when play's declaration and spec's drift apart.
-- **0024 shrinks.** Once play owns "does the critic still report faults", the inverted
-  skill leaves 0024 entirely — the term, `### The Critic Check`, the
-  `SKILL-inverted.md` artefact, the drift-against-the-scorecard problem, and the
-  three-way diagnosis. 0024 becomes: validate the xdd skill on a new version, against
-  a critic play has already validated.
+- **0024 divides.** Validating the skill on a new version stays here. Validating
+  play's prompts goes to play, and the critic check goes with it whole — the inverted
+  skill, its artefact and its three-way diagnosis — as the method that record inherits.
+  Whether that method is replaced is §0.1's question, still open.
 
 ### The classification
 
@@ -481,7 +479,7 @@ fresh session has after `/clear`.
 
 **The invariant that keeps each step safe:** every commit leaves all links resolving.
 During the migration a repo-level record may point into `play/docs/` — legal, because
-`play/` is still in this repo. Step 12 severs what remains, and the grep test below is
+`play/` is still in this repo. Step 11 severs what remains, and the grep test below is
 the definition of done. Without that allowance the mutually-citing cluster could only
 move in one large commit.
 
@@ -515,15 +513,18 @@ move in one large commit.
 
   Commits as one step: the three cite each other, 0025 cites all three, and 0002/0003
   point forward to them. That is why this one cannot subdivide.
-- [ ] **11.** The critic contract test — `FakeAgent` + a canned failing transcript +
-  the real critic, TDD, marked `contract`. Needs play's model declaration from step 10,
-  so it knows which version it is asserting about.
-- [ ] **12.** `COMMANDS.md` play counterpart; sever the remaining repo↔play links; run
+- [ ] **11.** `COMMANDS.md` play counterpart; sever the remaining repo↔play links; run
   the grep test; tidy both indexes.
 
-Each move is the same three edits: write play's version, deprecate the original in
-place with a prose note naming the *title* rather than a play number — a number cited
-across the boundary goes stale and cannot be link-checked — and update both indexes.
+**No step writes code.** The restructure moves documents and nothing else. A record that
+decides something not yet implemented lands Proposed, and building it becomes its own
+item here — §16 holds the ones this plan creates. A record whose decision is already
+implemented lands Accepted, because the code is there: 0013, 0016, 0017, and 0008's play
+half.
+
+Each move is the same three edits: write play's version, supersede the original in place
+with a prose note naming its play number *and* title — a hyperlink across the boundary
+breaks the day play leaves — and update both indexes.
 
 **A concrete test for "done":** copy `play/` out on its own and nothing in it points
 outside itself. Greppable — no `../` escaping `play/`, and no bare ADR numbers that
@@ -1179,6 +1180,26 @@ grades as a failure. Neither is the wording's fault; only the first is invisible
 No sign of either happening yet: six spec-run session files each used exactly one
 model, and the scenarios are about a miles-to-km converter. The risk grows if a
 scenario ever touches auth, crypto or input validation.
+
+## 16. Code the ADR restructure defers
+
+§1 moves documents only, so every record it leaves Proposed needs implementing
+afterwards. These are those items, each TDD in `play/`.
+
+- **The model plumbing 0023 decides.** `conftest.py` reads the model versions with
+  `tomllib` and passes each role's version into its `ClaudeSession`. `ClaudeCli` takes a
+  model parameter and puts `--model <version>` on the command. It does not read the
+  configuration file, so `play` stays extractable. §2 holds the detail.
+- **play's own version declaration.** play declares the CLI and model versions its
+  real-claude tests run against, separately from spec's. Needed before anything can
+  assert what version it is testing.
+- **The critic contract test.** `FakeAgent` with a canned failing transcript and the
+  real critic, marked `contract`, in `play/tests/contract/`. It answers "can this critic
+  report a fault at all", cheaply and on every full baseline. It needs play's version
+  declaration first, so it knows which version it is asserting about. Was step 11 of §1
+  until the plan became documents-only.
+- **Pin reasoning effort.** The `--effort` flag, gated on the resolved model. §9 holds
+  the detail, and §0.5 explains why the record moves to play.
 
 ## Future options
 
