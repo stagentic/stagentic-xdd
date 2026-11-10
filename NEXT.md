@@ -4,11 +4,14 @@
 > NEXT.md tracks the immediate next step and is rewritten as work lands (without 
 > any mention of what was just completed.
 
-## 0. Open decisions blocking §1
+## 0. Decisions behind §1
 
-An audit of §1's plan against the ADRs as they stand turned up twelve items, in three
-groups. The first is settled. The second needs a decision before the plan can be
-followed. The third is correction work on §1 that is understood but not yet applied.
+An audit of §1's plan against the ADRs as they stand turned up twelve items. All are now
+settled and §1 carries the corrections, so nothing here blocks the plan. The sections
+stay as the record of why each was decided the way it was.
+
+One question is deferred rather than answered: how the critic is tested (§0.1). It does
+not block anything, because play's record inherits the method it already has.
 
 ### 0.1 How the critic is tested — settled enough for §1 to proceed
 
@@ -270,11 +273,11 @@ whatever the CLI defaults to, and that default can shift between versions. Pinni
 still worth doing, gated on the resolved model because the levels vary by model.
 
 **Knock-ons.** Step 9 becomes three acts — correct 0019, reject it, copy it into play —
-rather than a split. No repo-level record comes out of it, so 0028 is free and §0.4's
-numbering shifts, and 0019 belongs in the migration record's list of records whose
-content moved to play, marked Rejected rather than Superseded.
+rather than a split. No repo-level record comes out of it, so the plan mints one number
+fewer. 0019 belongs in the migration record's list of records whose content moved to
+play, marked Rejected rather than Superseded.
 
-### 0.6 Corrections to §1 — some settled, the rest still to apply
+### 0.6 Corrections to §1 — applied
 
 **Which records we may edit, and which we may not.** Editability follows implementation
 rather than status.
@@ -314,33 +317,28 @@ So 0008 is superseded by two new records — one here for the context boundary, 
 play for cwd — and nothing in it is edited. It leaves the move-whole group and joins the
 split group with 0022, 0023 and 0024.
 
-**Still to apply:**
+**Applied to §1, and recorded here so the reasons are not lost:**
 
-- **The inlining claim is wrong by about six times.** §1 says two citations need
-  inlining. Verified across the five movers: **thirteen sites touching eight repo-level
-  records**. 0013 cites 0001, 0007, 0009, 0010, 0011. 0008 cites 0001, 0007. 0016 cites
-  0002, 0008, 0009. 0014 cites 0010 plus `../../working-practices.md` — itself a `../`
-  escaping `play/`. 0017 cites 0002, 0003, 0014, 0015, 0016. Steps 5, 7 and 8 carry no
-  inlining instruction at all.
-- **`play/` already points outside itself and no step touches it.**
-  `play/README.md:131,149` and `play/HOW_IT_WORKS.md:42,103` link
-  `../docs/architecture/decisions/…` and `../COMMANDS.md`. Step 6 moves 0016, so two
-  become links into a repo tombstone. `play/pyproject.toml:22` has
-  `path = "../stagentic-test"`.
-- **Two more files belong in "Beyond the ADRs":** `docs/architecture/improvements/`
-  (both files are about `play/src`), and `test-conventions.md:148`'s bare "ADR 0011" —
-  step 3 moves that file and would create the violation step 11 exists to catch. That
-  reference now points at the assertion policy record rather than 0011 (§0.3).
-- **Nothing here is code.** The restructure moves documents only. The critic contract
-  test was step 11 and has left the plan — it and the rest of the deferred code are §16.
-- **"The commands split with them" is wrong for `scripts/`.** All five drive
-  `uv run --directory spec`, and 0024/0025 link five COMMANDS.md anchors for them. Those
-  stay at repo level; only §6's underlying N× mechanism is play's.
-- **Repo→moved-record citations are never budgeted for.** The rule is symmetric, the
-  work list is not: 0022:17,38 cite 0008 and 0016; 0023:59,70 cite 0017 and 0016;
-  0019:15 cites 0017.
+- **Inlining is thirteen sites across eight records, not two.** Every move step now
+  names its own citations. 0013 cites 0001, 0007, 0009, 0010 and 0011. 0008 cites 0001
+  and 0007. 0016 cites 0002, 0008 and 0009. 0014 cites 0010 plus
+  `../../working-practices.md`, itself a `../` escaping `play/`. 0017 cites 0002, 0003,
+  0014, 0015 and 0016. 0019 cites 0017.
+- **Citations also run the other way.** 0022 cites 0008 and 0016; 0023 cites 0017 and
+  0016. Both are rewritten at step 10 anyway, so the inlining happens there.
+- **`play/` already pointed outside itself.** `play/README.md:131,149` and
+  `play/HOW_IT_WORKS.md:42,103` link `../docs/architecture/decisions/…` and
+  `../COMMANDS.md`, and step 11 now names them. `play/pyproject.toml:22`'s
+  `path = "../stagentic-test"` is left alone — correct while play lives here, and a
+  version dependency at extraction (§0.3).
+- **`scripts/` and its commands stay here.** All five drive `uv run --directory spec`.
+  Only §6's N× mechanism is play's.
+- **`docs/architecture/improvements/`** moves with the conventions; both files are about
+  `play/src`.
 - **`docs/working-practices.md` and `.claude/hooks/` stay here for now**, even though
   both are play-bearing. Revisit at extraction.
+- **Nothing in the plan is code.** The critic contract test was step 11 and has left —
+  it and the rest of the deferred code are §16.
 
 ## 1. Restructure the ADRs by project
 
@@ -490,14 +488,19 @@ move in one large commit.
   `README.md` index, `TEMPLATE.md`.
 - [ ] **3.** Move `src-conventions.md` and `test-conventions.md` to `play/docs/`;
   create `play/CLAUDE.md` pointing at them; prune the root `CLAUDE.md`'s play triggers.
-- [ ] **4.** play 0001 ← 0013. Inline its mention of 0009.
+  `test-conventions.md:148` carries a bare "ADR 0011" — inline it as prose, and note it
+  now describes the assertion policy record, not 0011 (§0.3).
+- [ ] **4.** play 0001 ← 0013. Inline its citations of 0001, 0007, 0009, 0010 and 0011.
 - [ ] **5.** Split 0008 — a play record for cwd and no-re-attachment, an xdd record for
-  the agent's context boundary. 0008 is superseded by both, and not edited.
-- [ ] **6.** play 0003 ← 0016. Inline its mention of 0009.
+  the agent's context boundary. 0008 is superseded by both, and not edited. Inline its
+  citations of 0001 and 0007 in play's half.
+- [ ] **6.** play 0003 ← 0016. Inline its citations of 0002, 0008 and 0009.
 - [ ] **7.** Correct 0014, reject it here, then copy its content into play's record.
-- [ ] **8.** play 0005 ← 0017.
+  Inline its citation of 0010, and its `../../working-practices.md` link — a `../` that
+  escapes `play/`.
+- [ ] **8.** play 0005 ← 0017. Inline its citations of 0002, 0003, 0014, 0015 and 0016.
 - [ ] **9.** Correct 0019 for what a run on 2.1.220 reports back, reject it here, then
-  copy its content into play's record.
+  copy its content into play's record. Inline its citation of 0017.
 - [ ] **10.** Rewrite 0022, 0023, 0024 in split form. Each produces an xdd record here
   and a play record — these are where play gets its version story, not separate new
   decisions:
@@ -511,10 +514,17 @@ move in one large commit.
     method the record inherits. Whether that method survives is §0.1's question, and
     it does not hold this step up.
 
+  While rewriting them, inline the citations that now point at records moved to play:
+  0022 cites 0008 and 0016, 0023 cites 0017 and 0016.
+
   Commits as one step: the three cite each other, 0025 cites all three, and 0002/0003
   point forward to them. That is why this one cannot subdivide.
 - [ ] **11.** `COMMANDS.md` play counterpart; sever the remaining repo↔play links; run
-  the grep test; tidy both indexes.
+  the grep test; tidy both indexes. The links already there and not touched by any
+  earlier step: `play/README.md:131,149` and `play/HOW_IT_WORKS.md:42,103`, which point
+  at `../docs/architecture/decisions/…` and `../COMMANDS.md`. Leave
+  `play/pyproject.toml:22`'s `path = "../stagentic-test"` alone — it is correct while
+  play lives here, and becomes a version dependency at extraction (§0.3).
 
 **No step writes code.** The restructure moves documents and nothing else. A record that
 decides something not yet implemented lands Proposed, and building it becomes its own
@@ -549,11 +559,15 @@ mean repo-level records.
   `CLAUDE.md` today, so an extracted play arrives with none. Create it so it travels.
 - **`COMMANDS.md` is repo-level and holds play's commands.** Needs a play counterpart,
   on the same fork-not-sync basis.
-- **`scripts/`** — `verify-runs.sh`, `compare-wordings.sh`, `tally.sh`, `fisher.sh` —
-  are interim, and §6 puts their successor in play. The commands split with them.
+- **`scripts/` stays here, and so do its commands.** All five drive
+  `uv run --directory spec`, and 0024 and 0025 link five `COMMANDS.md` anchors for them.
+  They are interim, and §6 puts their successor in play — but it is only that N×
+  mechanism that is play's, not these scripts or the commands that document them.
+- **`docs/architecture/improvements/`** — both files are about `play/src`, so they move
+  with the conventions.
 - **`docs/migrations/`** stays xdd, but play needs its own once it validates the critic
   prompt.
-- **`decisions/README.md`** needs Deprecated rows and a prose pointer to where play's
+- **`decisions/README.md`** needs Superseded rows and a prose pointer to where play's
   records live. Prose, not a link — that link breaks the day play leaves.
 
 ### How `play/CLAUDE.md` will load
