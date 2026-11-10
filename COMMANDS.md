@@ -86,7 +86,8 @@ uv run --directory spec pytest tests --agent=real --.artefacts-dir .artefacts
 
 A scenario judged by the critic passes or fails probabilistically, so one run
 establishes nothing. The scripts in [`scripts/`](scripts) run a scenario many times
-and tally the outcomes. Interim tooling — the framework version is NEXT.md §4.
+and tally the outcomes. These are interim tooling, to be replaced by a mechanism in
+`play`.
 
 Invoke every one from the **repo root with the relative path**. That matches the
 permission allowlist (e.g. `Bash(bash scripts/verify-runs.sh*)`) and runs without a
