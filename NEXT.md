@@ -205,36 +205,31 @@ it has both "Assertions use PyHamcrest matchers" and "Pin exact composed output 
 `==`". The new record settles that too, and the conventions file moves to `play/docs/`
 at step 3, so it wants settling before the move.
 
-### 0.4 Which numbers the new records take — settled
+### 0.4 Which numbers the new records take — settled: an untracked number is provisional
 
-§1 steps 9 and 10 add new records at repo level. §2 had pencilled in 0026 for the
-sessions-model pin, 0027 for split testing and 0028 for a second vendor. None of those
-three is written yet.
+**Decided: a number is fixed only once the record is committed.** 0000 to 0021 are
+committed, so they keep their numbers. Everything untracked can be renumbered, including
+the four reviewed drafts 0022 to 0025. We choose the final sequence once we know the
+whole set of new records, and we choose it to read in a logical order.
 
-**Step 10 needs no new numbers.** 0022 to 0025 are not committed, so we can rewrite them
-in split form and keep their numbers. ADR 0000 numbers a record when it is decided, and
-these four were decided before anything in §0.
+So the table below is a sketch of what has to be written, not an allocation. The numbers
+move as the set grows.
 
-None of those four numbers comes free either. 0022 and 0025 stay at repo level. 0023 and
-0024 each split in two, and the repo-level half stays here. Only the play halves cost
-nothing here, because we write them straight into play's sequence.
-
-**Decided: the new records take the next numbers, and §2's three unwritten items move up
-behind them.** They are decided and we need them first. A record nobody has written
-should not hold a number the next piece of work needs.
-
-| number | record |
+| provisional | record |
 |---|---|
 | 0026 | the list of records moved to play (§0.2) |
 | 0027 | the assertion policy, superseding 0011 (§0.3) |
-| 0028 | the model version for Claude Code sessions in this repository |
-| 0029 | split testing across models and versions |
-| 0030 | running the scenarios against a second vendor |
+| 0028 | the xdd half of 0008 — the agent's context boundary (§0.6) |
+| 0029 | the model version for Claude Code sessions in this repository |
+| 0030 | split testing across models and versions |
+| 0031 | running the scenarios against a second vendor |
 
-0019 adds nothing here — §0.5 rejects it at repo level, so step 9 mints no repo number.
+Two records add nothing here. §0.5 rejects 0019 at repo level, so step 9 mints no repo
+number. 0014 is the same case, for the same reason.
 
-We write 0026 at step 1, because every superseded record points at it. 0027 comes before
-step 3, which moves `test-conventions.md` into `play/docs/`.
+Order of writing, whatever the numbers turn out to be: the migration list comes first,
+because every superseded record points at it. The assertion policy comes before step 3,
+which moves `test-conventions.md` into `play/docs/`.
 
 ### 0.5 Whether 0019 is revised before it moves — settled: it is rejected here
 
@@ -276,11 +271,50 @@ still worth doing, gated on the resolved model because the levels vary by model.
 
 **Knock-ons.** Step 9 becomes three acts — correct 0019, reject it, copy it into play —
 rather than a split. No repo-level record comes out of it, so 0028 is free and §0.4's
-numbering shifts: §2's three unwritten items become 0028, 0029 and 0030. 0019 belongs in
-0026's list of records whose content moved to play, marked Rejected rather than
-Superseded.
+numbering shifts, and 0019 belongs in the migration record's list of records whose
+content moved to play, marked Rejected rather than Superseded.
 
-### 0.6 Corrections to §1, understood but not yet applied
+### 0.6 Corrections to §1 — some settled, the rest still to apply
+
+**Which records we may edit, and which we may not.** Editability follows implementation
+rather than status.
+
+- **Accepted, or Proposed but already implemented** — do not edit. The decision is in
+  force and the file is its trail. It is marked Superseded, and a new record carries it
+  on.
+- **Proposed and never implemented** — editable. There is no trail to protect, so we
+  correct the content first, then reject it here, then copy it into play's record.
+
+That sorts the five movers, and it moves two of them:
+
+| record | status | implemented | treatment |
+|---|---|---|---|
+| 0013 | Accepted | yes | Superseded, not edited |
+| 0016 | Accepted | yes | Superseded, not edited |
+| 0017 | Accepted | yes | Superseded, not edited |
+| 0008 | Proposed | yes — cwd at the workspace root is in the harness | Superseded, not edited, and it splits (below) |
+| 0014 | Proposed | no — the ground-up transcriber rewrite is still pending | correct, reject here, copy into play, as §0.5 does for 0019 |
+
+**0008 splits; it does not move whole.** §1 treats it as a mover with one concession to
+relocate. It is closer to half and half, and its Decision section divides cleanly:
+
+- **play's half** — the harness sets cwd to the workspace tmp directory when it invokes
+  `claude -p`, and nothing re-attaches the agent to the repo: no `--add-dir` at the
+  repository, no env var resolving back into it, no symlinks.
+- **xdd's half** — a per-scene `CLAUDE.md` is the supported way to seed agent-facing
+  context, and the repo-level `CLAUDE.md` is for contributors only, outside the agent's
+  context boundary.
+
+The Consequences and Alternatives divide the same way. The skill-staging bullet, the
+scene-authoring bullet, the `prompt.md` bullet and the Alternative naming the scorecard
+and the TDAB framing are xdd's. The isolation-invariant bullet and the `--bare`
+Alternative are play's.
+
+So 0008 is superseded by two new records — one here for the context boundary, one in
+play for cwd — and nothing in it is edited. It leaves the move-whole group and joins the
+split group with 0022, 0023 and 0024.
+
+**Still to apply:**
 
 - **The inlining claim is wrong by about six times.** §1 says two citations need
   inlining. Verified across the five movers: **thirteen sites touching eight repo-level
@@ -293,11 +327,10 @@ Superseded.
   `../docs/architecture/decisions/…` and `../COMMANDS.md`. Step 6 moves 0016, so two
   become links into a repo tombstone. `play/pyproject.toml:22` has
   `path = "../stagentic-test"`.
-- **Four more files belong in "Beyond the ADRs":** `docs/working-practices.md`
-  (play-bearing, and linked from 0014 which moves), `docs/architecture/improvements/`
-  (both files are about `play/src`), `.claude/hooks/` (one encodes play's mutation loop,
-  one injects working-practices), and `test-conventions.md:148`'s bare "ADR 0011" — step
-  3 moves that file and would create the violation step 12 exists to catch.
+- **Two more files belong in "Beyond the ADRs":** `docs/architecture/improvements/`
+  (both files are about `play/src`), and `test-conventions.md:148`'s bare "ADR 0011" —
+  step 3 moves that file and would create the violation step 12 exists to catch. That
+  reference now points at the assertion policy record rather than 0011 (§0.3).
 - **Step 11 depends on work no step performs.** It needs play's model declaration from
   step 10, but step 10 only writes ADRs. Building it — `tomllib` read, `ClaudeCli`
   taking a model parameter — is §2's "Building what 0023 decides", not one of the twelve
@@ -308,11 +341,8 @@ Superseded.
 - **Repo→moved-record citations are never budgeted for.** The rule is symmetric, the
   work list is not: 0022:17,38 cite 0008 and 0016; 0023:59,70 cite 0017 and 0016;
   0019:15 cites 0017.
-- **0008's xdd residue is more than §3's scene concession.** Also xdd-side: the
-  Consequences bullet on staging the xdd skill into the workspace, the "per-task agent
-  conventions become a scene authoring concern" bullet, and the first Alternative naming
-  the scorecard characteristics and the TDAB framing. §4 (repo-level `CLAUDE.md`) is
-  about this repo too, not an extracted play.
+- **`docs/working-practices.md` and `.claude/hooks/` stay here for now**, even though
+  both are play-bearing. Revisit at extraction.
 
 ## 1. Restructure the ADRs by project
 
@@ -402,12 +432,11 @@ That collapses the classification: **only play's records move**. Two sequences, 
 three, so repo-level references stay bare ("ADR 0018") and play's need qualifying
 ("play ADR 0003"). Ten records are affected, not twenty-six:
 
-- **Move whole**, leaving a Deprecated tombstone in place so the sequence has no gaps:
-  0013, 0014, 0016, 0017. And 0008, once §3's scene concession is relocated into 0007.
-- **Split**, superseded by an xdd record here and a new record in play: 0022, 0023,
-  0024.
-- **Correct, reject here, copy into play**: 0019. It is Proposed and unimplemented, and
-  nothing in it applies to xdd — see §0.5.
+- **Superseded here, rewritten in play**, so the sequence has no gaps: 0013, 0016, 0017.
+- **Split**, superseded by an xdd record here and a new record in play: 0008, 0022, 0023,
+  0024. See §0.6 for how 0008 divides.
+- **Correct, reject here, copy into play**: 0014 and 0019. Both are Proposed and never
+  implemented, and nothing in either applies to xdd — see §0.5 and §0.6.
 - **Need a play counterpart**, so play can stand alone: 0000 (its own ADR convention),
   0005 and 0006 (installing and tracking a CLI), 0010, 0011 (practices play follows),
   0021 (the namespace). 0012 does not — path-source packages describe this monorepo
@@ -464,9 +493,10 @@ move in one large commit.
 - [ ] **3.** Move `src-conventions.md` and `test-conventions.md` to `play/docs/`;
   create `play/CLAUDE.md` pointing at them; prune the root `CLAUDE.md`'s play triggers.
 - [ ] **4.** play 0001 ← 0013. Inline its mention of 0009.
-- [ ] **5.** play 0002 ← 0008. Relocate §3's scene concession into 0007.
+- [ ] **5.** Split 0008 — a play record for cwd and no-re-attachment, an xdd record for
+  the agent's context boundary. 0008 is superseded by both, and not edited.
 - [ ] **6.** play 0003 ← 0016. Inline its mention of 0009.
-- [ ] **7.** play 0004 ← 0014.
+- [ ] **7.** Correct 0014, reject it here, then copy its content into play's record.
 - [ ] **8.** play 0005 ← 0017.
 - [ ] **9.** Correct 0019 for what a run on 2.1.220 reports back, reject it here, then
   copy its content into play's record.
