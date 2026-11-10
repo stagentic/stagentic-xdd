@@ -398,13 +398,13 @@ the other.
 | 0005 | Periodic CLI update checking | repo-wide | still "To be determined"; both layers need it |
 | 0006 | Native installer for the pinned CLI | repo-wide | |
 | 0007 | Task chain audited by a scorecard | conflated → xdd | `spec/tasks/` and scenes are xdd; §4 fixes play's `Agent` contract — `task, in_workspace → transcript_path` |
-| 0008 | cwd at the workspace root | conflated → play | §1–2 and §4 are the harness's; §3's per-scene `CLAUDE.md` concession is xdd's |
+| 0008 | cwd at the workspace root | conflated, roughly half each | Decision 1–2 are the harness's, 3–4 are xdd's, and the Consequences and Alternatives divide the same way. §0.6 has the breakdown |
 | 0009 | Select inspector and agent via pytest options | xdd | re-read: the decision is entirely `spec/conftest.py`'s options and defaults. That the implementations are interchangeable is 0013's, not this record's |
 | 0010 | Mutation testing | repo-wide | |
 | 0011 | PyHamcrest | repo-wide | "starting with `play`" |
 | 0012 | Path-source packages | repo-wide | created what is now `stagentic-test` |
 | 0013 | Agents and inspectors return a Result | play | clean |
-| 0014 | Separate jsonl translation from the transcriber | play | clean |
+| 0014 | Separate jsonl translation from the transcriber | play | clean, and never implemented — so it is rejected here and copied, per §0.6 |
 | 0015 | Capture xdd-skill missteps as lessons | xdd | clean — "scope is the xdd skill only" |
 | 0016 | Permissions as a launch argument | play | reads a scene's file, but the decision is `ClaudeCli`'s |
 | 0017 | Record CLI version and model in the transcript | play | clean |
@@ -462,18 +462,19 @@ an introduction to the framework rather than to preserve this repo's chronology.
 The one hard constraint: a play record must not cite one that has not landed yet, or
 it points out of `play/` — the direction that breaks on extraction.
 
-| play | from | reads as |
+| play | content from | reads as |
 |---|---|---|
-| 0000 | — | new — play's own ADR-about-ADRs |
-| 0001 | 0013 | **the contract** — agents and inspectors return a Result |
-| 0002 | 0008 | **the agent's boundary** — cwd at the workspace root |
-| 0003 | 0016 | **completing that boundary** — permissions as a launch argument |
-| 0004 | 0014 | **reading a run back** — separate jsonl translation from the transcriber |
-| 0005 | 0017 | **what the transcript carries** — the resolved CLI version and model |
+| 0000 | — | new — play's own ADR about ADRs |
+| 0001 | 0013, superseded here | **the contract** — agents and inspectors return a Result |
+| 0002 | 0008's play half, the rest superseded here | **the agent's boundary** — cwd at the workspace root |
+| 0003 | 0016, superseded here | **completing that boundary** — permissions as a launch argument |
+| 0004 | 0014, rejected here | **reading a run back** — separate jsonl translation from the transcriber |
+| 0005 | 0017, superseded here | **what the transcript carries** — the resolved CLI version and model |
 
-Citations point backwards: 0003 cites 0002 ✓, 0005 cites 0004 and 0003 ✓. Two point at
-records staying at repo level and must be inlined as prose when they move — 0013's
-mention of 0009, and 0016's mention of 0009.
+Citations point backwards within play's own sequence: 0003 cites 0002, and 0005 cites
+0004 and 0003. Citations of records staying at repo level have to become prose instead.
+§0.6 counts thirteen such sites across eight repo-level records, and each move step
+names its own.
 
 New and forked records land after these, numbered as they are decided: play's CLI pin,
 its own model-version declaration, its critic validation, the play half of 0019, and
@@ -805,8 +806,9 @@ it deliberately — that is §9.
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
 (Proposed) was written when neither value could be read back from a run. That no
-longer holds for either, so the ADR needs revising before it is acted on. What a
-run on 2.1.220 shows:
+longer holds for either. §0.5 decides what happens to the record: correct it, reject it
+here, then copy its content into play. The work itself is §16's. What a run on 2.1.220
+shows:
 
 - **Effort is readable back** — §8 covers capturing it. What is left here is
   *setting* it, rather than taking whatever the CLI defaults to.
@@ -1227,8 +1229,9 @@ afterwards. These are those items, each TDD in `play/`.
   report a fault at all", cheaply and on every full baseline. It needs play's version
   declaration first, so it knows which version it is asserting about. Was step 11 of §1
   until the plan became documents-only.
-- **Pin reasoning effort.** The `--effort` flag, gated on the resolved model. §9 holds
-  the detail, and §0.5 explains why the record moves to play.
+- **Pin reasoning effort, and record the context window.** The `--effort` flag, gated on
+  the resolved model, and both values read back from the run. §9 holds the detail, and
+  §0.5 explains why the record moves to play.
 
 ## Future options
 
