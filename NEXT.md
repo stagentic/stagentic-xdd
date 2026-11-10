@@ -4,351 +4,6 @@
 > NEXT.md tracks the immediate next step and is rewritten as work lands (without 
 > any mention of what was just completed.
 
-## 0. Decisions behind §1
-
-An audit of §1's plan against the ADRs as they stand turned up twelve items. All are now
-settled and §1 carries the corrections, so nothing here blocks the plan. The sections
-stay as the record of why each was decided the way it was.
-
-One question is deferred rather than answered: how the critic is tested (§0.1). It does
-not block anything, because play's record inherits the method it already has.
-
-### 0.1 How the critic is tested — settled enough for §1 to proceed
-
-**Decided: play owns critic validation.** 0024's critic check goes into a new play
-record, which lands with status Proposed. Step 10 needs to know who owns the check and
-nothing more. How the critic is tested is a separate decision, taken later.
-
-The rest of this section argues for a different method. We keep it here for when we take
-that decision.
-
-**What the critic is.** A `claude -p` call. It is given a transcript and a list of
-characteristics written as prose. It returns PASS or FAIL for each one. A critic row
-holds only `{characteristic, failure}`. It has no `verify` lambda — that belongs to the
-Auditor, the other inspector, which checks its rows mechanically. So the critic knows
-nothing about xdd. xdd's scorecard is one input to it, not part of what it is.
-
-**What started the question.**
-
-> §1 says it two ways. The inverted skill "leaves 0024", and play gets "the critic
-> check, which is where the inverted skill ends up". But 0024's check runs the spec
-> suite against an inverted `SKILL.md` and grades spec's scorecard rows. An extracted
-> play has none of those three things. So either play's critic validation is the
-> canned-transcript contract test on its own, and the inverted skill stays an xdd
-> concern, or 0024's check does not move.
-
-The inverted skill is a copy of `SKILL.md` with every instruction reversed. Run the
-suite against it and every scorecard row should fail. If one passes, the critic has
-stopped reporting faults.
-
-**Inverting the scorecards is probably wrong anyway.** spec's scorecards will change,
-and there will be more of them. Anything that depends on inverting all of them goes
-stale as soon as one changes.
-
-**What play should test instead: characteristics it invents, in both directions, ordered
-by difficulty.** play needs no xdd vocabulary. It needs only triples of its own — a
-characteristic, a transcript, and the verdict it expects. "The transcript contains a
-greeting" should PASS against a transcript holding "hello". It should FAIL against one
-with no greeting.
-
-That buys two things the inverted skill never did.
-
-- **Both directions.** A critic that fails everything is as broken as one that passes
-  everything. The inverted skill only tested the FAIL direction.
-- **Graded difficulty.** A trivial characteristic can still pass after judgement on
-  subtle ones has gone. Order a set from unambiguous to subtle and it shows where
-  discrimination broke, not just that it broke.
-
-**spec's question is a different one, and probably real.** A critic that handles
-"contains a greeting" may still misread "failing for the right reason". That is a domain
-judgement, and play cannot test it without borrowing xdd's vocabulary. So spec needs the
-same mechanism at its own level. For each characteristic, keep one fixture that should
-fail it and one that should pass, next to the scorecard row they test.
-
-**That fixes the drift that sank the inverted skill.** A whole inverted copy of the file
-goes stale without anyone noticing when a scorecard gains a row. A fixture pair sits
-next to its row. A row with no fixtures is obvious, and adding a row means adding its
-pair.
-
-**It also removes the diagnosis step.** 0024 has a three-way branch for a row that
-passes when it should have failed: the copy is stale, the agent did not comply, or the
-critic is blind. That branch exists only because the inverted skill runs through a live
-agent. With known transcripts there is no agent to blame and no copy to go stale. A
-failing fixture means the critic.
-
-**One objection answered.** These are canned transcripts, which 0024 rejects: "a fixed
-transcript doesn't change with the version under test." That mixes two questions. Asking
-whether the agent behaves needs real runs, which is what the scenarios are. Asking
-whether the critic discriminates needs known inputs. 0024 is right about the first and
-wrong about the second.
-
-**The scorecards carry ten critic characteristics.** Nine are in
-`test_write_a_failing_test` and six in `test_make_the_failing_test_pass`, with five
-shared. Every one also carries a `verify` lambda, so no row is critic-only today.
-
-That changes the cost of spec's fixtures twice over. The critic is given a workspace as
-well as a transcript, and four of the ten rows are judged on the workspace. So a fixture
-is a pair of directories, not a file. But one passing fixture satisfies every row in its
-scenario at once, so only the failing side needs one per row. That is two passing
-fixtures and ten failing ones, not twenty.
-`tasks/1-first-test-for-miles-to-km-converter/scene` and its `transcript.md` are already
-one of the passing pair.
-
-Nothing is sunk in the method this would replace. No `SKILL-inverted.md` exists anywhere
-in the repo.
-
-### 0.2 What status marks a relocated ADR — settled
-
-0013, 0016 and 0017 are Accepted, and the code they decide is still in `play/src`. ADR
-0000 lists `Deprecated` as one of five statuses but never defines it. Marking these
-three `Deprecated` would tell a reader the decision was withdrawn. None of the five
-statuses says "still in force, recorded somewhere else now".
-
-**Decided: mark them `Superseded`, and what supersedes them is a new record in this
-repo's own sequence.** That record holds the list of what moved. It needs no new status
-word. Each superseded record then points at a record in the same repository, so that
-pointer still works after play leaves.
-
-- **The list record.** A new repo-level ADR records the decision to split the sequences,
-  and lists the records that have moved. It stays Proposed until every relevant decision
-  is in `play/docs/architecture/decisions/`. It becomes Accepted once they are. It gains
-  a line as each move lands, so we write it before the moves. That is step 1's work.
-- **What a superseded record says.** Its status is `Superseded`. Its note names play's
-  record by number and by title, in prose, with no hyperlink. A hyperlink breaks the day
-  play leaves the repo. The title still identifies the record if play's number changes
-  later. The note also says the decision itself is unchanged, or a reader goes looking
-  for what changed and finds nothing.
-- **What the index says.** The row names only the repo-level record that supersedes it:
-  "Superseded by ADR 00NN". The index carries no links into play either.
-- **0008 and 0014 are Proposed, not Accepted.** They are marked `Superseded` too.
-  Superseding a record that was never accepted reads oddly. Treating the same event two
-  different ways reads worse.
-- **A moved record is rewritten, not copied.** Read it as if `play` were its own
-  repository, and fix whatever stops making sense. Citations of repo-level records
-  become prose. References to `spec` or `stagentic-test` are reworded or dropped. `../`
-  paths go. §0.6 counts thirteen such citation sites across eight repo-level records.
-- **play's numbering.** 0000 is play's own ADR about ADRs. The moved records take the
-  numbers after it, in the order §1's table sets out.
-
-Two corrections to §1 follow. Its "Move whole, leaving a Deprecated tombstone" becomes
-`Superseded`. Its rule to name "the title rather than a play number" becomes number and
-title, because the objection was to the broken hyperlink and not to the number.
-
-### 0.3 Whether forking 0011 for play makes sense — supersede it here first
-
-0011 says the `matching` alias lives in `stagentic-test`, at
-`src/stagentic/test/matchers.py`. `stagentic-test` does not travel with play. §1
-dismisses the same problem for 0012.
-
-**Where the alias lives is the smaller half of the question.** `stagentic-test` becomes
-its own library, so an extracted play depends on it as a published package rather than
-as a sibling directory. play's tests already import three helpers from it — `matching`,
-`does_not` and `case` — and those imports appear in nine test files. So play's record
-covers all three. Nothing records `case` today. §1 dismisses a play counterpart for 0012
-because path sources describe this monorepo, which is right about the mechanism and
-wrong about the dependency. play's dependency on `stagentic-test` survives extraction.
-That belongs in play's record rather than in a fork of 0012.
-
-**The larger half: 0011 asks for more PyHamcrest than we now believe in.** Matchers are
-good for custom and composed checks. For plain equality in a unit test they cost words
-and lose information. 46 of play's roughly 75 `assert_that` calls are `equal_to`, which
-is plain equality written the long way.
-
-We measured this rather than assuming it. The failure output of both forms was compared
-on the same values, in six cases.
-
-- **Equality on a composite or long value.** pytest shows where the difference is: the
-  character in a string, the key in a dict, the index in a list, the line in a
-  multi-line string. Hamcrest prints both values whole and leaves the reader to find it.
-  Of those four kinds of value, the multi-line string is where Hamcrest does worst,
-  because it escapes the newlines onto one line.
-- **Scalar comparisons** (`>`, `<`, `>=`, `<=`). The two are equivalent. pytest is
-  terser. Hamcrest reads as prose.
-- **Membership.** `in` is a tie, because a failed `in` has nothing to diff and both
-  forms print the two operands escaped. `not in` favours pytest, which unescapes the
-  text and prints `'X' is contained here:` above the real lines.
-- **Checks that need a call** (`startswith`, `re.match`). Hamcrest wins outright. pytest
-  prints `assert False` or `assert None` plus the function's repr, because its rewriting
-  can take apart an operator but not a call.
-- **A slot inside `assert_called_once_with`.** There is no plain equivalent. Dropping
-  `matching` means `prompt=ANY` followed by a `call_args` pull, which is what the
-  convention exists to avoid.
-- **A domain concept.** `is_a_success()` names the intent and formats the failures.
-  `isinstance(result, Success)` does neither.
-
-**The rule that falls out: use plain `assert` unless one of three things is true.**
-
-1. The check needs a function call rather than an operator — prefix, suffix, regex,
-   length. Use the matcher.
-2. The check sits in a mock call slot. Use `matching(...)`.
-3. The check is a domain concept worth naming. Use a custom matcher.
-
-Two rules support it. **Actual goes on the left and expected on the right.** pytest
-marks the right operand `-` and the left `+`, so that order makes the output read from
-expected to actual. **Never write a parenthesised comparison.** `assert (a == b, "x")`
-is a non-empty tuple, so it always passes. Wrap a long assertion inside the brackets the
-expression already has. `ruff check` catches the tuple form as `F631`, so it cannot
-reach a commit.
-
-Two costs to accept. The change touches the 46 `equal_to` calls, spread across the 13
-test files that use `assert_that`. None of it changes behaviour, so it lands as
-refactoring commits, kept separate from any behavioural change. And pytest's notation
-has to be documented — `-` for expected, `+` for actual, `^` under the differing
-character — or we trade a message anyone can read for a better one they cannot.
-
-One site argues the other way. `spec/tests/test_conftest.py:53` matches a long string
-built by implicit concatenation. That reads better as a matcher argument than as the
-left operand of `in`.
-
-**So the order of work is: supersede 0011 with a new record here, then fork that one for
-play.** ADRs are append-only, so the narrower rule lands as a new repo-level record
-rather than as an edit to 0011. 0011 is repo-wide. It says "starting with `play`", and
-spec and stagentic-test follow it too, so play cannot decide this alone.
-
-**What forking means here.** play writes its own ADR, under its own number in play's
-sequence, saying the same thing for play. It is rewritten rather than copied, so it
-reads correctly with play as its own repository. Neither record links to the other.
-After the split either may change without the other following. The new repo-level record
-stays in force, because spec and stagentic-test still follow it. So forking supersedes
-nothing, unlike moving a record to play, and the decision is simply recorded twice.
-
-`test-conventions.md` carries the same unresolved split today. It holds both "Assertions
-use PyHamcrest matchers" and "Pin exact composed output once via `==`", and never says
-which wins where. The new record settles that. The file moves to `play/docs/` at step 3,
-so it wants settling before the move.
-
-### 0.4 Which numbers the new records take — settled: an untracked number is provisional
-
-**Decided: a number is fixed only once the record is committed.** 0000 to 0021 are
-committed, so they keep their numbers. Everything untracked can be renumbered, including
-the four reviewed drafts 0022 to 0025. We choose the final sequence once we know the
-whole set of new records, and we choose it to read in a logical order.
-
-So the table below is a sketch of what has to be written, not an allocation. The numbers
-move as the set grows.
-
-| provisional | record |
-|---|---|
-| 0026 | the list of records moved to play (§0.2) |
-| 0027 | the assertion policy, superseding 0011 (§0.3) |
-| 0028 | the xdd half of 0008 — the agent's context boundary (§0.6) |
-| 0029 | the model version for Claude Code sessions in this repository |
-| 0030 | split testing across models and versions |
-| 0031 | running the scenarios against a second vendor |
-
-Two records add nothing here. §0.5 rejects 0019 at repo level, so step 9 mints no repo
-number. 0014 is the same case, for the same reason.
-
-Order of writing, whatever the numbers turn out to be: the migration list comes first,
-because every superseded record points at it. The assertion policy comes before step 3,
-which moves `test-conventions.md` into `play/docs/`.
-
-### 0.5 Whether 0019 is revised before it moves — settled: it is rejected here
-
-**Decided: 0019 is Rejected at repo level, and its content is copied into a new play
-record.** It does not split, and nothing of it stays here as a decision.
-
-**Why rejected rather than superseded.** 0019 is Proposed and was never implemented.
-Superseded is for a record still in force whose home moved (§0.2). Rejected is for a
-proposal we are not taking, which is what this is: nothing in it applies to xdd.
-
-**Nothing in it is xdd's.** Its Decision section holds two items, both play's — that
-`play/src/claude_cli.py` passes `--effort high`, gated on the resolved model, and that
-the run transcript records effort and the context window alongside ADR 0017's header,
-which is `ClaudeTranscriber`'s. The one xdd thread is lesson provenance, and that
-appears in Consequences as an effect, not in the Decision. ADR 0015 already owns it.
-
-**Correct 0019 first, then reject it, then copy.** It is Proposed, so its content can
-still be edited — a draft nobody acted on has no reasoning trail to protect. Fixing it
-before rejecting it leaves an accurate record here, and makes play's record a copy
-rather than a rewrite.
-
-What needs correcting: 0019 argues that neither value can be read back from a run, so
-the harness has to record what it asked for. On CLI 2.1.220 both can be read back.
-
-- **Effort.** Every assistant event in the session JSONL carries a top-level `effort`
-  field, since 2.1.212.
-- **The context window.** `claude -p --output-format json` reports it under
-  `modelUsage`, as `"claude-opus-5[1m]": {"contextWindow": 1000000}`.
-
-That changes the decision, not just the wording: the record should say what the run
-actually used, rather than what the harness asked for. One of 0019's claims also broke
-outright — it says the `[1m]` form shows up in the `system/init` event, and on 2.1.220
-that event reports a bare `claude-opus-5`. The record is written about Opus 4.8 too,
-which is no longer the pinned model.
-
-**What survives the correction.** The harness passes no `--effort`, so a run inherits
-whatever the CLI defaults to, and that default can shift between versions. Pinning it is
-still worth doing, gated on the resolved model because the levels vary by model.
-
-**Knock-ons.** Step 9 becomes three acts — correct 0019, reject it, copy it into play —
-rather than a split. No repo-level record comes out of it, so the plan mints one number
-fewer. 0019 belongs in the migration record's list of records whose content moved to
-play, marked Rejected rather than Superseded.
-
-### 0.6 Corrections to §1 — applied
-
-**Which records we may edit, and which we may not.** Editability follows implementation
-rather than status.
-
-- **Accepted, or Proposed but already implemented** — do not edit. The decision is in
-  force and the file is its trail. It is marked Superseded, and a new record carries it
-  on.
-- **Proposed and never implemented** — editable. There is no trail to protect, so we
-  correct the content first, then reject it here, then copy it into play's record.
-
-That sorts the five movers, and it moves two of them:
-
-| record | status | implemented | treatment |
-|---|---|---|---|
-| 0013 | Accepted | yes | Superseded, not edited |
-| 0016 | Accepted | yes | Superseded, not edited |
-| 0017 | Accepted | yes | Superseded, not edited |
-| 0008 | Proposed | yes — cwd at the workspace root is in the harness | Superseded, not edited, and it splits (below) |
-| 0014 | Proposed | no — the ground-up transcriber rewrite is still pending | correct, reject here, copy into play, as §0.5 does for 0019 |
-
-**0008 splits; it does not move whole.** §1 treats it as a mover with one concession to
-relocate. It is closer to half and half, and its Decision section divides cleanly:
-
-- **play's half** — the harness sets cwd to the workspace tmp directory when it invokes
-  `claude -p`, and nothing re-attaches the agent to the repo: no `--add-dir` at the
-  repository, no env var resolving back into it, no symlinks.
-- **xdd's half** — a per-scene `CLAUDE.md` is the supported way to seed agent-facing
-  context, and the repo-level `CLAUDE.md` is for contributors only, outside the agent's
-  context boundary.
-
-The Consequences and Alternatives divide the same way. The skill-staging bullet, the
-scene-authoring bullet, the `prompt.md` bullet and the Alternative naming the scorecard
-and the TDAB framing are xdd's. The isolation-invariant bullet and the `--bare`
-Alternative are play's.
-
-So 0008 is superseded by two new records — one here for the context boundary, one in
-play for cwd — and nothing in it is edited. It leaves the move-whole group and joins the
-split group with 0022, 0023 and 0024.
-
-**Applied to §1, and recorded here so the reasons are not lost:**
-
-- **Inlining is thirteen sites across eight records, not two.** Every move step now
-  names its own citations. 0013 cites 0001, 0007, 0009, 0010 and 0011. 0008 cites 0001
-  and 0007. 0016 cites 0002, 0008 and 0009. 0014 cites 0010 plus
-  `../../working-practices.md`, itself a `../` escaping `play/`. 0017 cites 0002, 0003,
-  0014, 0015 and 0016. 0019 cites 0017.
-- **Citations also run the other way.** 0022 cites 0008 and 0016; 0023 cites 0017 and
-  0016. Both are rewritten at step 10 anyway, so the inlining happens there.
-- **`play/` already pointed outside itself.** `play/README.md:131,149` and
-  `play/HOW_IT_WORKS.md:42,103` link `../docs/architecture/decisions/…` and
-  `../COMMANDS.md`, and step 11 now names them. `play/pyproject.toml:22`'s
-  `path = "../stagentic-test"` is left alone — correct while play lives here, and a
-  version dependency at extraction (§0.3).
-- **`scripts/` and its commands stay here.** All five drive `uv run --directory spec`.
-  Only §6's N× mechanism is play's.
-- **`docs/architecture/improvements/`** moves with the conventions; both files are about
-  `play/src`.
-- **`docs/working-practices.md` and `.claude/hooks/` stay here for now**, even though
-  both are play-bearing. Revisit at extraction.
-- **Nothing in the plan is code.** The critic contract test was step 11 and has left —
-  it and the rest of the deferred code are §16.
-
 ## 1. Restructure the ADRs by project
 
 `play` is destined to become `stagentic-play`, a separate library, so its decisions
@@ -381,7 +36,7 @@ only writes the records that call for them.
 - **0024 divides.** Validating the skill on a new version stays here. Validating
   play's prompts goes to play, and the critic check goes with it whole — the inverted
   skill, its artefact and its three-way diagnosis — as the method that record inherits.
-  Whether that method is replaced is §0.1's question, still open.
+  Whether that method is replaced is §17's question, still open.
 
 ### The classification
 
@@ -398,13 +53,13 @@ the other.
 | 0005 | Periodic CLI update checking | repo-wide | still "To be determined"; both layers need it |
 | 0006 | Native installer for the pinned CLI | repo-wide | |
 | 0007 | Task chain audited by a scorecard | conflated → xdd | `spec/tasks/` and scenes are xdd; §4 fixes play's `Agent` contract — `task, in_workspace → transcript_path` |
-| 0008 | cwd at the workspace root | conflated, roughly half each | Decision 1–2 are the harness's, 3–4 are xdd's, and the Consequences and Alternatives divide the same way. §0.6 has the breakdown |
+| 0008 | cwd at the workspace root | conflated, roughly half each | Decision 1–2 are the harness's, 3–4 are xdd's, and the Consequences and Alternatives divide the same way. Step 5 has the breakdown |
 | 0009 | Select inspector and agent via pytest options | xdd | re-read: the decision is entirely `spec/conftest.py`'s options and defaults. That the implementations are interchangeable is 0013's, not this record's |
 | 0010 | Mutation testing | repo-wide | |
 | 0011 | PyHamcrest | repo-wide | "starting with `play`" |
 | 0012 | Path-source packages | repo-wide | created what is now `stagentic-test` |
 | 0013 | Agents and inspectors return a Result | play | clean |
-| 0014 | Separate jsonl translation from the transcriber | play | clean, and never implemented — so it is rejected here and copied, per §0.6 |
+| 0014 | Separate jsonl translation from the transcriber | play | clean, and never implemented — so it is rejected here and copied |
 | 0015 | Capture xdd-skill missteps as lessons | xdd | clean — "scope is the xdd skill only" |
 | 0016 | Permissions as a launch argument | play | reads a scene's file, but the decision is `ClaudeCli`'s |
 | 0017 | Record CLI version and model in the transcript | play | clean |
@@ -420,10 +75,10 @@ the other.
 5 clean play, 5 clean xdd, 8 repo-wide, 6 conflated, 2 superseded.
 
 Two split evenly: 0023 and 0024 — plus 0004, which probably comes off the list (see
-below). Three are lopsided: 0007's play content is one clause, 0008's xdd content is
-§3's scene concession and some of its Consequences and Alternatives, and 0001's play
-content was superseded in practice by 0009 and 0013. Move those whole to their owner
-and relocate the stray material, rather than minting a one-clause record.
+below). Two are lopsided. 0007's play content is one clause, and 0001's play content was
+superseded in practice by 0009 and 0013. Move those whole to their owner and relocate
+the stray material, rather than minting a one-clause record. 0008 looked lopsided too,
+but it divides roughly in half — step 5 has the breakdown.
 
 ### The layout
 
@@ -435,13 +90,14 @@ this same exercise.
 
 That collapses the classification: **only play's records move**. Two sequences, not
 three, so repo-level references stay bare ("ADR 0018") and play's need qualifying
-("play ADR 0003"). Ten records are affected, not twenty-six:
+("play ADR 0003"). Nine records move or split, and six more need a play counterpart —
+fifteen of the twenty-six, not all of them:
 
 - **Superseded here, rewritten in play**, so the sequence has no gaps: 0013, 0016, 0017.
 - **Split**, superseded by an xdd record here and a new record in play: 0008, 0022, 0023,
-  0024. See §0.6 for how 0008 divides.
+  0024. Step 5 has the breakdown.
 - **Correct, reject here, copy into play**: 0014 and 0019. Both are Proposed and never
-  implemented, and nothing in either applies to xdd — see §0.5 and §0.6.
+  implemented, and nothing in either applies to xdd.
 - **Need a play counterpart**, so play can stand alone: 0000 (its own ADR convention),
   0005 and 0006 (installing and tracking a CLI), 0010, 0011 (practices play follows),
   0021 (the namespace). 0012 does not — path-source packages describe this monorepo
@@ -473,7 +129,7 @@ it points out of `play/` — the direction that breaks on extraction.
 
 Citations point backwards within play's own sequence: 0003 cites 0002, and 0005 cites
 0004 and 0003. Citations of records staying at repo level have to become prose instead.
-§0.6 counts thirteen such sites across eight repo-level records, and each move step
+There are thirteen such sites across eight repo-level records, and each move step
 names its own.
 
 New and forked records land after these, numbered as they are decided: play's CLI pin,
@@ -491,32 +147,56 @@ During the migration a repo-level record may point into `play/docs/` — legal, 
 the definition of done. Without that allowance the mutually-citing cluster could only
 move in one large commit.
 
-- [ ] **1.** Add the two-sequence rules to this repo's `CLAUDE.md`, under its existing
-  ADR conventions: which sequence a new record goes in, never reference across the two,
-  a shared decision is forked rather than shared, and cite a play record by number and
-  title in prose with no hyperlink. The decision itself and the list of what moved go in
-  the new repo-level ADR, not here — this is the instruction, that is the reasoning.
+- [ ] **1.** Write the migration record, and add the two-sequence rules to this repo's
+  `CLAUDE.md`.
 
-  No new document. `CLAUDE.md` is where a contributor already looks, and it is the right
-  home until play is extracted. Step 3 mirrors these rules into `play/CLAUDE.md` so they
-  travel with play.
+  The record holds the decision to split the sequences, the reasons, and the list of
+  what moved. It comes first because every superseded record points at it, and step 9
+  adds 0019 to its list.
+
+  `CLAUDE.md` holds the instruction, under its existing ADR conventions: which sequence
+  a new record goes in, never reference across the two, a shared decision is forked
+  rather than shared, and cite a play record by number and title in prose with no
+  hyperlink. No new document — `CLAUDE.md` is where a contributor already looks, and it
+  is the right home until play is extracted. Step 3 mirrors these rules into
+  `play/CLAUDE.md` so they travel with play.
 - [ ] **2.** `play/docs/architecture/decisions/` scaffolding — play's `0000`,
   `README.md` index, `TEMPLATE.md`.
 - [ ] **3.** Move `src-conventions.md` and `test-conventions.md` to `play/docs/`;
   create `play/CLAUDE.md` pointing at them; prune the root `CLAUDE.md`'s play triggers.
   `test-conventions.md:148` carries a bare "ADR 0011" — inline it as prose, and note it
-  now describes the assertion policy record, not 0011 (§0.3).
+  now describes the assertion policy record, not 0011 (§18).
 - [ ] **4.** play 0001 ← 0013. Inline its citations of 0001, 0007, 0009, 0010 and 0011.
 - [ ] **5.** Split 0008 — a play record for cwd and no-re-attachment, an xdd record for
   the agent's context boundary. 0008 is superseded by both, and not edited. Inline its
-  citations of 0001 and 0007 in play's half.
+  citations of 0001 and 0007 in play's half. How it divides:
+  - **play's half** — Decision 1 and 2: the harness sets cwd to the workspace tmp
+    directory when it invokes `claude -p`, and nothing re-attaches the agent to the
+    repo, so no `--add-dir` at the repository, no env var resolving back into it, no
+    symlinks. From the Consequences and Alternatives: the isolation-invariant bullet and
+    the `--bare` alternative.
+  - **xdd's half** — Decision 3 and 4: a per-scene `CLAUDE.md` is the supported way to
+    seed agent-facing context, and the repo-level `CLAUDE.md` is for contributors only,
+    outside the agent's context boundary. From the Consequences and Alternatives: the
+    skill-staging bullet, the scene-authoring bullet, the `prompt.md` bullet, and the
+    alternative naming the scorecard and the TDAB framing.
 - [ ] **6.** play 0003 ← 0016. Inline its citations of 0002, 0008 and 0009.
 - [ ] **7.** Correct 0014, reject it here, then copy its content into play's record.
   Inline its citation of 0010, and its `../../working-practices.md` link — a `../` that
-  escapes `play/`.
+  escapes `play/`. List 0014 in the migration record, marked Rejected.
 - [ ] **8.** play 0005 ← 0017. Inline its citations of 0002, 0003, 0014, 0015 and 0016.
-- [ ] **9.** Correct 0019 for what a run on 2.1.220 reports back, reject it here, then
-  copy its content into play's record. Inline its citation of 0017.
+- [ ] **9.** Correct 0019, reject it here, then copy its content into play's record.
+  Inline its citation of 0017, and list 0019 in the migration record marked Rejected
+  rather than Superseded. Four things to correct, with §9 holding the observations:
+  - 0019 argues neither reasoning effort nor the context window can be read back from a
+    run, so the harness has to record what it asked for. On 2.1.220 both can be read
+    back, so the record should say what the run actually used.
+  - 0019 says the `[1m]` form shows up in the `system/init` event. On 2.1.220 that event
+    reports a bare `claude-opus-5`.
+  - 0019 is written about Opus 4.8, which is no longer the pinned model.
+  - What survives: the harness passes no `--effort`, so a run inherits whatever the CLI
+    defaults to, and that default can shift between CLI versions. Pinning it is still
+    worth doing, gated on the resolved model because the levels vary by model.
 - [ ] **10.** Rewrite 0022, 0023, 0024 in split form. Each produces an xdd record here
   and a play record — these are where play gets its version story, not separate new
   decisions:
@@ -527,7 +207,7 @@ move in one large commit.
   - 0024 → **xdd:** validate the skill on a new version.
     **play:** validate play's prompts on a new version. The critic check moves here
     whole — the inverted skill, its artefact and its three-way diagnosis — as the
-    method the record inherits. Whether that method survives is §0.1's question, and
+    method the record inherits. Whether that method survives is §17's question, and
     it does not hold this step up.
 
   While rewriting them, inline the citations that now point at records moved to play:
@@ -540,7 +220,7 @@ move in one large commit.
   earlier step: `play/README.md:131,149` and `play/HOW_IT_WORKS.md:42,103`, which point
   at `../docs/architecture/decisions/…` and `../COMMANDS.md`. Leave
   `play/pyproject.toml:22`'s `path = "../stagentic-test"` alone — it is correct while
-  play lives here, and becomes a version dependency at extraction (§0.3).
+  play lives here, and becomes a version dependency at extraction (§18).
 
 **No step writes code.** The restructure moves documents and nothing else. A record that
 decides something not yet implemented lands Proposed, and building it becomes its own
@@ -561,10 +241,61 @@ mean repo-level records.
 - **No cross-project ADR references.** An xdd record does not link a play record, or
   the reverse. Once play is extracted those become links out of the repository, which
   the portability rule forbids.
-- **A record that moves is deprecated with a note** saying it has moved to play — in
-  prose, without a link. See ADR 0000 for the statuses.
+- **Two statuses, and which one depends on whether the decision is in force.**
+  `Superseded` is for a record still in force whose home moved — 0013, 0016 and 0017 are
+  Accepted and the code they decide is in `play/src`, and 0008 is Proposed but its cwd
+  decision is already in the harness. `Rejected` is for a proposal we are not taking
+  here, which is 0014 and 0019. Neither needs a new status word. ADR 0000 lists
+  `Deprecated` among its five without defining it, and it would tell a reader the
+  decision was withdrawn.
+- **What supersedes a record is the new repo-level record that lists what moved.** That
+  keeps the pointer inside this repository, so it still works after play leaves.
+- **A superseded record names play's record by number and title, in prose.** No
+  hyperlink — it breaks the day play leaves. The title still identifies the record if
+  play's number changes later. Say that the decision itself is unchanged, or a reader
+  goes looking for what changed and finds nothing.
+- **The index row names only the repo-level record** that supersedes it: "Superseded by
+  ADR 00NN". No links into play from the index either.
+- **Whether a record may be edited depends on whether it was implemented**, not on its
+  status.
+  - Accepted, or Proposed but already implemented — do not edit. The decision is in
+    force and the file is its trail.
+  - Proposed and never implemented — editable. There is no trail to protect, so correct
+    the content first, then reject it here, then copy it into play's record. 0014 and
+    0019 are the two.
+- **A superseded record's content is rewritten for play, not copied.** Read it as if
+  `play` were its own repository, and fix whatever stops making sense. Citations of
+  repo-level records become prose. References to `spec` or `stagentic-test` are reworded
+  or dropped. `../` paths go. A rejected record is different: we correct it here first,
+  which is what makes play's version a copy rather than a rewrite.
 - **A play counterpart is a fork, not a sync.** At the split the copies diverge and
   neither is authoritative for the other.
+- **An untracked ADR number is provisional.** 0000 to 0021 are committed and keep their
+  numbers. Everything else can be renumbered, including the four reviewed drafts 0022 to
+  0025. The final sequence gets chosen once the whole set is known, and chosen to read in
+  a logical order.
+
+### The records this plan writes
+
+Numbers are provisional, per the rule above. The migration record comes first, because
+every superseded record points at it. The assertion policy comes before step 3, which
+moves `test-conventions.md` into `play/docs/`.
+
+| record | what it holds | written at |
+|---|---|---|
+| the migration record | the decision to split the sequences, and the list of what moved | step 1 |
+| the assertion policy | supersedes 0011 — see §18 | before step 3 |
+| the xdd half of 0008 | the agent's context boundary | step 5 |
+| the xdd half of 0022 | the CLI version scenario runs are validated against | step 10 |
+| the xdd half of 0023 | the model version spec runs name on every call | step 10 |
+| the xdd half of 0024 | validating the skill on a new version | step 10 |
+
+The migration record gains a line as each move lands, so it stays Proposed until every
+relevant decision is in `play/docs/architecture/decisions/`. It becomes Accepted once
+they are.
+
+Steps 7 and 9 add no repo-level record, because 0014 and 0019 are rejected here rather
+than superseded.
 
 ### Beyond the ADRs
 
@@ -581,6 +312,8 @@ mean repo-level records.
   mechanism that is play's, not these scripts or the commands that document them.
 - **`docs/architecture/improvements/`** — both files are about `play/src`, so they move
   with the conventions.
+- **`docs/working-practices.md` and `.claude/hooks/` stay here for now**, even though
+  both are play-bearing. Revisit at extraction.
 - **`docs/migrations/`** stays xdd, but play needs its own once it validates the critic
   prompt.
 - **`decisions/README.md`** needs Superseded rows and a prose pointer to where play's
@@ -620,8 +353,8 @@ titles are still free to change.
 
 They are numbered as they were decided, not grouped by subject, and listed below
 in the order we expect to write them. 0022 to 0025 are the set under review; the rest
-are unwritten. 0026 and 0027 are §1's records, listed in §0.4. 0019 has left this list —
-§0.5 rejects it here and moves its content to play.
+are unwritten. §1 lists the records it writes, and their numbers are provisional. 0019
+has left this list — §1 step 9 rejects it here and moves its content to play.
 
 | ADR | Covers | State |
 |---|---|---|
@@ -806,7 +539,7 @@ it deliberately — that is §9.
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
 (Proposed) was written when neither value could be read back from a run. That no
-longer holds for either. §0.5 decides what happens to the record: correct it, reject it
+longer holds for either. §1 step 9 decides what happens to the record: correct it, reject it
 here, then copy its content into play. The work itself is §16's. What a run on 2.1.220
 shows:
 
@@ -831,9 +564,9 @@ Two pieces of work, each TDD in `play/`:
    model** — passing `--effort` to a model that does not support it fails the run.
    `ClaudeCli` therefore needs to know which model it is invoking.
 2. **Record the context window.** Extend the versions header (ADR 0017) with the
-   window the harness asked for, since no run reports it back. **Revisit:** the
-   bullet above shows a run does report it, so reading it back may be the better
-   source — and would record what the run used rather than what was requested.
+   window the run reports, read back from `--output-format json` rather than echoed
+   from what the harness asked for. That records what the run actually used, which is
+   what provenance needs.
 
 Then backfill the captured lessons' metadata from the recorded values rather than
 from this investigation.
@@ -1227,11 +960,165 @@ afterwards. These are those items, each TDD in `play/`.
 - **The critic contract test.** `FakeAgent` with a canned failing transcript and the
   real critic, marked `contract`, in `play/tests/contract/`. It answers "can this critic
   report a fault at all", cheaply and on every full baseline. It needs play's version
-  declaration first, so it knows which version it is asserting about. Was step 11 of §1
-  until the plan became documents-only.
+  declaration first, so it knows which version it is asserting about. It was a step in
+  §1's plan until that plan became documents-only.
 - **Pin reasoning effort, and record the context window.** The `--effort` flag, gated on
   the resolved model, and both values read back from the run. §9 holds the detail, and
-  §0.5 explains why the record moves to play.
+  §1 step 9 covers the record.
+
+## 17. How the critic is tested — the method is still open
+
+**Decided: play owns critic validation.** Its record lands Proposed, and inherits
+0024's critic check as the method it starts with (§1 step 10). How the critic is tested
+is a separate decision, taken later. This section argues for replacing that method.
+Nothing is blocked on it.
+
+**What the critic is.** A `claude -p` call. It is given a transcript and a list of
+characteristics written as prose. It returns PASS or FAIL for each one. A critic row
+holds only `{characteristic, failure}`. It has no `verify` lambda — that belongs to the
+Auditor, the other inspector, which checks its rows mechanically. So the critic knows
+nothing about xdd. xdd's scorecard is one input to it, not part of what it is.
+
+**The method it would replace.** The inverted skill is a copy of `SKILL.md` with every
+instruction reversed. Run the suite against it and every scorecard row should fail. If
+one passes, the critic has stopped reporting faults. That check runs the spec suite
+against an inverted `SKILL.md` and grades spec's scorecard rows. An extracted play has
+none of those three things.
+
+**Inverting the scorecards is probably wrong anyway.** spec's scorecards will change,
+and there will be more of them. Anything that depends on inverting all of them goes
+stale as soon as one changes.
+
+**What play should test instead: characteristics it invents, in both directions, ordered
+by difficulty.** play needs no xdd vocabulary. It needs only triples of its own — a
+characteristic, a transcript, and the verdict it expects. "The transcript contains a
+greeting" should PASS against a transcript holding "hello". It should FAIL against one
+with no greeting.
+
+That buys two things the inverted skill never did.
+
+- **Both directions.** A critic that fails everything is as broken as one that passes
+  everything. The inverted skill only tested the FAIL direction.
+- **Graded difficulty.** A trivial characteristic can still pass after judgement on
+  subtle ones has gone. Order a set from unambiguous to subtle and it shows where
+  discrimination broke, not just that it broke.
+
+**spec's question is a different one, and probably real.** A critic that handles
+"contains a greeting" may still misread "failing for the right reason". That is a domain
+judgement, and play cannot test it without borrowing xdd's vocabulary. So spec needs the
+same mechanism at its own level. For each characteristic, keep one fixture that should
+fail it and one that should pass, next to the scorecard row they test.
+
+**That fixes the drift that sank the inverted skill.** A whole inverted copy of the file
+goes stale without anyone noticing when a scorecard gains a row. A fixture pair sits
+next to its row. A row with no fixtures is obvious, and adding a row means adding its
+pair.
+
+**It also removes the diagnosis step.** 0024 has a three-way branch for a row that
+passes when it should have failed: the copy is stale, the agent did not comply, or the
+critic is blind. That branch exists only because the inverted skill runs through a live
+agent. With known transcripts there is no agent to blame and no copy to go stale. A
+failing fixture means the critic.
+
+**One objection answered.** These are canned transcripts, which 0024 rejects: "a fixed
+transcript doesn't change with the version under test." That mixes two questions. Asking
+whether the agent behaves needs real runs, which is what the scenarios are. Asking
+whether the critic discriminates needs known inputs. 0024 is right about the first and
+wrong about the second.
+
+**The scorecards carry ten critic characteristics.** Nine are in
+`test_write_a_failing_test` and six in `test_make_the_failing_test_pass`, with five
+shared. Every one also carries a `verify` lambda, so no row is critic-only today.
+
+That changes the cost of spec's fixtures twice over. The critic is given a workspace as
+well as a transcript, and four of the ten rows are judged on the workspace. So a fixture
+is a pair of directories, not a file. But one passing fixture satisfies every row in its
+scenario at once, so only the failing side needs one per row. That is two passing
+fixtures and ten failing ones, not twenty.
+`tasks/1-first-test-for-miles-to-km-converter/scene` and its `transcript.md` are already
+one of the passing pair.
+
+Nothing is sunk in the method this would replace. No `SKILL-inverted.md` exists anywhere
+in the repo.
+
+## 18. Narrow the assertion policy, superseding 0011
+
+**Decided: use plain `assert` unless one of three things is true.** A new repo-level
+record supersedes 0011, and play then forks that record rather than 0011.
+
+1. The check needs a function call rather than an operator — prefix, suffix, regex,
+   length. Use the matcher.
+2. The check sits in a mock call slot. Use `matching(...)`.
+3. The check is a domain concept worth naming. Use a custom matcher.
+
+Two rules support it. **Actual goes on the left and expected on the right.** pytest
+marks the right operand `-` and the left `+`, so that order makes the output read from
+expected to actual. **Never write a parenthesised comparison.** `assert (a == b, "x")`
+is a non-empty tuple, so it always passes. Wrap a long assertion inside the brackets the
+expression already has. `ruff check` catches the tuple form as `F631`, so it cannot
+reach a commit.
+
+**Why it changes.** Matchers are good for custom and composed checks. For plain equality
+in a unit test they cost words and lose information. 46 of play's roughly 75
+`assert_that` calls are `equal_to`, which is plain equality written the long way.
+
+We measured this rather than assuming it. The failure output of both forms was compared
+on the same values, in six cases.
+
+- **Equality on a composite or long value.** pytest shows where the difference is: the
+  character in a string, the key in a dict, the index in a list, the line in a
+  multi-line string. Hamcrest prints both values whole and leaves the reader to find it.
+  Of those four kinds of value, the multi-line string is where Hamcrest does worst,
+  because it escapes the newlines onto one line.
+- **Scalar comparisons** (`>`, `<`, `>=`, `<=`). The two are equivalent. pytest is
+  terser. Hamcrest reads as prose.
+- **Membership.** `in` is a tie, because a failed `in` has nothing to diff and both
+  forms print the two operands escaped. `not in` favours pytest, which unescapes the
+  text and prints `'X' is contained here:` above the real lines.
+- **Checks that need a call** (`startswith`, `re.match`). Hamcrest wins outright. pytest
+  prints `assert False` or `assert None` plus the function's repr, because its rewriting
+  can take apart an operator but not a call.
+- **A slot inside `assert_called_once_with`.** There is no plain equivalent. Dropping
+  `matching` means `prompt=ANY` followed by a `call_args` pull, which is what the
+  convention exists to avoid.
+- **A domain concept.** `is_a_success()` names the intent and formats the failures.
+  `isinstance(result, Success)` does neither.
+
+**Two costs to accept.** The change touches the 46 `equal_to` calls, spread across the
+13 test files that use `assert_that`. None of it changes behaviour, so it lands as
+refactoring commits, kept separate from any behavioural change. And pytest's notation
+has to be documented — `-` for expected, `+` for actual, `^` under the differing
+character — or we trade a message anyone can read for a better one they cannot.
+
+One site argues the other way. `spec/tests/test_conftest.py:53` matches a long string
+built by implicit concatenation. That reads better as a matcher argument than as the
+left operand of `in`.
+
+**Why a new record rather than an edit.** ADRs are append-only. 0011 is also repo-wide —
+it says "starting with `play`", and spec and stagentic-test follow it too — so play
+cannot decide this alone.
+
+**What play's fork is.** play writes its own ADR, under its own number in play's
+sequence, saying the same thing for play. It is rewritten rather than copied, so it
+reads correctly with play as its own repository. Neither record links to the other.
+After the split either may change without the other following. The new repo-level record
+stays in force, because spec and stagentic-test still follow it. So forking supersedes
+nothing, and the decision is simply recorded twice.
+
+**Where the `matching` alias comes from.** 0011 says it lives in `stagentic-test`, at
+`src/stagentic/test/matchers.py`, and `stagentic-test` does not travel with play. It
+becomes its own library, so an extracted play depends on it as a published package
+rather than as a sibling directory. play's tests import three helpers from it —
+`matching`, `does_not` and `case` — across nine test files, so play's record covers all
+three. Nothing records `case` today. §1 dismisses a play counterpart for 0012 because
+path sources describe this monorepo, which is right about the mechanism and wrong about
+the dependency: play's dependency on `stagentic-test` survives extraction. That belongs
+in play's record rather than in a fork of 0012.
+
+`test-conventions.md` carries the same unresolved split today. It holds both "Assertions
+use PyHamcrest matchers" and "Pin exact composed output once via `==`", and never says
+which wins where. The new record settles that. The file moves to `play/docs/` at §1
+step 3, so it wants settling before the move.
 
 ## Future options
 
