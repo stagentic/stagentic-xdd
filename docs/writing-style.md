@@ -20,6 +20,29 @@ A higher-level framing may also be true, but substituting it changes the histori
 
 **Symptom to watch for:** reaching for "architectural" or "principled" framings the contributor did not give. Stop. Either ask whether that framing is also intended, or stick to what was said.
 
+## Write it plainly
+
+The other rules here are mostly about precision. This one is about being easy to read. Precise prose that takes two passes to parse has still failed.
+
+- **One idea per sentence.** A sentence carrying three facts should be three sentences, or a list.
+- **Use the plain word.** Not the longer or more formal one that means the same.
+- **Don't compress a clause into a noun phrase.** "The three files whose rate is relied on" is shorter than "the three files where we need to know the rate", and slower to read.
+- **Don't open with a contrast or a turn of phrase.** State the thing.
+
+Before, from ADR 0025 — one sentence defining three terms:
+
+> a run is one execution of the scenario suite, passing only when every scenario in it passes; a screening is ten runs, failed by one failing run; a confirmation is 100 runs in ten waves of ten, halting at the end of the first wave containing a failure, and passing only with no failing run in the 100.
+
+After:
+
+> A **run** is one execution of the scenario suite. It passes only if every scenario in it passes.
+>
+> A **screening** is ten runs. One failing run fails it.
+>
+> A **confirmation** is 100 runs, in ten waves of ten. It stops at the end of the first wave that contains a failure. It passes only if none of the 100 runs failed.
+
+**Symptom to watch for:** a sentence with more than one comma-joined clause, or any semicolon.
+
 ## Name the thing
 
 Abstraction hides in small words. "Settings kept here do not reach it", "where a contributor meets it", "the harness is given nothing of its own" — each reads as fine to whoever just wrote it, because they still hold the referent in their head. A reader does not.
