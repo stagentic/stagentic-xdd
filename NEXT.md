@@ -15,158 +15,165 @@ not block anything, because play's record inherits the method it already has.
 
 ### 0.1 How the critic is tested — settled enough for §1 to proceed
 
-**Decided: play owns critic validation, and 0024's critic check moves into a proposed
-play record for it.** Step 10 needs that ownership and nothing more, so the method
-stays open and is decided on its own.
+**Decided: play owns critic validation.** 0024's critic check goes into a new play
+record, which lands with status Proposed. Step 10 needs to know who owns the check and
+nothing more. How the critic is tested is a separate decision, taken later.
 
-The rest of this section argues for replacing that method. It is kept here for when we
-take that decision up.
+The rest of this section argues for a different method. We keep it here for when we take
+that decision.
 
-What started it:
+**What the critic is.** A `claude -p` call. It is given a transcript and a list of
+characteristics written as prose. It returns PASS or FAIL for each one. A critic row
+holds only `{characteristic, failure}`. It has no `verify` lambda — that belongs to the
+Auditor, the other inspector, which checks its rows mechanically. So the critic knows
+nothing about xdd. xdd's scorecard is one input to it, not part of what it is.
 
-> §1 says it two ways — the inverted skill "leaves 0024", and play gets "the critic
-> check, which is where the inverted skill ends up". But as 0024 is written, that check
-> runs the **spec suite** against an inverted **`SKILL.md`** and grades **spec's
-> scorecard rows**. An extracted play has none of those. So either play's critic
-> validation is the canned-transcript contract test *only*, and the inverted skill
-> stays an xdd concern, or 0024's check doesn't move.
+**What started the question.**
 
-Inverting the scorecards is probably the wrong choice anyway: spec's scorecards will
-change over time and there will be more of them, so anything keyed to inverting all of
-them drifts by construction.
+> §1 says it two ways. The inverted skill "leaves 0024", and play gets "the critic
+> check, which is where the inverted skill ends up". But 0024's check runs the spec
+> suite against an inverted `SKILL.md` and grades spec's scorecard rows. An extracted
+> play has none of those three things. So either play's critic validation is the
+> canned-transcript contract test on its own, and the inverted skill stays an xdd
+> concern, or 0024's check does not move.
 
-**What the critic actually is.** A `claude -p` call taking a transcript plus prose
-characteristics, returning per-row PASS/FAIL. Critic rows carry only
-`{characteristic, failure}` — no `verify` lambda, that is the Auditor's. So the critic
-is **domain-agnostic**: xdd's scorecard is one input, not part of its definition.
+The inverted skill is a copy of `SKILL.md` with every instruction reversed. Run the
+suite against it and every scorecard row should fail. If one passes, the critic has
+stopped reporting faults.
 
-**play's test: invented characteristics, graded by difficulty, both directions.** play
-needs no xdd vocabulary — only `(characteristic, transcript, expected verdict)` triples
-of its own making. *"The transcript contains a greeting"* against a transcript with
-"hello" expects PASS; against one with none, expects FAIL. Two things that buys which
-the inverted skill never did:
+**Inverting the scorecards is probably wrong anyway.** spec's scorecards will change,
+and there will be more of them. Anything that depends on inverting all of them goes
+stale as soon as one changes.
+
+**What play should test instead: characteristics it invents, in both directions, ordered
+by difficulty.** play needs no xdd vocabulary. It needs only triples of its own — a
+characteristic, a transcript, and the verdict it expects. "The transcript contains a
+greeting" should PASS against a transcript holding "hello". It should FAIL against one
+with no greeting.
+
+That buys two things the inverted skill never did.
 
 - **Both directions.** A critic that fails everything is as broken as one that passes
   everything. The inverted skill only tested the FAIL direction.
-- **Graded difficulty.** A trivial characteristic can pass while judgement on subtle
-  ones has degraded. A set ordered from unambiguous to subtle says *where*
-  discrimination broke on a new version, not just whether it is gone.
+- **Graded difficulty.** A trivial characteristic can still pass after judgement on
+  subtle ones has gone. Order a set from unambiguous to subtle and it shows where
+  discrimination broke, not just that it broke.
 
-**spec's question is different, and probably real.** A critic handling "contains a
-greeting" may still misread *"failing for the right reason"*. Those are domain
-judgements play cannot cover without importing its client's vocabulary. So spec's shape
-is the same mechanism at its own level: **per characteristic, one transcript that should
-fail it and one that should pass**, with the fixtures beside the scorecard row they
-test.
+**spec's question is a different one, and probably real.** A critic that handles
+"contains a greeting" may still misread "failing for the right reason". That is a domain
+judgement, and play cannot test it without borrowing xdd's vocabulary. So spec needs the
+same mechanism at its own level. For each characteristic, keep one fixture that should
+fail it and one that should pass, next to the scorecard row they test.
 
-**That solves the drift that sank the inverted skill.** A whole-file inverted copy
-drifts silently against a scorecard that gains rows. A fixture pair attached to a row
-drifts visibly — a row with no fixtures is obvious, and adding a row means adding its
+**That fixes the drift that sank the inverted skill.** A whole inverted copy of the file
+goes stale without anyone noticing when a scorecard gains a row. A fixture pair sits
+next to its row. A row with no fixtures is obvious, and adding a row means adding its
 pair.
 
-**And it dissolves the diagnosis.** 0024's three-way branch — stale copy, agent didn't
-comply, critic blind — exists only because the inverted skill routes through a live
-agent. With known transcripts there is no agent to blame and no copy to drift. A
+**It also removes the diagnosis step.** 0024 has a three-way branch for a row that
+passes when it should have failed: the copy is stale, the agent did not comply, or the
+critic is blind. That branch exists only because the inverted skill runs through a live
+agent. With known transcripts there is no agent to blame and no copy to go stale. A
 failing fixture means the critic.
 
-**One objection answered.** These are canned transcripts, which 0024 currently rejects:
-*"a fixed transcript doesn't change with the version under test."* That conflated two
-questions. *Does the agent behave?* needs real runs — the scenarios. *Does the critic
-discriminate?* needs known inputs. The rejection was right for the first and wrong for
-the second.
+**One objection answered.** These are canned transcripts, which 0024 rejects: "a fixed
+transcript doesn't change with the version under test." That mixes two questions. Asking
+whether the agent behaves needs real runs, which is what the scenarios are. Asking
+whether the critic discriminates needs known inputs. 0024 is right about the first and
+wrong about the second.
 
-**Counted: ten critic characteristics** — nine in `test_write_a_failing_test`, six in
-`test_make_the_failing_test_pass`, five shared. Every one also carries a `verify`
-lambda, so no row is critic-only today.
+**The scorecards carry ten critic characteristics.** Nine are in
+`test_write_a_failing_test` and six in `test_make_the_failing_test_pass`, with five
+shared. Every one also carries a `verify` lambda, so no row is critic-only today.
 
-That changes the cost twice over. The critic is handed a transcript *and* a workspace,
-and four of the ten rows are judged on the workspace, so a fixture is a pair of
-directories rather than a file. But one passing fixture satisfies every row in its
-scenario at once, so only the failing direction needs one per row — roughly twelve
-fixtures, not twenty, and
-`tasks/1-first-test-for-miles-to-km-converter/scene` plus its `transcript.md` is
-already one of the passing pair.
+That changes the cost of spec's fixtures twice over. The critic is given a workspace as
+well as a transcript, and four of the ten rows are judged on the workspace. So a fixture
+is a pair of directories, not a file. But one passing fixture satisfies every row in its
+scenario at once, so only the failing side needs one per row. That is two passing
+fixtures and ten failing ones, not twenty.
+`tasks/1-first-test-for-miles-to-km-converter/scene` and its `transcript.md` are already
+one of the passing pair.
 
-Nothing is sunk in the method this would replace: no `SKILL-inverted.md` exists
-anywhere in the repo.
+Nothing is sunk in the method this would replace. No `SKILL-inverted.md` exists anywhere
+in the repo.
 
 ### 0.2 What status marks a relocated ADR — settled
 
-0013, 0016 and 0017 are **Accepted** and still in force in `play/src`. ADR 0000 lists
-`Deprecated` among the statuses without defining it, and marking them that way tells a
-reader the decision was withdrawn. None of the five existing statuses says "still in
-force, recorded elsewhere now".
+0013, 0016 and 0017 are Accepted, and the code they decide is still in `play/src`. ADR
+0000 lists `Deprecated` as one of five statuses but never defines it. Marking these
+three `Deprecated` would tell a reader the decision was withdrawn. None of the five
+statuses says "still in force, recorded somewhere else now".
 
-**Decided: `Superseded`, by a new record in this sequence that holds the list of what
-moved.** No new status word, and every tombstone then points at a record in its own
-repo, so the link survives play's extraction.
+**Decided: mark them `Superseded`, and what supersedes them is a new record in this
+repo's own sequence.** That record holds the list of what moved. It needs no new status
+word. Each superseded record then points at a record in the same repository, so that
+pointer still works after play leaves.
 
-- **The list record.** A new root-level ADR records the decision to split the sequences
-  and lists the records that have moved. It stays **Proposed** until every relevant
-  decision is reflected in `play/docs/architecture/decisions/`, and is Accepted once
-  they are. It gains a line as each move lands, so it is written before the moves —
-  step 1's work, and one of the new records §0.4 covers.
-- **What a tombstone says.** `Superseded`, naming play's record by **number and title**,
-  in prose with no hyperlink — a hyperlink breaks the day play leaves the repo, and the
-  title still identifies the record if play's number ever drifts. Each tombstone also
-  says the decision itself is unchanged, or a reader goes hunting for what changed.
-- **What the index says.** The row names only the root record that supersedes it —
-  "Superseded by ADR 00NN". No play links in the index either.
+- **The list record.** A new repo-level ADR records the decision to split the sequences,
+  and lists the records that have moved. It stays Proposed until every relevant decision
+  is in `play/docs/architecture/decisions/`. It becomes Accepted once they are. It gains
+  a line as each move lands, so we write it before the moves. That is step 1's work.
+- **What a superseded record says.** Its status is `Superseded`. Its note names play's
+  record by number and by title, in prose, with no hyperlink. A hyperlink breaks the day
+  play leaves the repo. The title still identifies the record if play's number changes
+  later. The note also says the decision itself is unchanged, or a reader goes looking
+  for what changed and finds nothing.
+- **What the index says.** The row names only the repo-level record that supersedes it:
+  "Superseded by ADR 00NN". The index carries no links into play either.
 - **0008 and 0014 are Proposed, not Accepted.** They are marked `Superseded` too.
-  Superseding a record that was never accepted reads oddly, but two treatments of one
-  event reads worse.
+  Superseding a record that was never accepted reads oddly. Treating the same event two
+  different ways reads worse.
 - **A moved record is rewritten, not copied.** Read it as if `play` were its own
-  repository and edit whatever stops making sense there: citations to root-level
-  records inlined as prose, references to `spec` or `stagentic-test` reworded or
-  dropped, `../` paths removed. §0.6 counts thirteen such citation sites across eight
-  root records.
-- **play's numbering.** 0000 is play's own ADR-about-ADRs. The moved records take the
+  repository, and fix whatever stops making sense. Citations of repo-level records
+  become prose. References to `spec` or `stagentic-test` are reworded or dropped. `../`
+  paths go. §0.6 counts thirteen such citation sites across eight repo-level records.
+- **play's numbering.** 0000 is play's own ADR about ADRs. The moved records take the
   numbers after it, in the order §1's table sets out.
 
 Two corrections to §1 follow. Its "Move whole, leaving a Deprecated tombstone" becomes
-`Superseded`. Its rule to name "the title rather than a play number" becomes number
-*and* title, since the objection was to the broken hyperlink rather than to the number.
+`Superseded`. Its rule to name "the title rather than a play number" becomes number and
+title, because the objection was to the broken hyperlink and not to the number.
 
 ### 0.3 Whether forking 0011 for play makes sense — supersede it here first
 
-0011's decision names `stagentic-test` (`src/stagentic/test/matchers.py`) as the home of
-the `matching` alias — a project that does not travel with play. The same problem §1
-dismisses for 0012.
+0011 says the `matching` alias lives in `stagentic-test`, at
+`src/stagentic/test/matchers.py`. `stagentic-test` does not travel with play. §1
+dismisses the same problem for 0012.
 
-**Where the alias comes from is the smaller half.** `stagentic-test` becomes its own
-library, so an extracted play depends on it as a published package rather than a sibling
-directory. play's tests already import three helpers from it — `matching`, `does_not`
-and `case` — across nine files, so play's record covers all three. Nothing records
-`case` today. §1 dismisses a play counterpart for 0012 because path sources are a
-monorepo matter, which is right about the mechanism and wrong about the dependency:
-play's dependency on `stagentic-test` survives extraction. That belongs in play's record
-rather than a fork of 0012.
+**Where the alias lives is the smaller half of the question.** `stagentic-test` becomes
+its own library, so an extracted play depends on it as a published package rather than
+as a sibling directory. play's tests already import three helpers from it — `matching`,
+`does_not` and `case` — and those imports appear in nine test files. So play's record
+covers all three. Nothing records `case` today. §1 dismisses a play counterpart for 0012
+because path sources describe this monorepo, which is right about the mechanism and
+wrong about the dependency. play's dependency on `stagentic-test` survives extraction.
+That belongs in play's record rather than in a fork of 0012.
 
-**The larger half: 0011 says more PyHamcrest than we now believe.** Matchers are
-excellent for custom and composed checks. For plain equality in a unit test they cost
-words and lose information. 46 of play's roughly 75 `assert_that` calls are `equal_to`,
-which is plain equality written long.
+**The larger half: 0011 asks for more PyHamcrest than we now believe in.** Matchers are
+good for custom and composed checks. For plain equality in a unit test they cost words
+and lose information. 46 of play's roughly 75 `assert_that` calls are `equal_to`, which
+is plain equality written the long way.
 
-Measured, not assumed — the failure output for each form was compared on the same
-values:
+We measured this rather than assuming it. The failure output of both forms was compared
+on the same values, in six cases.
 
-- **Equality on a composite or long value.** pytest localises the difference: the
-  differing character in a string, the differing key in a dict, the index in a list, the
-  line in a multi-line string. Hamcrest prints both values whole and leaves the reader
-  to find it. On a multi-line string it escapes the newlines onto one line, which is the
-  worst of the four.
-- **Scalar comparisons** (`>`, `<`, `>=`, `<=`). Equivalent. pytest is terser; Hamcrest
-  is prose.
-- **Membership.** `in` is a tie — a failed `in` has nothing to diff, so both print the
-  two operands escaped. `not in` favours pytest, which unescapes the text and says
-  `'X' is contained here:` above the real lines.
-- **Predicates needing a call** (`startswith`, `re.match`). Hamcrest wins outright.
-  pytest prints `assert False` or `assert None` plus the function's repr, because its
-  rewriting can take apart operators and not calls.
-- **A slot inside `assert_called_once_with`.** No plain equivalent. Dropping `matching`
-  means `prompt=ANY` plus a `call_args` pull, which is what the convention exists to
-  avoid.
-- **A domain concept.** `is_a_success()` names the intent and formats the failures;
+- **Equality on a composite or long value.** pytest shows where the difference is: the
+  character in a string, the key in a dict, the index in a list, the line in a
+  multi-line string. Hamcrest prints both values whole and leaves the reader to find it.
+  Of those four kinds of value, the multi-line string is where Hamcrest does worst,
+  because it escapes the newlines onto one line.
+- **Scalar comparisons** (`>`, `<`, `>=`, `<=`). The two are equivalent. pytest is
+  terser. Hamcrest reads as prose.
+- **Membership.** `in` is a tie, because a failed `in` has nothing to diff and both
+  forms print the two operands escaped. `not in` favours pytest, which unescapes the
+  text and prints `'X' is contained here:` above the real lines.
+- **Checks that need a call** (`startswith`, `re.match`). Hamcrest wins outright. pytest
+  prints `assert False` or `assert None` plus the function's repr, because its rewriting
+  can take apart an operator but not a call.
+- **A slot inside `assert_called_once_with`.** There is no plain equivalent. Dropping
+  `matching` means `prompt=ANY` followed by a `call_args` pull, which is what the
+  convention exists to avoid.
+- **A domain concept.** `is_a_success()` names the intent and formats the failures.
   `isinstance(result, Success)` does neither.
 
 **The rule that falls out: use plain `assert` unless one of three things is true.**
@@ -176,37 +183,39 @@ values:
 2. The check sits in a mock call slot. Use `matching(...)`.
 3. The check is a domain concept worth naming. Use a custom matcher.
 
-Two supporting rules. **Actual on the left, expected on the right** — pytest marks the
-right operand `-` and the left `+`, so this order makes the output read from expected to
-actual. **Never a parenthesised comparison** — `assert (a == b, "x")` is a non-empty
-tuple and always passes. Wrap a long assertion inside the expression's own brackets
-instead. `ruff check` catches that one as `F631`, so it cannot reach a commit.
+Two rules support it. **Actual goes on the left and expected on the right.** pytest
+marks the right operand `-` and the left `+`, so that order makes the output read from
+expected to actual. **Never write a parenthesised comparison.** `assert (a == b, "x")`
+is a non-empty tuple, so it always passes. Wrap a long assertion inside the brackets the
+expression already has. `ruff check` catches the tuple form as `F631`, so it cannot
+reach a commit.
 
-Two costs to accept. The change is a sweep of roughly 46 call sites across 13 files,
-behaviour-preserving, so it lands as structural commits. And pytest's notation has to be
-documented — `-` expected, `+` actual, `^` the differing character — or we trade a
-self-explanatory message for a better one a reader cannot parse.
+Two costs to accept. The change touches the 46 `equal_to` calls, spread across the 13
+test files that use `assert_that`. None of it changes behaviour, so it lands as
+refactoring commits, kept separate from any behavioural change. And pytest's notation
+has to be documented — `-` for expected, `+` for actual, `^` under the differing
+character — or we trade a message anyone can read for a better one they cannot.
 
-One site argues the other way: `spec/tests/test_conftest.py:53` matches a long
-implicitly-concatenated string, which reads better as a matcher argument than as the
+One site argues the other way. `spec/tests/test_conftest.py:53` matches a long string
+built by implicit concatenation. That reads better as a matcher argument than as the
 left operand of `in`.
 
-**So the order of work is: supersede 0011 with a new record here, then fork that one
-for play.** ADRs are append-only, so the narrower rule lands as a new root-level record
-rather than an edit to 0011. 0011 is repo-wide — it says "starting with `play`", and
-spec and stagentic-test follow it too — so play cannot decide this alone.
+**So the order of work is: supersede 0011 with a new record here, then fork that one for
+play.** ADRs are append-only, so the narrower rule lands as a new repo-level record
+rather than as an edit to 0011. 0011 is repo-wide. It says "starting with `play`", and
+spec and stagentic-test follow it too, so play cannot decide this alone.
 
 **What forking means here.** play writes its own ADR, under its own number in play's
 sequence, saying the same thing for play. It is rewritten rather than copied, so it
-reads correctly with play as its own repository. Neither record links to the other, and
-after the split either may change without the other following. The root record stays in
-force, because spec and stagentic-test still follow it — so unlike a moved record there
-is no tombstone, and the decision is simply recorded twice.
+reads correctly with play as its own repository. Neither record links to the other.
+After the split either may change without the other following. The new repo-level record
+stays in force, because spec and stagentic-test still follow it. So forking supersedes
+nothing, unlike moving a record to play, and the decision is simply recorded twice.
 
-`test-conventions.md` carries the same split today and never says which rule wins where:
-it has both "Assertions use PyHamcrest matchers" and "Pin exact composed output once via
-`==`". The new record settles that too, and the conventions file moves to `play/docs/`
-at step 3, so it wants settling before the move.
+`test-conventions.md` carries the same unresolved split today. It holds both "Assertions
+use PyHamcrest matchers" and "Pin exact composed output once via `==`", and never says
+which wins where. The new record settles that. The file moves to `play/docs/` at step 3,
+so it wants settling before the move.
 
 ### 0.4 Which numbers the new records take — settled: an untracked number is provisional
 
