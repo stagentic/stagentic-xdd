@@ -450,8 +450,8 @@ three, so repo-level references stay bare ("ADR 0018") and play's need qualifyin
   play merely supplies mechanisms. Re-examine rather than split.
 - **Superseded records stay put.** 0002 and 0003 are history and do not move.
 
-Document the layout in a contributors doc at the repo root, referenced from
-`README.md` and `CLAUDE.md`.
+The rules a contributor needs go in this repo's `CLAUDE.md`, under its existing ADR
+conventions. The decision and the list of what moved go in the new repo-level ADR.
 
 ### play's own sequence
 
@@ -490,9 +490,15 @@ During the migration a repo-level record may point into `play/docs/` — legal, 
 the definition of done. Without that allowance the mutually-citing cluster could only
 move in one large commit.
 
-- [ ] **1.** Contributors doc at the repo root: the layout, the two sequences, the
-  no-cross-reference rule, fork-not-sync, how to cite a play record in prose.
-  Referenced from `README.md` and `CLAUDE.md`.
+- [ ] **1.** Add the two-sequence rules to this repo's `CLAUDE.md`, under its existing
+  ADR conventions: which sequence a new record goes in, never reference across the two,
+  a shared decision is forked rather than shared, and cite a play record by number and
+  title in prose with no hyperlink. The decision itself and the list of what moved go in
+  the new repo-level ADR, not here — this is the instruction, that is the reasoning.
+
+  No new document. `CLAUDE.md` is where a contributor already looks, and it is the right
+  home until play is extracted. Step 3 mirrors these rules into `play/CLAUDE.md` so they
+  travel with play.
 - [ ] **2.** `play/docs/architecture/decisions/` scaffolding — play's `0000`,
   `README.md` index, `TEMPLATE.md`.
 - [ ] **3.** Move `src-conventions.md` and `test-conventions.md` to `play/docs/`;
