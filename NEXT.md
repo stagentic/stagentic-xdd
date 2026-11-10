@@ -6,70 +6,72 @@
 
 ## 1. Restructure the ADRs by project
 
-`play` is destined to become `stagentic-play`, a separate library, so its decisions
-should travel with it. Today they sit in one sequence alongside the xdd skill's and
-the repo's, and six of twenty-six records decide something for both.
+`play` will become `stagentic-play`, a library of its own, so its decisions should go
+with it. Today they sit in one sequence alongside the xdd skill's and the repo's. Six of
+the twenty-six records decide something for both.
 
 ### What made this urgent
 
-`play` ships prompts of its own — the critic's, and the transcriber's. Those are as
-version-sensitive as `SKILL.md`, so a consumer pointing `stagentic-play` at a newer
-model cannot assume the critic still reports faults. That gives `play` its own
-version-validation story, and the ordering falls out of the dependency chain
-`stagentic-test` → `play` → `spec`/xdd: a `play` validated on the new version has to
-come first, because xdd's scenarios are graded by play's critic.
+`play` ships two prompts of its own: the critic's and the transcriber's. A prompt is as
+sensitive to the model version as `SKILL.md` is. So someone pointing `stagentic-play` at
+a newer model cannot assume the critic still reports faults. `play` needs its own way to
+validate a version change.
 
-Three things follow, none started. The first two are code, so they are §16's; this plan
-only writes the records that call for them.
+The order is forced by the dependency chain, `stagentic-test` → `play` → `spec` and xdd.
+A `play` validated on the new version has to come first, because xdd's scenarios are
+graded by play's critic.
 
-- **A critic contract test.** `FakeAgent` with a canned failing transcript and the
-  real critic, marked `contract`, in `play/tests/contract/`. It answers "can this
-  critic report a fault at all" — cheaply, deterministically, on every full baseline
-  rather than only when someone remembers a migration step. Total blindness is the
-  failure that makes a whole confirmation meaningless.
-- **Versioning play's real-claude tests.** A contract test asserting the critic
-  reports a fault is asserting that about one model version, so a green means nothing
-  without knowing which. **Decided: `play` declares its own versions for its own
-  tests**, rather than reading `spec/models.toml` — that would invert the dependency
-  and break the moment `play` is installed standalone. Cost accepted: nothing reports
-  when play's declaration and spec's drift apart.
-- **0024 divides.** Validating the skill on a new version stays here. Validating
-  play's prompts goes to play, and the critic check goes with it whole — the inverted
-  skill, its artefact and its three-way diagnosis — as the method that record inherits.
-  Whether that method is replaced is §17's question, still open.
+Three things follow, and none has started. The first two are code, so they belong to
+§16. This plan only writes the records that ask for them.
+
+- **A critic contract test.** `FakeAgent` with a canned failing transcript, and the real
+  critic, marked `contract`, in `play/tests/contract/`. It answers one question: can this
+  critic report a fault at all? It is cheap and deterministic, so it can run on every
+  full baseline rather than only when someone remembers a migration step. A critic that
+  reports nothing makes every confirmation meaningless.
+- **Versioning play's real-claude tests.** A test asserting the critic reports a fault
+  asserts that about one model version. A green says nothing unless we know which
+  version. **Decided: `play` declares its own versions for its own tests.** Reading
+  `spec/models.toml` would invert the dependency, and break the moment `play` is
+  installed on its own. Cost accepted: nothing tells us when play's declaration and
+  spec's drift apart.
+- **0024 divides.** Validating the skill on a new version stays here. Validating play's
+  prompts goes to play. The critic check goes with it whole — the inverted skill, its
+  artefact and its three-way diagnosis — as the method that record starts with. Whether
+  that method is replaced is §17's question, still open.
 
 ### The classification
 
-"Conflated" means the record decides something for both, not merely that it mentions
-the other.
+A record is "conflated" when it decides something for both projects. Merely mentioning
+the other one does not count.
 
 | # | Title | Category | Note |
 |---|---|---|---|
 | 0000 | Use ADRs to record decisions | repo-wide | play's repo needs its own copy of the convention |
-| 0001 | TDAB with vanilla pytest | conflated → xdd | §1–2 are the scenario method; §3 decides play's auditor→critic fixture swap |
+| 0001 | TDAB with vanilla pytest | conflated → xdd | Its sections 1 and 2 are the scenario method. Its section 3 decides play's auditor→critic fixture swap |
 | 0002 | Pin CLI version | superseded | by 0022 + 0024 |
 | 0003 | Pin model versions | superseded | by 0023 + 0024 |
-| 0004 | Guidance, guardrails, gateways | conflated → xdd | guidance is the skill (0018 is "the guidance leg"); guardrails and gateways are enforcement play owns |
-| 0005 | Periodic CLI update checking | repo-wide | still "To be determined"; both layers need it |
+| 0004 | Guidance, guardrails, gateways | conflated → xdd | Guidance is the skill, and 0018 calls itself the guidance leg. Guardrails and gateways are enforcement play owns |
+| 0005 | Periodic CLI update checking | repo-wide | Still says "To be determined", and both layers need it |
 | 0006 | Native installer for the pinned CLI | repo-wide | |
-| 0007 | Task chain audited by a scorecard | conflated → xdd | `spec/tasks/` and scenes are xdd; §4 fixes play's `Agent` contract — `task, in_workspace → transcript_path` |
-| 0008 | cwd at the workspace root | conflated, roughly half each | Decision 1–2 are the harness's, 3–4 are xdd's, and the Consequences and Alternatives divide the same way. Step 5 has the breakdown |
-| 0009 | Select inspector and agent via pytest options | xdd | re-read: the decision is entirely `spec/conftest.py`'s options and defaults. That the implementations are interchangeable is 0013's, not this record's |
+| 0007 | Task chain audited by a scorecard | conflated → xdd | `spec/tasks/` and scenes are xdd. Its section 4 fixes play's `Agent` contract, `task, in_workspace → transcript_path` |
+| 0008 | cwd at the workspace root | conflated, roughly half each | Its Decision 1 and 2 are the harness's, 3 and 4 are xdd's. The Consequences and Alternatives divide the same way. Step 5 has the breakdown |
+| 0009 | Select inspector and agent via pytest options | xdd | The decision is entirely `spec/conftest.py`'s options and defaults. That the implementations are interchangeable is 0013's decision, not this one's |
 | 0010 | Mutation testing | repo-wide | |
-| 0011 | PyHamcrest | repo-wide | "starting with `play`" |
-| 0012 | Path-source packages | repo-wide | created what is now `stagentic-test` |
+| 0011 | PyHamcrest | repo-wide | It says "starting with `play`" |
+| 0012 | Path-source packages | repo-wide | It created what is now `stagentic-test` |
 | 0013 | Agents and inspectors return a Result | play | clean |
-| 0014 | Separate jsonl translation from the transcriber | play | clean, and never implemented — so it is rejected here and copied |
-| 0015 | Capture xdd-skill missteps as lessons | xdd | clean — "scope is the xdd skill only" |
-| 0016 | Permissions as a launch argument | play | reads a scene's file, but the decision is `ClaudeCli`'s |
+| 0014 | Separate jsonl translation from the transcriber | play | Clean, and never implemented, so it is rejected here and copied |
+| 0015 | Capture xdd-skill missteps as lessons | xdd | Clean. Its scope is the xdd skill only |
+| 0016 | Permissions as a launch argument | play | It reads a scene's file, but the decision is `ClaudeCli`'s |
 | 0017 | Record CLI version and model in the transcript | play | clean |
 | 0018 | Build the xdd skill as a corrective skill | xdd | clean |
-| 0019 | Pin and record reasoning effort and context window | play | re-read: it decides `--effort high` as a harness constant in `play/src/claude_cli.py`, and the header is `ClaudeTranscriber`'s. No spec declaration in it; the only xdd tie is the 0015 provenance motive. §9 also records its premise as stale on 2.1.220 |
+| 0019 | Pin and record reasoning effort and context window | play | It decides `--effort high` as a harness constant in `play/src/claude_cli.py`, and the header is `ClaudeTranscriber`'s. There is no spec declaration in it. The only xdd tie is the 0015 provenance motive. Its premise is stale on 2.1.220 — see §9 |
 | 0020 | Frontmatter description drives invocation | xdd | clean |
 | 0021 | `stagentic` namespace | repo-wide | |
-| 0022 | Pin the Claude Code CLI version | repo-wide | re-read: it decides `DISABLE_AUTOUPDATER=1` and a version in `README.md`. Neither touches play code, so play needs a *counterpart*, not a split |
-| 0023 | Pin the model version used by spec runs | conflated | `--model` is passed by play's `ClaudeCli`; the declaration is spec's — and play now needs its own |
-| 0024 | Validate a version change | conflated | the critic check belongs to play; the skill validation is xdd |
+| 0022 | Pin the Claude Code CLI version | repo-wide | It decides `DISABLE_AUTOUPDATER=1` and a version in `README.md`. Neither touches play code, so play needs a counterpart rather than a split |
+| 0023 | Pin the model version used by spec runs | conflated | `--model` is passed by play's `ClaudeCli`. The declaration is spec's, and play now needs its own |
+| 0024 | Validate a version change | conflated | The critic check belongs to play. The skill validation is xdd |
 | 0025 | Distil the skill to its minimum | xdd | clean |
 
 5 clean play, 5 clean xdd, 8 repo-wide, 6 conflated, 2 superseded.
