@@ -76,36 +76,40 @@ the other one does not count.
 
 5 clean play, 5 clean xdd, 8 repo-wide, 6 conflated, 2 superseded.
 
-Two split evenly: 0023 and 0024 — plus 0004, which probably comes off the list (see
-below). Two are lopsided. 0007's play content is one clause, and 0001's play content was
-superseded in practice by 0009 and 0013. Move those whole to their owner and relocate
-the stray material, rather than minting a one-clause record. 0008 looked lopsided too,
-but it divides roughly in half — step 5 has the breakdown.
+Two split evenly, 0023 and 0024. So does 0004, which probably comes off the list — see
+below.
+
+Two are lopsided. 0007's play content is one clause. 0001's play content was superseded
+in practice by 0009 and 0013. Move both whole to their owner and relocate the stray
+material, rather than minting a record of one clause. 0008 looked lopsided too,
+but it divides roughly in half. Step 5 has the breakdown.
 
 ### The layout
 
-This repo is the xdd plugin's. So anything xdd — `spec/` included — and anything
-repo-wide stays at the repo level in `docs/`. `play/` gets its own `docs/`, because it
-will be extracted. `stagentic-test/` will likely be extracted too, but has no
-decisions of its own today, so it gets nothing yet — and whoever extracts it inherits
+This repo is the xdd plugin's. So anything xdd stays at the repo level in `docs/`, and
+`spec/` counts as xdd. Anything repo-wide stays at the repo level as well. `play/` gets its own `docs/`,
+because it will be extracted. `stagentic-test/` will likely be extracted as well, but it
+has no decisions of its own today, so it gets nothing yet. Whoever extracts it inherits
 this same exercise.
 
-That collapses the classification: **only play's records move**. Two sequences, not
-three, so repo-level references stay bare ("ADR 0018") and play's need qualifying
-("play ADR 0003"). Nine records move or split, and six more need a play counterpart —
-fifteen of the twenty-six, not all of them:
+That collapses the classification: **only play's records move.** So there are two
+sequences, not three, and that is why a repo-level reference stays bare, as "ADR 0018",
+while a play reference needs qualifying, as "play ADR 0003".
+
+Nine records move or split, and six more need a play counterpart. That is fifteen of the
+twenty-six, not all of them.
 
 - **Superseded here, rewritten in play**, so the sequence has no gaps: 0013, 0016, 0017.
 - **Split**, superseded by an xdd record here and a new record in play: 0008, 0022, 0023,
   0024. Step 5 has the breakdown.
 - **Correct, reject here, copy into play**: 0014 and 0019. Both are Proposed and never
   implemented, and nothing in either applies to xdd.
-- **Need a play counterpart**, so play can stand alone: 0000 (its own ADR convention),
-  0005 and 0006 (installing and tracking a CLI), 0010, 0011 (practices play follows),
-  0021 (the namespace). 0012 does not — path-source packages describe this monorepo
-  and mean nothing to an extracted play.
-- **0004 probably comes off the list.** Its taxonomy is how *xdd* controls an agent;
-  play merely supplies mechanisms. Re-examine rather than split.
+- **Need a play counterpart**, so play can stand alone: 0000 for its own ADR convention,
+  0005 and 0006 for installing and tracking a CLI, 0010 and 0011 for practices play
+  follows, and 0021 for the namespace. 0012 needs none. Path-source packages describe
+  this monorepo, and mean nothing to an extracted play.
+- **0004 probably comes off the list.** Its taxonomy is how *xdd* controls an agent, and
+  play only supplies the mechanisms. Re-examine it rather than split it.
 - **Superseded records stay put.** 0002 and 0003 are history and do not move.
 
 The rules a contributor needs go in this repo's `CLAUDE.md`, under its existing ADR
@@ -113,12 +117,13 @@ conventions. The decision and the list of what moved go in the new repo-level AD
 
 ### play's own sequence
 
-play renumbers from 0000 — the moved records take play's next numbers, not their repo
-numbers. So the move order is play's permanent sequence, and it is ordered to read as
-an introduction to the framework rather than to preserve this repo's chronology.
+play renumbers from 0000. A moved record takes play's next number, not the number it had
+here. So the order we move them in becomes play's permanent sequence, and we order it to
+read as an introduction to the framework rather than to preserve this repo's chronology.
 
-The one hard constraint: a play record must not cite one that has not landed yet, or
-it points out of `play/` — the direction that breaks on extraction.
+The one hard constraint: a play record must not cite a play record that has not landed
+yet. That citation would point out of `play/`, which is the direction that breaks on
+extraction.
 
 | play | content from | reads as |
 |---|---|---|
@@ -129,10 +134,10 @@ it points out of `play/` — the direction that breaks on extraction.
 | 0004 | 0014, rejected here | **reading a run back** — separate jsonl translation from the transcriber |
 | 0005 | 0017, superseded here | **what the transcript carries** — the resolved CLI version and model |
 
-Citations point backwards within play's own sequence: 0003 cites 0002, and 0005 cites
-0004 and 0003. Citations of records staying at repo level have to become prose instead.
-There are thirteen such sites across eight repo-level records, and each move step
-names its own.
+Citations point backwards within play's own sequence: play 0003 cites play 0002, and
+play 0005 cites play 0004 and play 0003. A citation of a record staying at repo level
+has to become prose instead. There are thirteen such sites across eight repo-level
+records, and each move step names its own.
 
 New and forked records land after these, numbered as they are decided: play's CLI pin,
 its own model-version declaration, its critic validation, the play half of 0019, and
