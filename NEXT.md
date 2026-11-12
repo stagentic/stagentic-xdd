@@ -906,36 +906,38 @@ where nobody measures the case.
 
 ## 14. Capture the CLI's stdout and stderr in the run artefacts
 
-Nothing records what the `claude` process itself printed. `ClaudeCli` already
-captures both streams (`capture_output=True`), but uses `result.stderr` only in
-the failure path — on a successful run both are discarded. `transcript.md` is
-built by `ClaudeTranscriber` from the session JSONL, which never carries them. So
-a run that passes leaves no record of anything the CLI said about it.
+Nothing records what the `claude` process itself printed. `ClaudeCli` already captures
+both streams with `capture_output=True`, but uses `result.stderr` only in the failure
+path. On a successful run both streams are discarded. `ClaudeTranscriber` builds
+`transcript.md` from the session JSONL, which never carries them. So a run that passes
+leaves no record of anything the CLI said about it.
 
-Observed on 2.1.220: a hand-built run mirroring a scenario (scene copied to a
-temp dir, cwd there, `--settings <copy>/.claude/settings.json`, `--add-dir`)
-printed to stderr:
+Observed on 2.1.220. A hand-built run mirroring a scenario — the scene copied to a temp
+dir, cwd there, `--settings <copy>/.claude/settings.json`, `--add-dir` — printed to
+stderr:
 
 ```
 Ignoring 1 permissions.allow entry from .claude/settings.json: this workspace
 has not been trusted.
 ```
 
-That one is benign — the handed-over settings still apply, which is ADR
+That particular warning is benign. The handed-over settings still apply, which is ADR
 [0016](docs/architecture/decisions/0016-hand-the-agent-its-permissions-as-a-launch-argument.md)'s
 whole point, and a real run in the same session ran `uv run pytest` without an
-approval. The concern is the class, not the instance: a real scenario run almost
-certainly prints the same line, and would equally swallow a warning that mattered
-— a skipped MCP server, a demoted plugin, a settings file that failed validation.
+approval.
 
-One such warning matters directly once 0023 lands. When `--model` names a version
-the account cannot use, Claude Code
+The concern is the class, not the instance. A real scenario run almost certainly prints
+the same line, and would equally swallow a warning that mattered — a skipped MCP server,
+a demoted plugin, a settings file that failed validation.
+
+One such warning matters directly once 0023 lands. When `--model` names a version the
+account cannot use, Claude Code
 [substitutes the default at startup](https://code.claude.com/docs/en/model-config#setting-your-model)
-and says so on stderr. Discarding stderr means the run proceeds on a model nobody
-chose, silently.
+and says so on stderr. Discarding stderr means the run proceeds on a model that nobody
+asked for, and there's nothing telling us that this happened.
 
-Archive both streams beside `transcript.md`, so a run's artefacts carry what the
-CLI reported as well as what the agent did. TDD in `play`.
+Archive both streams beside `transcript.md`, so a run's artefacts carry what the CLI
+reported as well as what the agent did. TDD in `play`.
 
 ## 15. The versions header reports only the first model a run used
 
