@@ -310,46 +310,50 @@ than superseded.
 
 ### Beyond the ADRs
 
-- **Conventions.** `src-conventions.md` and `test-conventions.md` describe `play/src`
-  and `play/tests`, so they move to `play/docs/`. `spec-conventions.md` stays. Both are
-  cited from `CLAUDE.md` and from §11's lens lists.
-- **`play/CLAUDE.md` does not exist.** Play's working instructions live inside the root
-  `CLAUDE.md` today, so an extracted play arrives with none. Create it so it travels.
-- **`COMMANDS.md` is repo-level and holds play's commands.** Needs a play counterpart,
-  on the same fork-not-sync basis.
+- **Two of the three conventions move.** `src-conventions.md` and `test-conventions.md`
+  describe `play/src` and `play/tests`, so they go to `play/docs/`. `spec-conventions.md`
+  stays. The two moving files are cited from `CLAUDE.md` and from §11's lens lists.
+- **`play/CLAUDE.md` does not exist yet.** play's working instructions live inside the
+  root `CLAUDE.md` today, so an extracted play would arrive with none. Create it, so it
+  travels with play.
+- **`COMMANDS.md` needs a play counterpart.** It sits at the repo level and holds play's
+  commands. Fork it rather than keeping the two in step, the same as the records.
 - **`scripts/` stays here, and so do its commands.** All five drive
   `uv run --directory spec`, and 0024 and 0025 link five `COMMANDS.md` anchors for them.
-  They are interim, and §6 puts their successor in play — but it is only that N×
-  mechanism that is play's, not these scripts or the commands that document them.
-- **`docs/architecture/improvements/`** — both files are about `play/src`, so they move
-  with the conventions.
+  They are interim, and §6 puts their successor in play. Only that N× mechanism is
+  play's — not these scripts, and not the commands that document them.
+- **`docs/architecture/improvements/` moves with the conventions.** Both files in it are
+  about `play/src`.
 - **`docs/working-practices.md` and `.claude/hooks/` stay here for now**, even though
-  both are play-bearing. Revisit at extraction.
-- **`docs/migrations/`** stays xdd, but play needs its own once it validates the critic
-  prompt.
-- **`decisions/README.md`** needs Superseded rows and a prose pointer to where play's
-  records live. Prose, not a link — that link breaks the day play leaves.
+  both carry play material. Revisit at extraction.
+- **`docs/migrations/` stays xdd.** play needs one of its own once it validates the
+  critic prompt.
+- **`decisions/README.md` needs Superseded rows**, and a pointer to where play's records
+  live. Write that pointer as prose, not a link — that link would break the day play
+  leaves.
 
 ### How `play/CLAUDE.md` will load
 
-Checked against the Claude Code docs: CLAUDE.md files in the hierarchy *above* the
-working directory load at launch, and files in **subdirectories load on demand, when
-Claude reads a file in that directory**. So `play/CLAUDE.md` is picked up
-automatically, but lazily — not at session start.
+We checked this against the Claude Code docs. Every `CLAUDE.md` file above the working
+directory loads at launch. A file in a subdirectory loads later, when Claude first reads
+a file in that directory.
 
-That is the behaviour wanted: scoped to play, and it travels with play. Three
-consequences.
+So `play/CLAUDE.md` loads only when someone works on play. That is what we want. It
+applies to play, and it goes with play.
 
-- **Anything needed before touching play stays in the root `CLAUDE.md`.** The
-  full-baseline-at-session-start rule is the example — it runs play's suites, so it has
-  to be in context at launch.
-- **Move, don't duplicate.** The docs warn that contradictory rules across nested
-  CLAUDE.md files are resolved arbitrarily, so the root file's play sections get
-  deleted as they move rather than left behind as a summary.
-- **Two tempting shortcuts to avoid.** `@play/CLAUDE.md` from the root file expands at
-  launch, which defeats the laziness, and its path breaks when play leaves.
-  `.claude/rules/` with `paths:` frontmatter gives the same scoping, but rules live in
-  the project's `.claude/`, so they would not travel either.
+Three things follow.
+
+- Anything Claude needs before it touches play has to stay in the root `CLAUDE.md`. The
+  rule about running the full baseline at session start is the example, because that run
+  includes play's suites.
+- Delete each play section from the root file as it moves. Don't leave a summary behind.
+  The docs say that when two nested `CLAUDE.md` files contradict each other, Claude
+  picks between them arbitrarily.
+- Two shortcuts look tempting and both fail. Writing `@play/CLAUDE.md` in the root file
+  loads it at launch, so play's rules would no longer wait until they are needed, and
+  the path breaks when play leaves. Putting the rules in `.claude/rules/` with `paths:`
+  frontmatter limits them to play the same way, but they would live in this project's
+  `.claude/`, so they would not travel either.
 
 
 ## 2. Finish the version-pinning ADRs
