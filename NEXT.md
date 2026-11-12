@@ -148,11 +148,15 @@ the forks of 0005, 0006, 0010, 0011 and 0021.
 Each row is one commit, and ends by ticking its box here — this checklist is all a
 fresh session has after `/clear`.
 
-**The invariant that keeps each step safe:** every commit leaves all links resolving.
-During the migration a repo-level record may point into `play/docs/` — legal, because
-`play/` is still in this repo. Step 11 severs what remains, and the grep test below is
-the definition of done. Without that allowance the mutually-citing cluster could only
-move in one large commit.
+**Every commit must leave all links resolving.** That is what makes each step safe to
+land on its own.
+
+While the migration is under way, a repo-level record may point into `play/docs/`. That
+is allowed, because `play/` is still in this repo. Step 11 severs whatever is left, and
+the grep test below is the definition of done.
+
+Without that allowance, the records that cite each other could only move together, in
+one large commit.
 
 - [ ] **1.** Write the migration record, and add the two-sequence rules to this repo's
   `CLAUDE.md`.
