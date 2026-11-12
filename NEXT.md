@@ -461,25 +461,27 @@ covering both a wording change and a version change, pointing at 0024 and 0025.
 
 ## 3. Capture code-change diffs in the run transcript — Edit still to do
 
-The captured `transcript.md` (produced by `ClaudeTranscriber`) renders a tool use
-as only its `file_path`, so what the agent changed can be invisible to a reviewer
-or critic reading the transcript.
+`ClaudeTranscriber` writes `transcript.md`, and it renders a tool use as nothing but the
+`file_path`. So what the agent actually changed can be invisible to a reviewer or a
+critic reading the transcript.
 
-**Write — done.** A Write now renders the content it wrote as a fenced block, by
-default (the branch-by-abstraction seam is collapsed and the approval masters
-migrated).
+**Write is done.** A Write now renders the content it wrote as a fenced block, and it
+does that by default. The branch-by-abstraction seam is collapsed and the approval
+masters have been migrated.
 
-**Edit — still to do.** Render the before/after (`old_string` → `new_string`) as a
-diff. The JSONL already carries the full tool input. TDD in `play`
-(`claude_transcriber.py`) — extend the current transcriber, rather than waiting on
-the ground-up rewrite in ADR 0014.
+**Edit is still to do.** Render the before and after — `old_string` to `new_string` — as
+a diff. The JSONL already carries the full tool input. Do it TDD in `play`, in
+`claude_transcriber.py`, extending the current transcriber rather than waiting on the
+ground-up rewrite in ADR 0014.
 
 ## 4. Observed Misstep: Added multiple cases to a test all at once
 
-Introducing a parametrised `case` is introducing a test, so adding more than one
-case at once writes several failing tests before any production change — the same
-smallest-step break as composing several plain test methods up front. A `case`
-earns its place only to remove or avoid duplication, and lands across two commits:
+Adding a parametrised `case` is adding a test. So adding more than one case at once
+writes several failing tests before any production code changes. That breaks the
+smallest step, the same way as writing several plain test methods up front does.
+
+A `case` earns its place only when it removes duplication, or stops it appearing. It
+lands across two commits.
 
 1. **Refactor** the existing single test into the parametrised shape over its one
    present case — behaviour-preserving, no new assertion (structural).
@@ -495,37 +497,39 @@ earns its place only to remove or avoid duplication, and lands across two commit
 
 ## 5. Observed Misstep: Started TDD at the innermost unit
 
-The change was driven from `ClaudeCli` — the deepest collaborator — rather than
-from the failing scenario. Adding its new required parameter meant threading the
-argument up through every caller before anything could go green: eight call sites
-in its own test file, the contract test, a test double's signature, and
-`ClaudeSession`. None of that work was the change; it was the cost of having
-started underneath it.
+The change was driven from `ClaudeCli`, the deepest collaborator, rather than from the
+failing scenario. Adding a new required parameter there meant threading the argument up
+through every caller before anything could go green: eight call sites in its own test
+file, the contract test, a test double's signature, and `ClaudeSession`. None of that
+work was the change itself. It was the price of starting underneath it.
 
-Worse, the question the change actually turned on — who owns the knowledge that a
-scene keeps its permissions at `.claude/settings.json` — surfaced mid-cascade,
-with the code already half-changed. Working outside-in asks it first: start at the
-scenario that fails, descend one collaborator at a time, and each red is about the
-seam being designed rather than about call sites that no longer bind.
+Worse, the question the change really turned on only surfaced in the middle of that
+cascade, with the code already half-changed. That question was who owns the knowledge
+that a scene keeps its permissions at `.claude/settings.json`.
+
+Working outside-in asks it first. Start at the scenario that fails and go down one
+collaborator at a time. Then each red is about the seam being designed, rather than
+about call sites that no longer bind.
 
 ## 6. N× batch gateway — run a scenario Nx and tally (belongs in play)
 
-Guidance experiments (baseline vs a `SKILL.md` change) are measured by running a
-scenario many times and tallying per-run outcomes. The shell scripts in
-[`scripts/`](scripts) get us by: `verify-runs.sh` for single-arm verification,
-`compare-wordings.sh` for an alternating A/B, `tally.sh` to read accumulated spec runs. They
-launch at full concurrency with no stagger, and a wave count has to be chosen by
-hand against the session usage limit.
+We measure a guidance experiment — baseline against a `SKILL.md` change — by running a
+scenario many times and tallying what each run did. The shell scripts in
+[`scripts/`](scripts) get us by. `verify-runs.sh` does single-arm verification,
+`compare-wordings.sh` does an alternating A/B, and `tally.sh` reads accumulated spec
+runs. All of them launch at full concurrency with no stagger, and someone has to pick a
+wave count by hand against the session usage limit.
 
-Make it a first-class mechanism in **play** — framework work, not a spec helper or
-a shell loop (cf. "Review later: move scene management to play"). Run a named
-scenario N times with capped concurrency and return a per-run tally and pass-rate.
-Per run, capture the pytest result plus the scenario's signals (skill loaded; the
-production shape). This makes experiments (baseline vs B, gateway variants)
-reproducible rather than one-off.
+Make this a first-class mechanism in **play** instead. It is framework work, not a spec
+helper and not a shell loop — compare "Review later: move scene management to play",
+further down this file. It should run a named scenario N times with a cap on
+concurrency, and return a tally per run plus a pass rate. For each run it should capture
+the pytest result and the scenario's signals: whether the skill loaded, and the
+production shape. That makes an experiment such as baseline against B, or a gateway
+variant, reproducible rather than a one-off.
 
-The elimination methodology these encode — paired waves, a control arm, stopping
-on contamination — is the subject of item 2.
+The elimination methodology these scripts encode — paired waves, a control arm, stopping
+on contamination — is the method ADR 0025 holds, and §2 tracks that record.
 
 ## 7. Contract-test ClaudeCli's options
 
@@ -536,50 +540,50 @@ verifying it does what we expect against the real CLI, one at a time.
 
 ## 8. Capture the effort used in the agent transcript
 
-The versions header records the CLI and the model a run used (ADR
-[0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)),
-but not its **reasoning effort**, which bears on a lesson's provenance (ADR
-[0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md))
-the same way.
+The versions header records the CLI version and the model a run used, which is ADR
+[0017](docs/architecture/decisions/0017-record-cli-version-and-model-in-the-run-transcript.md)'s
+decision. It does not record the **reasoning effort**. Effort bears on a lesson's
+provenance the same way those two do, and lessons are ADR
+[0015](docs/architecture/decisions/0015-capture-xdd-skill-missteps-as-lessons.md)'s.
 
-Since CLI 2.1.212 the effort a run used is observable: every `assistant` event in
-the session JSONL carries a top-level `"effort"` field, reading `"high"` on the
-pinned model. Read it from there and render it in the versions header beside CLI
-and MODEL. TDD in `play` (`claude_transcriber.py`) — extend the current
-transcriber rather than waiting on the ground-up rewrite in ADR
+Since CLI 2.1.212 we can see what effort a run used. Every `assistant` event in the
+session JSONL carries a top-level `"effort"` field, and it reads `"high"` on the pinned
+model. Read it from there and render it in the versions header beside CLI and MODEL. Do
+it TDD in `play`, in `claude_transcriber.py`, extending the current transcriber rather
+than waiting on the ground-up rewrite in ADR
 [0014](docs/architecture/decisions/0014-separate-claude-jsonl-translation-from-the-transcriber.md).
 
-This records what a run *actually used*, which is a separate matter from choosing
-it deliberately — that is §9.
+This records what a run *actually used*. Choosing the effort deliberately is a separate
+matter, and that is §9.
 
 ## 9. Pin reasoning effort, and record the context window
 
 ADR [0019](docs/architecture/decisions/0019-pin-and-record-reasoning-effort-and-context-window.md)
-(Proposed) was written when neither value could be read back from a run. That no
-longer holds for either. §1 step 9 decides what happens to the record: correct it, reject it
-here, then copy its content into play. The work itself is §16's. What a run on 2.1.220
-shows:
+(Proposed) was written when neither value could be read back from a run. Neither of
+those limits holds any more. §1 step 9 decides what happens to the record: correct it,
+reject it here, then copy its content into play. The work itself is §16's.
 
-- **Effort is readable back** — §8 covers capturing it. What is left here is
-  *setting* it, rather than taking whatever the CLI defaults to.
-- **The context window is readable back too** — new behaviour, observed on
-  2.1.220. `claude -p --output-format json` reports it under `modelUsage`, keyed
-  by the resolved model: `"claude-opus-5[1m]": {"contextWindow": 1000000,
-  "canonicalModel": "claude-opus-5"}`. The session JSONL and the `system/init`
-  event still report a bare `claude-opus-5` with no `[1m]` variant, which is
-  where the earlier finding came from.
-- The harness passes no `--effort`, so runs take the CLI default — measured as
-  `high` on the pinned model.
+Here is what a run on 2.1.220 shows.
 
-Two pieces of work, each TDD in `play/`:
+- **Effort can be read back.** §8 covers capturing it. What is left here is *setting*
+  it, rather than taking whatever the CLI defaults to.
+- **The context window can be read back too.** This is new behaviour, observed on
+  2.1.220. `claude -p --output-format json` reports it under `modelUsage`, keyed by the
+  resolved model: `"claude-opus-5[1m]": {"contextWindow": 1000000, "canonicalModel":
+  "claude-opus-5"}`. The session JSONL and the `system/init` event still report a bare
+  `claude-opus-5`, with no `[1m]` variant. That is where the earlier finding came from.
+- **The harness passes no `--effort`.** So a run takes the CLI default, which we
+  measured as `high` on the pinned model.
 
-1. **Pin effort.** Add a `--effort` flag to the harness's `claude -p` invocation
-   (`play/src/claude_cli.py`), set to `high` so the flag records behaviour rather
-   than changes it.
+Two pieces of work, each one TDD in `play/`.
 
-   Levels are **model-dependent**, so the flag must be **gated on the resolved
-   model** — passing `--effort` to a model that does not support it fails the run.
-   `ClaudeCli` therefore needs to know which model it is invoking.
+1. **Pin effort.** Add a `--effort` flag to the harness's `claude -p` invocation, in
+   `play/src/claude_cli.py`, set to `high`. At that value the flag records the behaviour
+   we already have rather than changing it.
+
+   The levels on offer depend on the model, so the flag has to be gated on the resolved
+   model. Passing `--effort` to a model that does not support it fails the run. That
+   means `ClaudeCli` needs to know which model it is invoking.
 2. **Record the context window.** Extend the versions header (ADR 0017) with the
    window the run reports, read back from `--output-format json` rather than echoed
    from what the harness asked for. That records what the run actually used, which is
