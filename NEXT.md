@@ -702,48 +702,47 @@ agent — see [working-practices](docs/working-practices.md).
 
 ## 11. Improvement plan working approach
 
-One change at a time: apply it, run the test(s) the change's scope calls
-for, then propose a commit — behavioural and structural changes kept in
-separate commits (see
-[`docs/working-practices.md`](docs/working-practices.md)).
+One change at a time. Apply it, run the test or tests the change's scope calls for, then
+propose a commit. Behavioural and structural changes are kept in separate commits — see
+[`docs/working-practices.md`](docs/working-practices.md).
 
-At the start of the review run the full baseline tests and then full mutation test.
-If clear, for a file under review, add all lenses in the correct order to 
-the task list before reviewing any files. Number each lens in the task list.
+At the start of the review, run the full baseline tests and then the full mutation test.
+If those are clear, then for a file under review, add all its lenses to the task list in
+the correct order, before reviewing any files. Number each lens in the task list.
 
-Then, once the task list is complete, for each lens, one at a time, review the
-file through that lens and:
-- Tell me the lens
-- If no issues seen through that lens, say no issues (no explanation
-  needed) and await the user's approval to proceed to the next lens.
-- If changes are required, show me the before and after of the change you
-  propose and await the user's approval to proceed.
+Then, once the task list is complete, take each lens one at a time. Review the file
+through that lens, and:
 
-Review the file *only* when its lens is the active one — and read it fresh at
-that moment, along with any other file the lens needs (e.g. the production
-source for the execution-flow lens). Do not read the whole file, nor any file
-a later lens will need, up front. Each lens is a fresh pass: look at the file
+- tell me which lens it is;
+- if you see no issues through that lens, say no issues — no explanation needed — and
+  wait for the user's approval before going on to the next;
+- if changes are required, show me the before and after of the change you propose, and
+  wait for the user's approval before going on.
+
+Review the file *only* when its lens is the active one, and read it fresh at that
+moment. Read any other file that lens needs at that same moment, such as the production
+source for the execution-flow lens. Up front, do not read the whole file, and do not
+read any file a later lens will need. Each lens is a fresh pass: look at the file
 through that lens alone, report, and only then move to the next.
 
-Reading fresh at each lens is correctness, not tidiness. A lens reviews the
-file's current state — which includes any change an earlier lens produced. A
-read taken before those changes is stale, so a lens reviewing against it is
-reviewing text that no longer exists. Re-read when the lens becomes active so
-every pass sees what is actually there.
+Reading fresh at each lens is correctness, not tidiness. A lens reviews the file's
+current state, and that includes any change an earlier lens produced. A read taken
+before those changes is stale, so a lens reviewing against it is reviewing text that no
+longer exists. Re-read when the lens becomes active, so every pass sees what is actually
+there.
 
-Reporting lens-by-lens in order is necessary but not sufficient — the
-examination itself must be lens-at-a-time, not a single up-front sweep
-re-narrated as separate lenses.
+Reporting lens by lens in order is necessary but not sufficient. The examination itself
+must be lens at a time, not a single sweep up front re-narrated as separate lenses.
 
 ### Reviewing a test file
 
-Review the file through each lens below in turn, confirming each one by
-one — even where it needs no change. Most lenses are the conventions in
-[`docs/architecture/conventions/test-conventions.md`](docs/architecture/conventions/test-conventions.md);
-the last two are inferred from the reviewed exemplars.
-Add each lens to your task list for easy tracking in the session.
+Review the file through each lens below in turn, confirming each one by one, even where
+it needs no change. Most of the lenses are the conventions in
+[`docs/architecture/conventions/test-conventions.md`](docs/architecture/conventions/test-conventions.md).
+The last two are inferred from the exemplars we have already reviewed. Add each lens to
+your task list, so the session is easy to track.
 
-Review the file through each lens below in turn and in the order below:
+Review the file through each lens below in turn, and in the order below.
 
 - Whole-story tests
 - Test order follows the production code's execution flow
@@ -764,12 +763,12 @@ Review the file through each lens below in turn and in the order below:
 
 ### Reviewing a src file
 
-As above, but through these lenses. Most are the conventions in
-[`docs/architecture/conventions/src-conventions.md`](docs/architecture/conventions/src-conventions.md);
-the last two are inferred from the reviewed exemplars.
-Add each lens to your task list for easy tracking in the session.
+As above, but through these lenses. Most of them are the conventions in
+[`docs/architecture/conventions/src-conventions.md`](docs/architecture/conventions/src-conventions.md).
+The last two are inferred from the exemplars we have already reviewed. Add each lens to
+your task list, so the session is easy to track.
 
-Review the file through each lens below in turn and in the order below:
+Review the file through each lens below in turn, and in the order below.
 
 - Type hints on every public method parameter (avoid `Any`)
 - Required vs optional: no `| None = None` defaults for test convenience
