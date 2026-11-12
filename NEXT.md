@@ -358,18 +358,19 @@ Three things follow.
 
 ## 2. Finish the version-pinning ADRs
 
-**Held pending §1.** 0022 to 0025 are written and reviewed but stay uncommitted:
-two of the six conflated records are in that set, so committing them now would mean
-superseding them immediately.
+**This section waits for §1.** 0022 to 0025 are written and reviewed, but they stay
+uncommitted. Two of the six conflated records are in that set, so committing them now
+would mean superseding them straight away.
 
-Eight records cover pinning a version, changing it, reducing the skill afterwards,
-and where this is heading. Nothing above 0021 is committed, so numbering and
-titles are still free to change.
+Seven records cover pinning a version, changing it, reducing the skill afterwards, and
+where this is heading. Nothing above 0021 is committed, so their numbers and titles can
+still change.
 
-They are numbered as they were decided, not grouped by subject, and listed below
-in the order we expect to write them. 0022 to 0025 are the set under review; the rest
-are unwritten. §1 lists the records it writes, and their numbers are provisional. 0019
-has left this list — §1 step 9 rejects it here and moves its content to play.
+Their numbers follow the order they were decided in, not a grouping by subject. The
+table below lists them in the order we expect to write them. 0022 to 0025 are the set
+under review. The rest are unwritten. §1 lists the records it writes, and those numbers
+are provisional too. 0019 has left this list, because §1 step 9 rejects it here and
+moves its content to play.
 
 | ADR | Covers | State |
 |---|---|---|
@@ -386,32 +387,31 @@ forward to them. 0028 can follow separately, since nothing existing links to it.
 
 ### 0028 — the model version for sessions in this repository
 
-`.claude/settings.json` sets `ANTHROPIC_DEFAULT_OPUS_MODEL` and its siblings for
-every Claude Code session started here. ADR 0003 set them intending to control
-spec runs, which they do not. What they do control is the model a contributor or
-agent works on inside this repository, and that effect has no record behind it
-once 0003 is superseded.
+`.claude/settings.json` sets `ANTHROPIC_DEFAULT_OPUS_MODEL` and its siblings for every
+Claude Code session started here. ADR 0003 set them meaning to control spec runs, which
+they do not do. What they do control is the model a contributor or an agent works on
+inside this repository. Once 0003 is superseded, nothing records that.
 
-The rationale is provenance. The observations that drive this project come out of
-those sessions — the missteps captured as lessons under ADR 0015 especially. A
-lesson says the agent got something wrong, and that claim is only attributable if
-the model that got it wrong is known. Item 8 below treats reasoning effort as
-bearing on the same provenance.
+The rationale is provenance. The observations that drive this project come out of those
+sessions, especially the missteps captured as lessons under ADR 0015. A lesson
+says the agent got something wrong. We can only attribute that if we know which model
+got it wrong. §8 treats reasoning effort as bearing on provenance the same way.
 
-A second, softer reason: contributors get the same agent behaviour as each other,
-so shared working practices behave consistently rather than per-person.
+There is a second, softer reason. Contributors get the same agent behaviour as each
+other, so shared working practices behave the same way for everyone.
 
-It has the limitation ADR 0022 records for the CLI version — the entries only
-apply to sessions started in this repository.
+The entries have the same limitation ADR 0022 records for the CLI version: they apply
+only to sessions started in this repository.
 
 ### Building what 0023 decides
 
-0023 records the measurements showing why each `claude -p` call has to be given
-the model version as an argument, rather than inheriting it from the environment
-a spec run starts in. It decides `--model <version>`, that the agent and the
-critic are pinned separately, and that the versions are declared in
-`spec/models.toml` under `[agent] model` and `[critic] model`, and that no
-environment variable overrides them. What is left is building it:
+0023 holds the measurements that show why each `claude -p` call has to be given the
+model version as an argument, instead of inheriting it from the environment a spec run
+starts in. It decides four things. The call carries `--model <version>`. The agent and
+the critic are pinned separately. The versions are declared in `spec/models.toml`, under
+`[agent] model` and `[critic] model`. And no environment variable overrides them.
+
+What is left is building it.
 
 - `conftest.py` reads `spec/models.toml` with `tomllib` and passes each role's
   version into its `ClaudeSession`.
@@ -423,36 +423,38 @@ behind them until 0028 is written.
 
 ### 0029 — split testing, later
 
-Lists of versions rather than one, the agent and the critic configured separately,
-and comparative runs driven by a fixture. Adding a version to the agent, running
-the spec, then bumping the critic separately.
+This record would hold lists of versions rather than one, with the agent and the critic
+configured separately, and comparative runs driven by a fixture. You would add a version
+to the agent, run the spec, then bump the critic on its own.
 
-The ordering point that used to sit here — bump the critic first and confirm it
-still catches a seeded fault — is now 0024's, and moves to play under §1.
+One point about ordering used to sit here and has moved. Bumping the critic first and
+confirming it still catches a seeded fault is now 0024's, and §1 moves it to play.
 
-Trying a candidate version belongs there too, and the preferred way is a pytest
-option — `--agent-model` and `--critic-model`, defaulting to `spec/models.toml`.
-Two arms can then run at the same time on different versions, which
-swapping a file cannot do; that is why `compare-wordings.sh` alternates arms
-sequentially. It also leaves the version in the command that produced a batch of
-artefacts, and mutates nothing in the working tree.
+Trying out a candidate version belongs in this record too. The way we prefer is a pytest
+option, `--agent-model` and `--critic-model`, defaulting to `spec/models.toml`. That
+lets two arms run at the same time on different versions, which swapping a file cannot
+do — and that is why `compare-wordings.sh` alternates its arms one after the other. An
+option also leaves the version visible in the command that produced a batch of
+artefacts, and changes nothing in the working tree.
 
 ### 0030 — a second vendor, later still
 
-Running the same scenarios against another service — Codex alongside Claude. The
-seam already exists: `Agent` and `FakeAgent` share
+This record would cover running the same scenarios against another service, Codex
+alongside Claude.
+
+The seam for it already exists. `Agent` and `FakeAgent` share
 `perform(task=, working_dir=) -> Success`, and ADR 0009's `--agent` option selects
-between them, so a vendor implementation is a third one. `ClaudeSession`,
-`ClaudeCli` and `ClaudeTranscriber` sit below that as injected collaborators, and
-each would need a counterpart — the transcriber most of all, since it parses
-Claude's session JSONL.
+between them, so a vendor implementation is simply a third one. Below that sit
+`ClaudeSession`, `ClaudeCli` and `ClaudeTranscriber` as injected collaborators, and each
+would need a counterpart. The transcriber most of all, because it parses Claude's
+session JSONL.
 
-`spec/models.toml` keys on role rather than vendor, so a vendor entry slots in
-beside `model` when there is a second implementation to name. Adding one before
-then would be wiring with nothing behind it.
+`spec/models.toml` keys on role rather than on vendor, so a vendor entry can go in
+beside `model` once there is a second implementation to name. Adding one before then
+would be wiring with nothing behind it.
 
-Item 6 below is the `play` implementation of the repeated-run mechanism these
-records rely on; this item is about recording the decisions.
+§6 is the `play` implementation of the repeated-run mechanism these records rely on.
+This section of `NEXT.md` is about writing the decisions down.
 
 When these land, add a trigger to the *What to read when* list in `CLAUDE.md`
 covering both a wording change and a version change, pointing at 0024 and 0025.
