@@ -784,35 +784,34 @@ Review the file through each lens below in turn, and in the order below.
 
 ## 12. Improvement plan
 
-We are working through each file in turn, bringing each up to the reference
-standard set by `critic.py` / `TestCritic` — matching the conventions inferred
-from `critic.py` and `test_critic.py` — and running mutation testing to confirm
-coverage.
+We are working through each file in turn. Each one is brought up to the reference
+standard set by `critic.py` and `TestCritic`, matching the conventions inferred from
+`critic.py` and `test_critic.py`, and mutation tested to confirm coverage.
 
 `critic.py` is the current reference standard for this repo's production code.
 `TestCritic` is the current reference standard for tests.
 
 For each file:
-- Review the test first, then the implementation; bring both to the standard
-  set by `critic.py` / `test_critic.py`.
-- Match the conventions inferred from those files, alongside the documented
-  conventions in `docs/architecture/conventions/`.
-- Run mutation testing (`mutmut`, per ADR
-  [0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md)):
-  review survivors against the tests and act where appropriate. Read-only for now (ADR 0010 stage 1); "where
-  appropriate" is judgement, not an enforced gate. `source_paths` grows by one
-  file as each reaches acceptable coverage.
 
-The conventions in `docs/architecture/conventions/` are the standard; the
-reference-standard files above are exemplars, not infallible. A file under
-review may already exceed them in places. Anchor each proposed change on the
-convention text and judgement, not on what other files happen to do. Follow
-the working practices in [`docs/working-practices.md`](docs/working-practices.md)
-for the workflow itself, rather than inferring one from the files.
+- Review the test first, then the implementation. Bring both to the standard set by
+  `critic.py` and `test_critic.py`.
+- Match the conventions inferred from those files, alongside the documented conventions
+  in `docs/architecture/conventions/`.
+- Run mutation testing with `mutmut`, per ADR
+  [0010](docs/architecture/decisions/0010-adopt-mutation-testing-with-a-staged-rollout.md).
+  Review the survivors against the tests and act where appropriate. This is read-only
+  for now, which is ADR 0010's stage 1, and "where appropriate" is judgement rather than
+  an enforced gate. `source_paths` grows by one file as each reaches acceptable coverage.
 
-Some files have a per-file punch list at
-`docs/architecture/improvements/<file>.md` — items tracked separately so they
-don't bury NEXT.md.
+The conventions in `docs/architecture/conventions/` are the standard. The
+reference-standard files above are exemplars, not infallible, and a file under review
+may already exceed them in places. Anchor each proposed change on the convention text
+and on judgement, not on what other files happen to do. For the workflow itself, follow
+the working practices in [`docs/working-practices.md`](docs/working-practices.md) rather
+than inferring one from the files.
+
+Some files have a per-file punch list at `docs/architecture/improvements/<file>.md`.
+Those items are tracked separately so they don't bury NEXT.md.
 
 ### `play/src/`
 
@@ -825,12 +824,13 @@ don't bury NEXT.md.
 - [x] `claude_session.py` (and `tests/test_claude_session.py`)
 - [x] `auditor.py` (and `tests/test_auditor.py`)
 - [x] `scorecard_results.py` (and `tests/test_scorecard_results.py`)
-- [~] `claude_transcriber.py` (and `tests/test_claude_transcriber.py`) —
-  interim mutation coverage added: the `varied-transcript` approval test took
-  survivors 75 → 8 (the remaining 8 are equivalence mutants). Bringing it fully
+- [~] `claude_transcriber.py` (and `tests/test_claude_transcriber.py`). Interim mutation
+  coverage has been added. The `varied-transcript` approval test took the survivors from
+  75 down to 8, and those remaining 8 are equivalence mutants. Bringing the file fully
   to standard is superseded by a ground-up rewrite — see ADR
   [0014](docs/architecture/decisions/0014-separate-claude-jsonl-translation-from-the-transcriber.md).
-  Kept out of `source_paths` (the equivalence survivors can't be accepted yet).
+  It is kept out of `source_paths`, because the equivalence survivors cannot be accepted
+  yet.
 - [ ] `claude_jsonl_path.py` (and `tests/test_claude_jsonl_path.py`)
 - [ ] `failure_message.py` (and `tests/test_failure_message.py`)
 - [ ] `raise_when.py` (and `tests/test_raise_when.py`)
@@ -838,9 +838,8 @@ don't bury NEXT.md.
 - [ ] `archiver.py` (and `tests/test_archiver.py`)
 - [ ] `inspector.py` — No test yet
 
-A cross-cutting improvement surfaced by the critic extraction — a
-`ScorecardEntry` type spanning `Critic`, `Auditor`, and `formatted_failures_for`
-— is deferred and tracked in
+Extracting the critic surfaced a cross-cutting improvement: a `ScorecardEntry` type
+spanning `Critic`, `Auditor` and `formatted_failures_for`. It is deferred, and tracked in
 [`docs/architecture/improvements/scorecard-entry.md`](docs/architecture/improvements/scorecard-entry.md).
 
 ### `spec/`
@@ -849,44 +848,44 @@ A cross-cutting improvement surfaced by the critic extraction — a
 
 ### `Auditor.evaluate` should derive per-row status, not hard-code PASS
 
-`Auditor.evaluate`'s success branch hard-codes `"status": "PASS"` for every
-result row. It can, because that branch is reached only when `_failures_from`
-returns empty — the all-pass case. The literal is a symptom: the Auditor
-reimplements pass/fail branching instead of delegating to
-`ScorecardResults.failures()` the way `Critic.evaluate` does. On success it
-hand-builds an all-PASS `results` list; on any failure it returns `Failure(...)`
-and bypasses `ScorecardResults` entirely.
+`Auditor.evaluate`'s success branch hard-codes `"status": "PASS"` for every result row.
+It can do that, because the branch is reached only when `_failures_from` returns empty,
+which is the all-pass case.
 
-The symmetric fix mirrors `Critic.evaluate`: evaluate each row once into a real
-`PASS`/`FAIL` status, build `ScorecardResults(should=should, results=<those
-rows>)`, then `match scorecard.failures()`. Then the status is derived per row,
-never a literal, and both `evaluate` methods read alike.
+The literal is a symptom. The Auditor reimplements pass and fail branching instead of
+delegating to `ScorecardResults.failures()`, which is what `Critic.evaluate` does. On
+success it hand-builds an all-PASS `results` list. On any failure it returns
+`Failure(...)` and bypasses `ScorecardResults` entirely.
 
-This is a **behavioural** change, not a refactor: it changes what
-`ScorecardResults.should` holds on the Auditor path (today
-`_entries_from(should)`; Critic stores the raw `should`) and the `Failure`
-payload shape, so it needs test updates. It is adjacent to the deferred
-`ScorecardEntry` work above — do it as its own red-green.
+The symmetric fix mirrors `Critic.evaluate`. Evaluate each row once into a real `PASS`
+or `FAIL` status, build `ScorecardResults(should=should, results=<those rows>)`, then
+`match scorecard.failures()`. The status is then derived per row and never a literal,
+and both `evaluate` methods read alike.
+
+This is a **behavioural** change, not a refactor. It changes what
+`ScorecardResults.should` holds on the Auditor path — today `_entries_from(should)`,
+whereas the Critic stores the raw `should` — and it changes the `Failure` payload shape.
+So it needs test updates. It sits next to the deferred `ScorecardEntry` work above. Do
+it as its own red-green.
 
 ### Error handling (cross-cutting — final review)
 
-A final pass over error handling across the harness, after the per-file
-reviews above. `ClaudeSession`, for one, has no error handling and does not
-wrap errors raised by `ClaudeCli` — whether it should is a question the
-per-file lenses don't currently cover.
+A final pass over error handling across the harness, once the per-file reviews above are
+done. `ClaudeSession`, for one, has no error handling and does not wrap errors raised by
+`ClaudeCli`. Whether it should is a question the per-file lenses do not currently cover.
 
-**Prerequisite:** the error-handling strategy must be agreed and documented
-first. An ADR captures the 'why' and proposes the 'how';
-`docs/architecture/conventions/src-conventions.md` hosts the finally agreed
-'how'. The review checks each file against the agreed convention, so it
-can't run until that convention exists.
+**This has a prerequisite.** The error-handling strategy must be agreed and documented
+first. An ADR captures the why and proposes the how.
+`docs/architecture/conventions/src-conventions.md` hosts the how once it is agreed. The
+review checks each file against the agreed convention, so it cannot run until that
+convention exists.
 
-A candidate convention to start from — every public entry point to the
-`play` framework:
+A candidate convention to start from. Every public entry point to the `play` framework:
+
 - returns `Success` when it succeeds;
 - returns `Failure` for an in-domain failure;
-- raises an exception for a mechanical/infrastructure failure (file not
-  found, network unavailable).
+- raises an exception for a mechanical or infrastructure failure, such as a file not
+  found or the network being unavailable.
 
 This may become the standard for all files.
 
