@@ -202,6 +202,12 @@ above require — run that afterwards.
   rather than linking out.
 - Statuses: `Proposed`, `Accepted`, `Rejected`, `Superseded`, `Deprecated`.
   New decisions start as `Proposed` and move to `Accepted` once validated.
+- **Whether a record may be edited depends on whether it was implemented**,
+  not on its status. An `Accepted` record, or a `Proposed` one whose decision
+  is already in the code, is in force and the file is its trail — do not edit
+  it. Write a new record that supersedes it instead. A `Proposed` record
+  nobody acted on has no trail to protect, so its content can be corrected in
+  place.
 - When adding an ADR: copy [`TEMPLATE.md`](docs/architecture/decisions/TEMPLATE.md) to `NNNN-short-slug.md` (next
   number), fill it in, and add a row to the index in
   [`docs/architecture/decisions/README.md`](docs/architecture/decisions/README.md).
