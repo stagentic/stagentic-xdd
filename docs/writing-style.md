@@ -69,6 +69,20 @@ Replacing "where a contributor meets it before running anything" with "above the
 
 **Symptom to watch for:** the plainer version asserts a fact the original did not.
 
+## Rewording for plainness must not strengthen the claim
+
+Reaching for a better-sounding sentence shifts what it asserts. This is the commonest way a reword goes wrong, and it is easy to miss because the new sentence reads well. Five forms, each one observed:
+
+- **A bound is lost.** "nox is *only worth it* for matrix testing" became "it *earns its place* for matrix testing". A limit on where the tool qualifies became an endorsement of it. Note also that the original was the plainer of the two — a figure of speech is not plain language.
+- **A scope widens.** "must never live in a *git hook*" became "must never live in a *hook*". A qualifier that carries the whole point is the first thing to go when a sentence is tightened.
+- **A description becomes an obligation.** "`compare-wordings.sh` *alternates* arms sequentially" became "*has to* alternate". The first reports what the script does; the second says it could not do otherwise.
+- **A count appears.** "*A* cross-cutting improvement surfaced" became "*one* cross-cutting improvement", which says no others did.
+- **A causal link appears.** Joining two sentences with "so" makes the second follow from the first. If the original left them side by side, it was not claiming that.
+
+A moved qualifier can also invert a rule. "Do not read the whole file, nor any file a later lens will need, up front" has "up front" governing both clauses. Moving it into the first clause left an absolute prohibition on ever reading a file a later lens needs, which contradicted an instruction two sentences earlier.
+
+**Symptom to watch for:** the new sentence reads better than the old one. That is the moment to check what it now obliges.
+
 ## A reference must name what it references
 
 "As explained above" points at everything, so it points at nothing. Name the fact being leaned on: *"which the Context above shows does not check for updates"*.
