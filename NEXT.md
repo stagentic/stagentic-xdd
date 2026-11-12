@@ -891,16 +891,17 @@ This may become the standard for all files.
 
 ## 13. Heading case — a repo-wide convention question
 
-`SKILL.md` uses title-case headings; every other heading in the repo is sentence
-case. Neither [`document-style.md`](docs/document-style.md) nor
-[`writing-style.md`](docs/writing-style.md) states a rule, so there is a
-convention to adopt rather than one being broken.
+`SKILL.md` uses title-case headings. Every other heading in the repo is sentence case.
+Neither [`document-style.md`](docs/document-style.md) nor
+[`writing-style.md`](docs/writing-style.md) states a rule, so this is a convention to
+adopt rather than one being broken.
 
-`SKILL.md` is agent-facing and its wording is measured, so changing it needs a
-fresh measurement. Every other doc is human-facing, where case is unmeasured.
+`SKILL.md` is agent-facing, and we measure its wording by running the scenarios and
+counting. So changing it means measuring it again. Every other doc is human-facing,
+where nobody measures the case.
 
 - Document that split in [`document-style.md`](docs/document-style.md).
-- Harmonise the repo to one case — a wide diff, no evidence either way.
+- Harmonise the repo to one case. That is a wide diff, with no evidence either way.
 - Change `SKILL.md` to sentence case, and re-measure.
 
 ## 14. Capture the CLI's stdout and stderr in the run artefacts
