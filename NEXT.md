@@ -594,30 +594,36 @@ from this investigation.
 
 ## 10. Simplify the dev commands with a build tool
 
-The "before any commit" gate — test → lint → mutation — and the levels of test and
-check (unit, contract, integration, the spec configs, focused/full mutation, the full
-baseline) are currently sequenced by hand and documented as prose in
-[COMMANDS.md](COMMANDS.md). In a JVM project this would be a build script (`gradle
-build` runs compile → test → checks in one command). Python has no single equivalent,
-and `uv` (unlike cargo/gradle) has no built-in task runner. This item explores encoding
-the levels and the gate as named tasks. **Choice TBC — this will mature into an ADR
-after further discussion.**
+Two things are sequenced by hand today, and documented as prose in
+[COMMANDS.md](COMMANDS.md). One is the "before any commit" gate: test, then lint, then
+mutation. The other is the levels of test and check — unit, contract, integration, the
+spec configurations, focused and full mutation, and the full baseline.
+
+In a JVM project this would be a build script. `gradle build` runs compile, then test,
+then the checks, in one command. Python has no single equivalent, and `uv` has no
+built-in task runner, unlike cargo and gradle.
+
+This section explores writing the levels and the gate down as named tasks. **The choice
+is still open, and this will become an ADR once we have discussed it further.**
 
 ### Options considered
 
-- **`poethepoet` (poe)** — tasks in `pyproject.toml` (`[tool.poe.tasks]`), run via
-  `uv run poe <task>`. Most native to the uv + pyproject setup, but per-pyproject and
-  Python-only, with no natural root to orchestrate across `play`/`spec`/`stagentic-test`.
-- **`just`** — a `justfile` of recipes; recipe-with-dependencies gives a task DAG (like
-  Gradle's), `just --list` gives discoverability (like `gradle tasks`), and it is
-  polyglot. Scoped to this repo, a single **root `justfile`** orchestrating the
-  sub-projects through `uv run --directory …` is the cleanest shape — no import/module
-  machinery (that was only for cross-repo reuse, which we've decided we don't need).
-- **`nox`** (`noxfile.py`) — session-based; only worth it for matrix testing across
-  Python versions or dist/build steps. Overkill for chaining checks.
+- **`poethepoet`, or `poe`.** Tasks live in `pyproject.toml`, under `[tool.poe.tasks]`,
+  and run via `uv run poe <task>`. It is the most native to the uv and pyproject setup.
+  But it is per-pyproject, and Python-only, with no natural root from which to
+  orchestrate `play`, `spec` and `stagentic-test` together.
+- **`just`.** A `justfile` of recipes. A recipe with dependencies gives a task DAG, as
+  Gradle does, and `just --list` makes the tasks discoverable, as `gradle tasks` does.
+  It is also polyglot. For this repo the cleanest shape is a single root `justfile` that
+  orchestrates the sub-projects through `uv run --directory …`. No import or module
+  machinery is needed — that was only for reuse across repos, which we have decided we
+  do not need.
+- **`nox`, with a `noxfile.py`.** Session-based. It is only worth it for matrix testing
+  across Python versions, or for build and distribution steps. For chaining checks it is
+  overkill.
 
-**Current lean: `just`, single root `justfile`.** `poe` is the fallback if we'd rather
-keep tasks in `pyproject.toml`.
+**We lean towards `just`, with a single root `justfile`.** `poe` is the fallback if we
+would rather keep the tasks in `pyproject.toml`.
 
 ### Shape (levels as recipes, composites via dependencies)
 
@@ -639,53 +645,60 @@ baseline: play-full play-integration helpers spec spec-critic spec-real
 build: lint baseline mutate-all              # the gradle-build analogue
 ```
 
-Recipe dependencies run first and abort on the first failure, so the gate's ordering
-comes for free; `just --list` documents the levels.
+A recipe's dependencies run first, and they abort on the first failure. So the gate's
+ordering comes for free. And `just --list` documents the levels.
 
 ### The gating, precisely
 
-- **Mutation must follow a green baseline** — correctness, not economy: mutation testing
-  measures whether tests kill mutants, so it is meaningless on red.
-- **test → lint is fail-fast economy, not a dependency** — linting a red tree isn't
-  wrong, just wasted; we fix behaviour before polishing style.
-- **Mutation depends on *tests*, not on *lint*** — a lint failure doesn't invalidate
-  mutation results; lint sits before mutation only to fail cheap. So: tests gate
-  everything; lint and mutation both need green tests but are independent of each other.
+- **Mutation must follow a green baseline.** This is about correctness, not economy.
+  Mutation testing measures whether the tests kill mutants, so it means nothing on red.
+- **Running the tests before linting is fail-fast economy, not a dependency.** Linting a
+  red tree is not wrong, just wasted. We fix behaviour before polishing style.
+- **Mutation depends on the tests, not on lint.** A lint failure does not invalidate a
+  mutation result. Lint sits before mutation only so that a cheap failure comes first.
+  So the tests gate everything. Lint and mutation both need green tests, but neither
+  depends on the other.
 
 ### `build` vs the current scoped rules
 
-`gradle build` feels cheap to re-run because Gradle is **incremental and cached** — it
-skips work whose inputs didn't change. A `just build` here has none of that: `baseline`
-hits **real claude** (spec-critic, spec-real) and `mutate-all` is a full sweep, so a
-full `build` is minutes and network-dependent every time. That is exactly why the
-current "before any commit" rules in [CLAUDE.md](CLAUDE.md) are **scoped** (single test
-file → just that file; play-src change → full baseline) rather than always-everything.
+`gradle build` feels cheap to re-run because Gradle is incremental and cached. It skips
+work whose inputs did not change. A `just build` here has none of that. `baseline` calls
+real claude, in `spec-critic` and `spec-real`, and `mutate-all` is a full sweep. So a
+full `build` takes minutes and depends on the network, every time.
 
-So the real decision is **what runs when**, not the recipe:
+That is exactly why the current "before any commit" rules in [CLAUDE.md](CLAUDE.md) are
+scoped rather than always-everything. A single test file changed means run that file; a change
+in play's source means the full baseline.
 
-- **Fast vs full split** — `check` (lint + unit) for routine commits; `build` (full)
-  before significant commits or in CI.
-- **Automated git hook vs manual** — the Python `pre-commit` framework can run a task on
-  `git commit`, but it must stay **fast** (ruff on staged files, maybe the unit lane);
-  the full baseline and mutation must never live in a git hook (every commit would stall
-  for minutes and call real claude). So: hook → `check`; `build` stays a task you invoke.
-- **Scoped judgement vs always-full** — keep the cheaper scoped rules (a human/agent
-  picks scope) or go always-full (simpler, slow, no caching to rescue it).
+So the real decision is what runs when, not what the recipe looks like.
+
+- **A fast lane and a full lane.** `check`, meaning lint and the unit tests, for routine
+  commits. `build`, meaning everything, before a significant commit or in CI.
+- **A git hook, or invoked by hand.** The Python `pre-commit` framework can run a task
+  on `git commit`, but that task has to stay fast — ruff on the staged files, perhaps
+  the unit lane. The full baseline and mutation must never live in a git hook, or every
+  commit stalls for minutes and calls real claude. So the hook runs `check`, and `build`
+  stays a task someone invokes.
+- **Scoped judgement, or always run everything.** Keep the cheaper scoped rules, where a
+  person or an agent picks the scope. Or go always-full, which is simpler and slow, with
+  no caching to rescue it.
 
 ### What a runner cannot encode
 
-The runner gates a command's exit code; it cannot make the mutation **judgement** — a
-survivor means *subtract the speculative code* (or document an accepted-mutation), not
-"add a test". That call stays with the human/agent (see
-[working-practices](docs/working-practices.md)).
+A runner gates on a command's exit code. It cannot make the judgement a surviving mutant
+calls for. A survivor means subtract the speculative code, or document an
+accepted-mutation. It does not mean add a test. That call stays with the person or the
+agent — see [working-practices](docs/working-practices.md).
 
-### Open decisions (for the ADR)
+### Open decisions, for the ADR
 
-1. Tool: `just` (lean) vs `poe`.
-2. `baseline` parallelism: it is deliberately parallel today (six suites at once, ≈ one
-   scenario's wall-clock); `just` runs dependencies **sequentially**, so a parallel
-   `baseline` needs shell `&`/`wait` in that one recipe, or we accept serial.
-3. Fast-auto (`pre-commit` hook) + manual full `build`, keep the scoped rules, or a blend.
+1. **Which tool**, `just` — the standing lean — or `poe`.
+2. **Whether `baseline` stays parallel.** It is deliberately parallel today: six suites
+   at once, finishing in roughly one scenario's wall-clock. `just` runs a recipe's
+   dependencies one after another, so a parallel `baseline` needs shell `&` and `wait`
+   inside that one recipe, or we accept it running serially.
+3. **What runs automatically.** A fast `pre-commit` hook plus a full `build` invoked by
+   hand, or keep the scoped rules, or some blend of the two.
 
 ## 11. Improvement plan working approach
 
